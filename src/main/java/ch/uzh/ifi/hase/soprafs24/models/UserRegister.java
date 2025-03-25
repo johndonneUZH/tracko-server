@@ -8,13 +8,16 @@ import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 public class UserRegister {
 
     @Id
-    private String id; 
+    private String id;  
 
     private String name;
     private String username;
     private String email;
     private String password;
     private UserStatus status;
+
+    public String getId() { return id; }   
+    public void setId(String id) { this.id = id; } 
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

@@ -2,10 +2,11 @@ package ch.uzh.ifi.hase.soprafs24.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import ch.uzh.ifi.hase.soprafs24.models.UserRegister;
-import ch.uzh.ifi.hase.soprafs24.models.UserGet;
+import java.util.Optional;
 
-public interface Repository extends MongoRepository<UserRegister, Long> 
+public interface Repository extends MongoRepository<UserRegister, String> 
 {
-    UserGet findByUsername(String username);
-    UserGet findById(String id);
+    UserRegister findByUsername(String username);
+    Optional<UserRegister> findById(String id);
+    UserRegister findByEmail(String email);
 }

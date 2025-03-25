@@ -1,5 +1,6 @@
+package ch.uzh.ifi.hase.soprafs24.controller;
+
 import ch.uzh.ifi.hase.soprafs24.models.UserRegister;
-import ch.uzh.ifi.hase.soprafs24.models.UserGet;
 import ch.uzh.ifi.hase.soprafs24.models.UserLogin;
 import ch.uzh.ifi.hase.soprafs24.repository.Repository;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +34,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserLogin loginRequest) {
-        UserGet user = repository.findByUsername(loginRequest.getUsername());
+        UserRegister user = repository.findByUsername(loginRequest.getUsername());
 
         if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(401).body("Invalid credentials");
