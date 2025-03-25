@@ -1,25 +1,23 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
-import ch.uzh.ifi.hase.soprafs24.repository.Repository;
-import ch.uzh.ifi.hase.soprafs24.models.UserRegister;
+import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import ch.uzh.ifi.hase.soprafs24.models.User;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 
 @RestController
 public class UserController {
-  private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-  @Autowired
-  private Repository repository;
+  private final UserService userService;
+  
+  UserController(UserService userService) {
+    this.userService = userService;
+  }
 
   @GetMapping("/users")
   @PreAuthorize("hasAuthority('USER')")
-  public List<UserRegister> getUsers() {
-    return repository.findAll();
+  public List<User> getUsers() {
+    return userService.getUsers();
   }
   
 }
