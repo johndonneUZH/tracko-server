@@ -49,10 +49,18 @@ public class AuthController {
     
         // Only runs if status == SUCCESS
         HashMap<String, String> userDetails = userService.getTokenById(loginRequest);
+        userService.setStatusOnline(userDetails.get("userId"));
         return ResponseEntity.status(HttpStatus.OK)
                              .header("Authorization", "Bearer " + userDetails.get("token"))
                              .header("userId", userDetails.get("userId"))
                              .body("Login successful");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String authHeader) {
+        String userId = userService.getUserIdByToken(authHeader);
+        userService.setStatusOffline(userId);
+        return ResponseEntity.status(HttpStatus.OK).body("Logout successful");
     }
     
 }

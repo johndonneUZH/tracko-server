@@ -16,6 +16,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(requests -> requests
                 .antMatchers(HttpMethod.GET, "/users").authenticated()
                 .antMatchers(HttpMethod.GET, "/users/{userId}").authenticated()
+                .antMatchers(HttpMethod.PUT, "/users/{userId}").authenticated()
                 .anyRequest().permitAll()) // Adjust this depending on your public endpoints
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
