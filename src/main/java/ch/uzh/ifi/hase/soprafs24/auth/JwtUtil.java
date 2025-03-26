@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class JwtUtil {
 
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long EXPIRATION_TIME = 1000 * 60 * 60;
+    private final long EXPIRATION_TIME = 1000 * 60 * 15; // 15 minutes
 
     public String generateToken(String userId) {
         return Jwts.builder()
@@ -29,11 +29,18 @@ public class JwtUtil {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
-            return true;
+            Date expiration = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+    
+            return expiration != null && expiration.after(new Date());
         } catch (Exception e) {
             return false;
         }
     }
+    
 
 }

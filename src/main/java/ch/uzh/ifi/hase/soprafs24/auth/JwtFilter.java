@@ -4,12 +4,15 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Component;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.filter.OncePerRequestFilter;
-import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -23,7 +26,7 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -31,8 +34,19 @@ public class JwtFilter extends OncePerRequestFilter {
 
             if (jwtUtil.validateToken(token)) {
                 String userId = jwtUtil.extractUserId(token);
-                SecurityContextHolder.getContext().setAuthentication(new AuthToken(userId));
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(userId, null, null);
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } 
+            else {
+                // Clear context if the token is invalid or expired
+                SecurityContextHolder.clearContext();
             }
+        } else {
+            // Clear context if no token is present
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
