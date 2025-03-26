@@ -1,5 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.models.user;
 
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
@@ -14,6 +16,7 @@ public class User {
     private String email;
     private String password;
     private UserStatus status;
+    private List<String> projectIds;
 
     public String getId() { return id; }   
     public void setId(String id) { this.id = id; } 
@@ -32,4 +35,7 @@ public class User {
 
     public UserStatus getStatus() { return status; }
     public void setStatus(UserStatus status) { this.status = status; }
+
+    public List<String> getProjectIds() { return projectIds; }
+    public void setProjectIds(List<String> projectIds) { this.projectIds = projectIds; }
 }
