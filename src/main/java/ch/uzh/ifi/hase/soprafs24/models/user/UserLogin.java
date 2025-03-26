@@ -1,5 +1,5 @@
 
-package ch.uzh.ifi.hase.soprafs24.models;
+package ch.uzh.ifi.hase.soprafs24.models.user;
 
 public class UserLogin {
     private String username;

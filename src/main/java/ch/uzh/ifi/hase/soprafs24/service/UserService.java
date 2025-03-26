@@ -2,10 +2,10 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
-import ch.uzh.ifi.hase.soprafs24.models.User;
-import ch.uzh.ifi.hase.soprafs24.models.UserLogin;
-import ch.uzh.ifi.hase.soprafs24.models.UserRegister;
-import ch.uzh.ifi.hase.soprafs24.models.UserUpdate;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
+import ch.uzh.ifi.hase.soprafs24.models.user.UserLogin;
+import ch.uzh.ifi.hase.soprafs24.models.user.UserRegister;
+import ch.uzh.ifi.hase.soprafs24.models.user.UserUpdate;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,8 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
-import ch.uzh.ifi.hase.soprafs24.models.User;
-import ch.uzh.ifi.hase.soprafs24.models.UserLogin;
-import ch.uzh.ifi.hase.soprafs24.models.UserRegister;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
+import ch.uzh.ifi.hase.soprafs24.models.user.UserLogin;
+import ch.uzh.ifi.hase.soprafs24.models.user.UserRegister;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.constant.LoginStatus;
 

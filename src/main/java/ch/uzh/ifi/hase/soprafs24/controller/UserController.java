@@ -1,7 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
-import ch.uzh.ifi.hase.soprafs24.models.User;
-import ch.uzh.ifi.hase.soprafs24.models.UserUpdate;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
+import ch.uzh.ifi.hase.soprafs24.models.user.UserUpdate;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/users")
 public class UserController {
 
   private final UserService userService;
@@ -18,13 +20,13 @@ public class UserController {
     this.userService = userService;
   }
 
-  @GetMapping("/users")
+  @GetMapping("")
   @PreAuthorize("hasAuthority('USER')")
   public List<User> getUsers() {
     return userService.getUsers();
   }
   
-  @GetMapping("/users/{userId}")
+  @GetMapping("/{userId}")
   @PreAuthorize("hasAuthority('USER')")
   public ResponseEntity<User> getUser(@PathVariable String userId) {
     User user = userService.getUserById(userId);
@@ -34,7 +36,7 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
   }
 
-  @PutMapping("/users/{userId}")
+  @PutMapping("/{userId}")
   @PreAuthorize("hasAuthority('USER')")
   public ResponseEntity<User> updateUser(
           @PathVariable String userId,
