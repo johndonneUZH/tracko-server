@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.service.ProjectService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 @RestController
 @RequestMapping("/projects")
@@ -29,4 +32,14 @@ public class ProjectController {
         Project savedProject = projectService.createProject(newProject, authHeader);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedProject);
     }
+
+    @GetMapping("/{projectId}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Project> getProject(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
+        Project project = projectService.authenticateProject(projectId, authHeader);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(project);
+    }
+    
+
+    
 }
