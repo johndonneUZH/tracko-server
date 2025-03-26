@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ch.uzh.ifi.hase.soprafs24.constant.LoginStatus;
+
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -57,15 +60,36 @@ public class UserService {
     return toBeSavedUser;
   }
 
-    public boolean checkLoginRequest(UserLogin loginRequest) {
+    public LoginStatus checkLoginRequest(UserLogin loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUsername());
-        if (user == null) { return false; }
-        return passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
+        if (user == null) {
+            return LoginStatus.USER_NOT_FOUND;
+        }
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            return LoginStatus.INVALID_PASSWORD;
+        }
+        return LoginStatus.SUCCESS;
     }
 
-    public String getTokenById(UserLogin loginRequest) {
+
+    public HashMap<String, String> getTokenById(UserLogin loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUsername());
-        return jwtUtil.generateToken(user.getId());
+        
+        if (user == null) { 
+          return null; 
+        }
+
+        String userId = user.getId().toString();
+
+        HashMap<String, String> tokenMap = new HashMap<>();
+        tokenMap.put("token", jwtUtil.generateToken(userId));
+        tokenMap.put("userId", userId);
+
+        return tokenMap;
+    }
+
+    public User getUserById(String userId) {
+        return userRepository.findById(userId).orElse(null);
     }
  
 }

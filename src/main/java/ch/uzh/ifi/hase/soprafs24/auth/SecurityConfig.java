@@ -14,7 +14,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(requests -> requests
-                .antMatchers(HttpMethod.GET, "/users").authenticated() // Enforce token requirement
+                .antMatchers(HttpMethod.GET, "/users").authenticated()
+                .antMatchers(HttpMethod.GET, "/users/{userId}").authenticated()
                 .anyRequest().permitAll()) // Adjust this depending on your public endpoints
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

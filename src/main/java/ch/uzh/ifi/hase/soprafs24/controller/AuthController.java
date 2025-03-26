@@ -4,6 +4,9 @@ import ch.uzh.ifi.hase.soprafs24.models.User;
 import ch.uzh.ifi.hase.soprafs24.models.UserLogin;
 import ch.uzh.ifi.hase.soprafs24.models.UserRegister;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import ch.uzh.ifi.hase.soprafs24.constant.LoginStatus;
+
+import java.util.HashMap;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +35,24 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserLogin loginRequest) {
-        
-        if (!userService.checkLoginRequest(loginRequest)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+    
+        LoginStatus status = userService.checkLoginRequest(loginRequest);
+    
+        switch (status) {
+            case USER_NOT_FOUND:
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            case INVALID_PASSWORD:
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password");
+            case SUCCESS:
+                break;
         }
-        
-        String token = userService.getTokenById(loginRequest);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).header("Authorization", "Bearer " + token).body("Login successful");
+    
+        // Only runs if status == SUCCESS
+        HashMap<String, String> userDetails = userService.getTokenById(loginRequest);
+        return ResponseEntity.status(HttpStatus.OK)
+                             .header("Authorization", "Bearer " + userDetails.get("token"))
+                             .header("userId", userDetails.get("userId"))
+                             .body("Login successful");
     }
+    
 }
