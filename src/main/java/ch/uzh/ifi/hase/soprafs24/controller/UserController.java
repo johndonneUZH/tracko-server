@@ -33,7 +33,7 @@ public class UserController {
     if (user == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
-    return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
+    return ResponseEntity.status(HttpStatus.OK).body(user);
   }
 
   @PutMapping("/{userId}")
