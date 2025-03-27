@@ -5,10 +5,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
+import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
@@ -63,5 +66,34 @@ public class ProjectService {
         return project.get();
     }
 
+    public Project updateProject(String projectId, ProjectUpdate updatedProject, String authHeader) {
+        Project project = authenticateProject(projectId, authHeader);
+
+        String userId = userService.getUserIdByToken(authHeader);
+        if (!project.getOwnerId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this project");
+        }
+
+        project.setProjectName(updatedProject.getProjectName());
+        project.setProjectDescription(updatedProject.getProjectDescription());
+        project.setUpdatedAt(java.time.LocalDateTime.now());
+
+        // Members logic
+        HashSet<String> members = new HashSet<>(project.getProjectMembers());
+
+        if (updatedProject.getMembersToAdd() != null) {
+            members.addAll(updatedProject.getMembersToAdd());
+        }
+        
+        if (updatedProject.getMembersToRemove() != null) {
+            members.removeAll(updatedProject.getMembersToRemove());
+        }
+        
+        project.setProjectMembers(new ArrayList<>(members));
+        
+        projectRepository.save(project);
+        return project;
+
+    }
 
 }

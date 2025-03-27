@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
+import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
 import ch.uzh.ifi.hase.soprafs24.service.ProjectService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 
 @RestController
@@ -39,7 +42,14 @@ public class ProjectController {
         Project project = projectService.authenticateProject(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(project);
     }
-    
 
+    @PutMapping("/{projectId}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Project> updateProject(@PathVariable String projectId, 
+                                                 @RequestBody ProjectUpdate updatedProject, 
+                                                 @RequestHeader("Authorization") String authHeader) {
+        Project project = projectService.updateProject(projectId, updatedProject, authHeader);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(project);
+    }
     
 }
