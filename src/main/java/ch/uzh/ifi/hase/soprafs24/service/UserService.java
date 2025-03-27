@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.constant.LoginStatus;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -56,6 +57,7 @@ public class UserService {
     toBeSavedUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
     toBeSavedUser.setEmail(newUser.getEmail());
     toBeSavedUser.setName(newUser.getName());
+    toBeSavedUser.setProjectIds(new ArrayList<>());
     toBeSavedUser.setStatus(UserStatus.ONLINE);
 
     toBeSavedUser = userRepository.save(toBeSavedUser);
