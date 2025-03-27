@@ -1,57 +1,58 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
-
-import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
+import ch.uzh.ifi.hase.soprafs24.models.user.UserUpdate;
 
-import java.util.ArrayList;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-/**
- * User Controller
- * This class is responsible for handling all REST request that are related to
- * the user.
- * The controller will receive the request and delegate the execution to the
- * UserService and finally return the result.
- */
 @RestController
+@RequestMapping("/users")
 public class UserController {
 
   private final UserService userService;
-
+  
   UserController(UserService userService) {
     this.userService = userService;
   }
 
-  @GetMapping("/users")
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-  public List<UserGetDTO> getAllUsers() {
-    // fetch all users in the internal representation
-    List<User> users = userService.getUsers();
-    List<UserGetDTO> userGetDTOs = new ArrayList<>();
-
-    // convert each user to the API representation
-    for (User user : users) {
-      userGetDTOs.add(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
+  @GetMapping("")
+  @PreAuthorize("hasAuthority('USER')")
+  public List<User> getUsers() {
+    return userService.getUsers();
+  }
+  
+  @GetMapping("/{userId}")
+  @PreAuthorize("hasAuthority('USER')")
+  public ResponseEntity<User> getUser(@PathVariable String userId) {
+    User user = userService.getUserById(userId);
+    if (user == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
-    return userGetDTOs;
+    return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
   }
 
-  @PostMapping("/users")
-  @ResponseStatus(HttpStatus.CREATED)
-  @ResponseBody
-  public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
-    // convert API user to internal representation
-    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-
-    // create user
-    User createdUser = userService.createUser(userInput);
-    // convert internal representation of user back to API
-    return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+  @PutMapping("/{userId}")
+  @PreAuthorize("hasAuthority('USER')")
+  public ResponseEntity<User> updateUser(
+          @PathVariable String userId,
+          @RequestBody UserUpdate updatedUser,
+          @RequestHeader("Authorization") String authHeader) {
+  
+      userService.authenticateUser(userId, authHeader);
+  
+      User user = userService.updateUser(userId, updatedUser);
+      if (user == null) {
+          return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+      }
+  
+      return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
   }
+  
 }
+
+
