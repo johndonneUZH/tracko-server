@@ -48,6 +48,17 @@ public class IdeaController {
         return ResponseEntity.status(HttpStatus.OK).body(ideas);
     }
 
+    @GetMapping("/{ideaId}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Idea> getIdeaById(
+            @PathVariable String projectId,
+            @PathVariable String ideaId,
+            @RequestHeader("Authorization") String authHeader) {
+
+        Idea idea = ideaService.getIdeaById(projectId, ideaId, authHeader);
+        return ResponseEntity.status(HttpStatus.OK).body(idea);
+    }
+
     @PutMapping("/{ideaId}")
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Idea> updateIdea(

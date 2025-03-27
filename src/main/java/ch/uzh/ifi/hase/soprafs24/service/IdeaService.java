@@ -61,6 +61,13 @@ public class IdeaService {
         return ideaRepository.findByProjectId(projectId);
     }
 
+    public Idea getIdeaById(String projectId, String ideaId, String authHeader) {
+        projectService.authenticateProject(projectId, authHeader);
+
+        return ideaRepository.findById(ideaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+    }
+
     public Idea updateIdea(String projectId, String ideaId, IdeaUpdate inputIdea, String authHeader) {
         String userId = userService.getUserIdByToken(authHeader);
         Idea idea = ideaRepository.findById(ideaId)

@@ -8,3 +8,5 @@ public interface IdeaRepository extends MongoRepository<Idea, String> {
     List<Idea> findByOwnerId(String ownerId);
     List<Idea> findByProjectId(String projectId);
 }
+
+
