@@ -66,6 +66,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
     testImplementation 'de.bwaldvogel:mongo-java-server:1.39.0'
+    testImplementation 'org.springframework.security:spring-security-test'
 
     // For mocking in tests
     testImplementation 'org.mockito:mockito-core'
