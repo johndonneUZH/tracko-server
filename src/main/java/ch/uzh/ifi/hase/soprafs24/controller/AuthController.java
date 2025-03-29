@@ -5,6 +5,7 @@ import ch.uzh.ifi.hase.soprafs24.models.user.UserLogin;
 import ch.uzh.ifi.hase.soprafs24.models.user.UserRegister;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.constant.LoginStatus;
+import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 
 import java.util.HashMap;
 
@@ -49,7 +50,7 @@ public class AuthController {
     
         // Only runs if status == SUCCESS
         HashMap<String, String> userDetails = userService.getTokenById(loginRequest);
-        userService.setStatusOnline(userDetails.get("userId"));
+        userService.setStatus(userDetails.get("userId"), UserStatus.ONLINE);
         return ResponseEntity.status(HttpStatus.OK)
                              .header("Authorization", "Bearer " + userDetails.get("token"))
                              .header("userId", userDetails.get("userId"))
@@ -59,7 +60,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String authHeader) {
         String userId = userService.getUserIdByToken(authHeader);
-        userService.setStatusOffline(userId);
+        userService.setStatus(userId, UserStatus.OFFLINE);
         return ResponseEntity.status(HttpStatus.OK).body("Logout successful");
     }
     

@@ -26,47 +26,56 @@ import java.util.List;
 @Transactional
 public class UserService {
 
-  private final Logger log = LoggerFactory.getLogger(UserService.class);
-  private final JwtUtil jwtUtil;
-  private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final JwtUtil jwtUtil;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    
+    @Autowired
+    private UserRepository userRepository;
 
-  UserService(JwtUtil jwtUtil) {
-    this.jwtUtil = jwtUtil;
-  }
-
-  @Autowired
-  private UserRepository userRepository;
-
-  public List<User> getUsers() {
-    return userRepository.findAll();
-  } 
-
-  public boolean checkIfUserExists(UserRegister newUser) {
-    User userByUsername = userRepository.findByUsername(newUser.getUsername());
-    User userByEmail = userRepository.findByEmail(newUser.getEmail());
-
-    if (userByUsername != null || userByEmail!= null) {
-      return true;
+    UserService(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
     }
-    return false;
-  }
 
-  public User createUser(UserRegister newUser) {
-    User toBeSavedUser = new User();
-    toBeSavedUser.setUsername(newUser.getUsername());
-    toBeSavedUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-    toBeSavedUser.setEmail(newUser.getEmail());
-    toBeSavedUser.setName(newUser.getName());
-    toBeSavedUser.setProjectIds(new ArrayList<>());
-    toBeSavedUser.setStatus(UserStatus.ONLINE);
 
-    toBeSavedUser = userRepository.save(toBeSavedUser);
+    public List<User> getUsers() {
+        return userRepository.findAll();
+    } 
 
-    log.debug("Created Information for User: " + newUser);
-    return toBeSavedUser;
-  }
+    public boolean checkIfUserExists(UserRegister newUser) {
+        // If either there is a user with the same username, or email, it returns True
+        User userByUsername = userRepository.findByUsername(newUser.getUsername());
+        User userByEmail = userRepository.findByEmail(newUser.getEmail());
+
+        if (userByUsername != null || userByEmail!= null) {
+        return true;
+        }
+        return false;
+    }
+
+    public User createUser(UserRegister newUser) {
+        /**Sets name/username/password/email from input (required).
+        Sets projects and status to default values*/;
+        User toBeSavedUser = new User();
+        toBeSavedUser.setName(newUser.getName());
+        toBeSavedUser.setUsername(newUser.getUsername());
+        toBeSavedUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        toBeSavedUser.setEmail(newUser.getEmail());
+        toBeSavedUser.setProjectIds(new ArrayList<>());
+        toBeSavedUser.setStatus(UserStatus.ONLINE);
+
+        toBeSavedUser = userRepository.save(toBeSavedUser);
+
+        log.debug("Created Information for User: " + newUser);
+        return toBeSavedUser;
+    }
 
     public LoginStatus checkLoginRequest(UserLogin loginRequest) {
+        /*
+            Try to test the credentials. 
+            return USER_NOT_FOUND or INVALID_PASSWORD or SUCCESS
+        */
+
         User user = userRepository.findByUsername(loginRequest.getUsername());
         if (user == null) {
             return LoginStatus.USER_NOT_FOUND;
@@ -79,10 +88,11 @@ public class UserService {
 
 
     public HashMap<String, String> getTokenById(UserLogin loginRequest) {
+        /*Return the token of this user*/
         User user = userRepository.findByUsername(loginRequest.getUsername());
         
         if (user == null) { 
-          return null; 
+            return null; 
         }
 
         String userId = user.getId().toString();
@@ -98,21 +108,13 @@ public class UserService {
         return userRepository.findById(userId).orElse(null);
     }
 
-    public void setStatusOnline(String userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-        }
-        user.setStatus(UserStatus.ONLINE);
-        userRepository.save(user);
-    }
 
-    public void setStatusOffline(String userId) {
+    public void setStatus(String userId, UserStatus status) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        user.setStatus(UserStatus.OFFLINE);
+        user.setStatus(status);
         userRepository.save(user);
     }
 
@@ -131,24 +133,26 @@ public class UserService {
     }
 
     public void authenticateUser(String userId, String authHeader) {
-      if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-          throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header");
-      }
+        /* Authenticates the User by making sure the token provided and userId are the same*/
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header");
+        }
 
-      String token = authHeader.replace("Bearer ", "");
+        String token = authHeader.replace("Bearer ", "");
 
-      if (!jwtUtil.validateToken(token)) {
-          throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
-      }
+        if (!jwtUtil.validateToken(token)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+        }
 
-      String tokenUserId = jwtUtil.extractUserId(token);
+        String tokenUserId = jwtUtil.extractUserId(token);
 
-      if (!tokenUserId.equals(userId)) {
-          throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to update this user");
-      }
+        if (!tokenUserId.equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to update this user");
+        }
     }
     
     public User updateUser(String userId, UserUpdate userUpdate) {
+        /*Updates username/password if username is not already used*/
         User userById = userRepository.findById(userId).orElse(null);
         User userByUsername = userRepository.findByUsername(userUpdate.getUsername());
         if (userById == null) {
