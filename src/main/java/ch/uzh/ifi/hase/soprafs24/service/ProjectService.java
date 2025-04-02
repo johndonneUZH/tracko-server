@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
-
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
 import org.springframework.http.HttpStatus;
