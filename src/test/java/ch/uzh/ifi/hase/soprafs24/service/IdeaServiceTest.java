@@ -3,12 +3,19 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+
+import org.mockito.ArgumentCaptor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,13 +35,20 @@ import ch.uzh.ifi.hase.soprafs24.constant.IdeaStatus;
 import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaRegister;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaUpdate;
+import ch.uzh.ifi.hase.soprafs24.models.websocket.IdeaUpdateMessage;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
 
 import org.springframework.context.annotation.Import;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+// import org.mockito.InjectMocks;
+// import org.mockito.MockitoAnnotations;
+
 import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 
 @SpringBootTest
@@ -56,6 +70,9 @@ public class IdeaServiceTest {
     @MockBean
     private ProjectService projectService;
 
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
+
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
     private final String IDEA_ID = "idea-123";
@@ -63,7 +80,7 @@ public class IdeaServiceTest {
 
     @BeforeEach
     public void setup() {
-        ideaService = new IdeaService(ideaRepository, userService, projectService);
+        ideaService = new IdeaService(ideaRepository, userService, projectService, messagingTemplate);
         
         // Mock the user authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
@@ -265,5 +282,151 @@ public class IdeaServiceTest {
         
         // The original parent idea should have been updated to include the sub-idea
         verify(ideaRepository, times(3)).save(any(Idea.class)); // Once for the sub idea, once for parent update
+    }
+
+    @Test
+    public void testCreateIdeaSendsWebSocketMessage() {
+        // Arrange
+        IdeaRegister ideaRegister = new IdeaRegister();
+        ideaRegister.setIdeaName("Test Idea");
+        ideaRegister.setIdeaDescription("Test Description");
+        
+        // Mock repository save
+        when(ideaRepository.save(any(Idea.class))).thenAnswer(invocation -> {
+            Idea savedIdea = invocation.getArgument(0);
+            savedIdea.setIdeaId(IDEA_ID);
+            return savedIdea;
+        });
+
+        // Act
+        ideaService.createIdea(PROJECT_ID, ideaRegister, VALID_AUTH_HEADER, new ArrayList<>());
+        
+        // Assert
+        ArgumentCaptor<IdeaUpdateMessage> messageCaptor = ArgumentCaptor.forClass(IdeaUpdateMessage.class);
+        verify(messagingTemplate).convertAndSend(
+            eq("/topic/projects/" + PROJECT_ID + "/ideas"), 
+            messageCaptor.capture()
+        );
+
+        // Then verify the content of the captured message
+        IdeaUpdateMessage capturedMessage = messageCaptor.getValue();
+        assertEquals("CREATE", capturedMessage.getAction());
+        assertEquals(PROJECT_ID, capturedMessage.getProjectId());
+        assertEquals(IDEA_ID, capturedMessage.getIdeaId());  // Note: Using your constant IDEA_ID here
+        assertEquals("Test Idea", capturedMessage.getIdea().getIdeaName());
+    }
+
+    @Test
+    public void testUpdateIdeaSendsWebSocketMessage() {
+        // Arrange
+        IdeaUpdate ideaUpdate = new IdeaUpdate();
+        ideaUpdate.setIdeaName("Updated Idea");
+        ideaUpdate.setIdeaDescription("Updated Description");
+        ideaUpdate.setIdeaStatus(IdeaStatus.OPEN);
+        ideaUpdate.setUpVotes(5L);
+        ideaUpdate.setDownVotes(2L);
+        ideaUpdate.setSubIdeas(new ArrayList<>());
+        
+        Idea existingIdea = new Idea();
+        existingIdea.setIdeaId(IDEA_ID);
+        existingIdea.setOwnerId(USER_ID);
+        existingIdea.setProjectId(PROJECT_ID);
+        existingIdea.setIdeaName("Original Idea");
+        existingIdea.setSubIdeas(new ArrayList<>());
+        
+        when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.of(existingIdea));
+        when(ideaRepository.save(any(Idea.class))).thenReturn(existingIdea);
+        
+        // Act
+        ideaService.updateIdea(PROJECT_ID, IDEA_ID, ideaUpdate, VALID_AUTH_HEADER);
+        
+        // Assert
+        ArgumentCaptor<IdeaUpdateMessage> messageCaptor = ArgumentCaptor.forClass(IdeaUpdateMessage.class);
+        verify(messagingTemplate).convertAndSend(
+            eq("/topic/projects/" + PROJECT_ID + "/ideas"), 
+            messageCaptor.capture()
+        );
+        
+        IdeaUpdateMessage capturedMessage = messageCaptor.getValue();
+        assertEquals("UPDATE", capturedMessage.getAction());
+        assertEquals(PROJECT_ID, capturedMessage.getProjectId());
+        assertEquals(IDEA_ID, capturedMessage.getIdeaId());
+    }
+
+    @Test
+    public void testCreateSubIdeaSendsWebSocketMessages() {
+        // Arrange
+        IdeaRegister subIdeaRegister = new IdeaRegister();
+        subIdeaRegister.setIdeaName("Sub Idea");
+        subIdeaRegister.setIdeaDescription("Sub Description");
+        
+        Idea parentIdea = new Idea();
+        parentIdea.setIdeaId(IDEA_ID);
+        parentIdea.setOwnerId(USER_ID);
+        parentIdea.setProjectId(PROJECT_ID);
+        parentIdea.setSubIdeas(new ArrayList<>());
+        
+        Idea newSubIdea = new Idea();
+        newSubIdea.setIdeaId("sub-idea-123");
+        newSubIdea.setOwnerId(USER_ID);
+        newSubIdea.setProjectId(PROJECT_ID);
+        
+        when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.of(parentIdea));
+        when(ideaRepository.save(any(Idea.class))).thenReturn(parentIdea);
+        
+        // Mock the createIdea method to return our sub-idea
+        IdeaService spyIdeaService = Mockito.spy(ideaService);
+        doReturn(newSubIdea).when(spyIdeaService).createIdea(
+            eq(PROJECT_ID), 
+            any(IdeaRegister.class), 
+            eq(VALID_AUTH_HEADER), 
+            any(ArrayList.class)
+        );
+        
+        // Act
+        spyIdeaService.createSubIdea(PROJECT_ID, IDEA_ID, subIdeaRegister, VALID_AUTH_HEADER);
+        
+        // Assert - should capture the message for the parent idea update
+        ArgumentCaptor<IdeaUpdateMessage> messageCaptor = ArgumentCaptor.forClass(IdeaUpdateMessage.class);
+        verify(messagingTemplate).convertAndSend(
+            eq("/topic/projects/" + PROJECT_ID + "/ideas"), 
+            messageCaptor.capture()
+        );
+        
+        IdeaUpdateMessage capturedMessage = messageCaptor.getValue();
+        assertEquals("UPDATE", capturedMessage.getAction());
+        assertEquals(PROJECT_ID, capturedMessage.getProjectId());
+        assertEquals(IDEA_ID, capturedMessage.getIdeaId());
+        
+        // Verify the sub-idea was added to the parent's subIdeas list
+        assertTrue(capturedMessage.getIdea().getSubIdeas().contains("sub-idea-123"));
+    }
+
+    @Test
+    public void testDeleteIdeaSendsWebSocketMessage() {
+        // Arrange
+        Idea existingIdea = new Idea();
+        existingIdea.setIdeaId(IDEA_ID);
+        existingIdea.setOwnerId(USER_ID);
+        existingIdea.setProjectId(PROJECT_ID);
+        existingIdea.setIdeaName("Idea to Delete");
+        
+        when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.of(existingIdea));
+        doNothing().when(ideaRepository).deleteById(IDEA_ID);
+        
+        // Act
+        ideaService.deleteIdea(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER);
+        
+        // Assert
+        ArgumentCaptor<IdeaUpdateMessage> messageCaptor = ArgumentCaptor.forClass(IdeaUpdateMessage.class);
+        verify(messagingTemplate).convertAndSend(
+            eq("/topic/projects/" + PROJECT_ID + "/ideas"), 
+            messageCaptor.capture()
+        );
+        
+        IdeaUpdateMessage capturedMessage = messageCaptor.getValue();
+        assertEquals("DELETE", capturedMessage.getAction());
+        assertEquals(PROJECT_ID, capturedMessage.getProjectId());
+        assertEquals(IDEA_ID, capturedMessage.getIdeaId());
     }
 }
