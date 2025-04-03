@@ -2,40 +2,51 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
 import ch.uzh.ifi.hase.soprafs24.models.comment.Comment;
-import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
+import ch.uzh.ifi.hase.soprafs24.models.comment.CommentRegister;
 import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
-import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
-import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
 @Service
 @Transactional
 public class CommentService {
     private final CommentRepository commentRepository;
-    private final IdeaRepository ideaRepository;
-    private final ProjectService projectService;
-    private final UserRepository userRepository;
+    private final IdeaService ideaService;
+    private final UserService userService;
 
-    public CommentService(CommentRepository commentRepository, IdeaRepository ideaRepository, UserRepository userRepository, ProjectService projectService) {
-        this.projectService = projectService;
+    public CommentService(CommentRepository commentRepository, IdeaService ideaService, UserService userService) {
         this.commentRepository = commentRepository;
-        this.ideaRepository = ideaRepository;
-        this.userRepository = userRepository;
+        this.ideaService = ideaService;
+        this.userService = userService;
     }
 
     public List<Comment> getCommentsByIdea(String projectId, String ideaId, String authHeader) {
         // Authenticate the project and idea
-        projectService.authenticateProject(projectId, authHeader);
-        
-        Idea idea = ideaRepository.findById(ideaId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
-        if (!idea.getProjectId().equals(projectId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this idea");
-        }
+        ideaService.getIdeaById(projectId, ideaId, authHeader);
+
+        // Return comments linked to the provided ideaId
         return commentRepository.findByIdeaId(ideaId);
+    }
+
+    public Comment createComment(String projectId, String ideaId, String authHeader, CommentRegister comment) {
+        // Authenticate the project and idea
+        ideaService.getIdeaById(projectId, ideaId, authHeader);
+        String userId = userService.getUserIdByToken(authHeader);
+
+        Comment newComment = new Comment();
+        newComment.setCommentText(comment.getCommentText());
+        newComment.setIdeaId(ideaId);
+        newComment.setOwnerId(userId);
+        newComment.setProjectId(projectId);
+        newComment.setCreatedAt(java.time.LocalDateTime.now());
+
+        if (comment.getParentId() != null) {
+            newComment.setParentCommentId(comment.getParentId());
+        } else {
+            newComment.setParentCommentId(null);
+        }
+
+        return commentRepository.save(newComment);
     }
 }
