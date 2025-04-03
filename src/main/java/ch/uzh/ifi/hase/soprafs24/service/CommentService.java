@@ -29,7 +29,7 @@ public class CommentService {
         return commentRepository.findByIdeaId(ideaId);
     }
 
-    public Comment createComment(String projectId, String ideaId, String authHeader, CommentRegister comment) {
+    public Comment createComment(String projectId, String ideaId, String commentId, String authHeader, CommentRegister comment) {
         // Authenticate the project and idea
         ideaService.getIdeaById(projectId, ideaId, authHeader);
         String userId = userService.getUserIdByToken(authHeader);
@@ -40,13 +40,16 @@ public class CommentService {
         newComment.setOwnerId(userId);
         newComment.setProjectId(projectId);
         newComment.setCreatedAt(java.time.LocalDateTime.now());
-
-        if (comment.getParentId() != null) {
-            newComment.setParentCommentId(comment.getParentId());
-        } else {
-            newComment.setParentCommentId(null);
-        }
+        newComment.setParentCommentId(commentId);
 
         return commentRepository.save(newComment);
+    }
+
+    public List<Comment> getCommentById(String projectId, String ideaId, String commentId, String authHeader) {
+        // Authenticate the project and idea
+        ideaService.getIdeaById(projectId, ideaId, authHeader);
+
+        // Get all commments with parentId = commentId
+        return commentRepository.findByParentCommentId(commentId);
     }
 }

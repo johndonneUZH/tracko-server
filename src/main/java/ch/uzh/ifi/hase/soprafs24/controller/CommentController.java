@@ -43,13 +43,38 @@ public class CommentController {
 
     @PostMapping("")
     @PreAuthorize("hasAuthority('USER')")
-    public ResponseEntity<Comment> createComment(
+    public ResponseEntity<Comment> createRootComment(
             @PathVariable String projectId,
             @PathVariable String ideaId,
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CommentRegister comment) {
 
-        Comment createdComment = commentService.createComment(projectId, ideaId, authHeader, comment);
+        Comment createdComment = commentService.createComment(projectId, ideaId, null, authHeader, comment);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
+    }
+
+    @PostMapping("/{commentId}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Comment> createComment(
+            @PathVariable String projectId,
+            @PathVariable String ideaId,
+            @PathVariable String commentId,
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody CommentRegister comment) {
+
+        Comment createdComment = commentService.createComment(projectId, ideaId, commentId, authHeader, comment);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
+    }
+
+    @GetMapping("/{commentId}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<List<Comment>> getCommentById(
+            @PathVariable String projectId,
+            @PathVariable String ideaId,
+            @PathVariable String commentId,
+            @RequestHeader("Authorization") String authHeader) {
+
+        List<Comment> comment = commentService.getCommentById(projectId, ideaId, commentId, authHeader);
+        return ResponseEntity.status(HttpStatus.OK).body(comment);
     }
 }
