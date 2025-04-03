@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,8 +15,13 @@ import ch.uzh.ifi.hase.soprafs24.constant.IdeaStatus;
 import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaRegister;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaUpdate;
+import ch.uzh.ifi.hase.soprafs24.models.websocket.IdeaUpdateMessage;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
+
+// WebSocket related
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @Service
 @Transactional
@@ -26,10 +31,14 @@ public class IdeaService {
     private final UserService userService;
     private final ProjectService projectService;
 
-    IdeaService(IdeaRepository ideaRepository, UserService userService, ProjectService projectService) {
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    IdeaService(IdeaRepository ideaRepository, UserService userService, ProjectService projectService, SimpMessagingTemplate messagingTemplate) {
         this.ideaRepository = ideaRepository;
         this.userService = userService;
         this.projectService = projectService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public Idea createIdea(String projectId, IdeaRegister inputIdea, String authHeader, ArrayList<String> subIdeas) {
@@ -51,7 +60,19 @@ public class IdeaService {
         newIdea.setDownVotes(0L);
         newIdea.setSubIdeas(subIdeas);
 
-        return ideaRepository.save(newIdea);
+        // Save the new idea
+        newIdea = ideaRepository.save(newIdea);
+    
+        // Broadcast the new idea to all subscribers
+        IdeaUpdateMessage message = new IdeaUpdateMessage();
+        message.setAction("CREATE");
+        message.setIdeaId(newIdea.getIdeaId());
+        message.setProjectId(projectId);
+        message.setIdea(newIdea);
+        
+        messagingTemplate.convertAndSend("/topic/projects/" + projectId + "/ideas", message);
+
+        return newIdea;
     }
 
     public List<Idea> getIdeasByProject(String projectId, String authHeader) {
@@ -97,9 +118,18 @@ public class IdeaService {
 
         // Convert the set back to a list and update the idea
         idea.setSubIdeas(new ArrayList<>(mergedSubIdeas));
-        ideaRepository.save(idea);
+        Idea updatedIdea = ideaRepository.save(idea);
 
-        return idea;
+        // Broadcast the update to all subscribers
+        IdeaUpdateMessage message = new IdeaUpdateMessage();
+        message.setAction("UPDATE");
+        message.setIdeaId(updatedIdea.getIdeaId());
+        message.setProjectId(projectId);
+        message.setIdea(updatedIdea);
+        
+        messagingTemplate.convertAndSend("/topic/projects/" + projectId + "/ideas", message);
+
+        return updatedIdea;
     }
 
     public Idea createSubIdea(String projectId, String ideaId, IdeaRegister newIdea, String authHeader) {
@@ -117,9 +147,44 @@ public class IdeaService {
         idea.setSubIdeas(new ArrayList<>(mergedSubIdeas)); // Convert back to a List
     
         // Save both the parent idea and the sub-idea
-        ideaRepository.save(subIdea);
         ideaRepository.save(idea);
+
+        // Broadcast the parent idea update to all subscribers
+        IdeaUpdateMessage parentMessage = new IdeaUpdateMessage();
+        parentMessage.setAction("UPDATE");
+        parentMessage.setIdeaId(idea.getIdeaId());
+        parentMessage.setProjectId(projectId);
+        parentMessage.setIdea(idea);
+
+        messagingTemplate.convertAndSend("/topic/projects/" + projectId + "/ideas", parentMessage);
+
+        ideaRepository.save(subIdea);
     
         return subIdea;
+    }
+
+    public void deleteIdea(String projectId, String ideaId, String authHeader) {
+        String userId = userService.getUserIdByToken(authHeader);
+        Idea idea = ideaRepository.findById(ideaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+    
+        projectService.authenticateProject(projectId, authHeader);
+        
+        // Authenticate user association
+        if (!idea.getOwnerId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this idea");
+        }
+    
+        // Delete the idea
+        ideaRepository.deleteById(ideaId);
+    
+        // Broadcast the deletion to all subscribers
+        IdeaUpdateMessage message = new IdeaUpdateMessage();
+        message.setAction("DELETE");
+        message.setIdeaId(ideaId);
+        message.setProjectId(projectId);
+        message.setIdea(idea); // Including the full idea for reference before deletion
+        
+        messagingTemplate.convertAndSend("/topic/projects/" + projectId + "/ideas", message);
     }
 }

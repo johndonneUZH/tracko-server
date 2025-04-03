@@ -147,3 +147,30 @@ db.Users.deleteOne({ username: "testuser" })
 
 // Delete all documents in a collection
 db.Users.deleteMany({})
+
+
+
+
+
+
+
+# Web sockets - On the frontend, you would connect to the WebSocket and subscribe to relevant topics:
+
+// Using STOMP.js and SockJS
+const socket = new SockJS('/ws');
+const stompClient = Stomp.over(socket);
+
+stompClient.connect({}, frame => {
+  console.log('Connected to WebSocket');
+  
+  // Subscribe to project updates
+  stompClient.subscribe(`/topic/projects/${projectId}/ideas`, message => {
+    const ideaUpdate = JSON.parse(message.body);
+    // Update your UI accordingly
+    if (ideaUpdate.action === 'CREATE') {
+      // Add new idea to the UI
+    } else if (ideaUpdate.action === 'UPDATE') {
+      // Update existing idea in the UI
+    }
+  });
+});
