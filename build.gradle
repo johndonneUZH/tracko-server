@@ -52,12 +52,12 @@ dependencies {
     implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0'
     implementation 'org.slf4j:slf4j-api:1.7.36'
 
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework:spring-web:5.3.10'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly 'com.h2database:h2'
+    // runtimeOnly 'com.h2database:h2'
 
     // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

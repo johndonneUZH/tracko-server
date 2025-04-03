@@ -20,7 +20,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("*") // Configure with your frontend URL in production
+                // .setAllowedOrigins("*") // Configure with your frontend URL in production
+                .setAllowedOrigins("http://localhost:3000")
                 .withSockJS(); // Fallback options for browsers that don't support WebSockets
+
+        System.out.println("Websocket endpoint registered at /ws");
     }
 }
