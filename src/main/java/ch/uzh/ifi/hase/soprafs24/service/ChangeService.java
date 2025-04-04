@@ -2,7 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import ch.uzh.ifi.hase.soprafs24.models.change.Change;
 import ch.uzh.ifi.hase.soprafs24.models.change.ChangeRegister;

@@ -7,7 +7,6 @@ import ch.uzh.ifi.hase.soprafs24.models.user.UserLogin;
 import ch.uzh.ifi.hase.soprafs24.models.user.UserRegister;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
-import ch.uzh.ifi.hase.soprafs24.auth.JwtFilter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

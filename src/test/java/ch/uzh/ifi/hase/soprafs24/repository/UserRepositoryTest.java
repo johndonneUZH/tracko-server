@@ -1,16 +1,12 @@
-package ch.uzh.ifi.hase.soprafs24.service;
+package ch.uzh.ifi.hase.soprafs24.repository;
 import java.util.Optional;
 import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.ArrayList;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -19,7 +15,6 @@ import org.springframework.test.context.ActiveProfiles;
 import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
-import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
 @SpringBootTest
 @Import(MongoTestConfig.class)
@@ -51,7 +46,7 @@ public class UserRepositoryTest {
         User savedUser = userRepository.save(testUser);
         
         // Print info
-        System.out.println("SAVED USER WITH USERNAME: " + uniqueUsername);
+        System.out.println("SAVED USER WITH USERNAME: " + savedUser.getUsername());
         
         // Verify the user was saved
         User retrievedUser = userRepository.findByUsername(uniqueUsername);
