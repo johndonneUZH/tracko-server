@@ -1,4 +1,4 @@
-package ch.uzh.ifi.hase.soprafs24.service;
+package ch.uzh.ifi.hase.soprafs24.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,7 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
 import ch.uzh.ifi.hase.soprafs24.models.comment.Comment;
-import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
 
 @SpringBootTest
 @Import(MongoTestConfig.class)
