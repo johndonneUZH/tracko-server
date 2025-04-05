@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.constant.LoginStatus;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +64,14 @@ public class UserService {
         toBeSavedUser.setEmail(newUser.getEmail());
         toBeSavedUser.setProjectIds(new ArrayList<>());
         toBeSavedUser.setStatus(UserStatus.ONLINE);
+        toBeSavedUser.setCreateAt(LocalDateTime.now());
+        toBeSavedUser.setLastLoginAt(LocalDateTime.now());
+        toBeSavedUser.setFriendsIds(new ArrayList<>());
+        toBeSavedUser.setFriendRequestsIds(new ArrayList<>());
+        toBeSavedUser.setFriendRequestsSentIds(new ArrayList<>());
+        toBeSavedUser.setAvatarUrl("https://avatar.vercel.sh/" + newUser.getUsername());
+        toBeSavedUser.setBirthday(null);
+        toBeSavedUser.setBio(null);
 
         toBeSavedUser = userRepository.save(toBeSavedUser);
 
@@ -83,6 +92,11 @@ public class UserService {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return LoginStatus.INVALID_PASSWORD;
         }
+
+        // If the password is correct, update the lastLoginAt field
+        user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
+
         return LoginStatus.SUCCESS;
     }
 
@@ -115,6 +129,7 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         user.setStatus(status);
+        user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
