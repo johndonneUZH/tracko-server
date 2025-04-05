@@ -32,7 +32,7 @@ public class Application {
         registry.addMapping("/**")
                 .allowedOrigins("*")
                 .allowedMethods("*") // NOSONAR
-                .exposedHeaders("Authorization", "userId");
+                .exposedHeaders("Authorization", "Userid");
       }
     };
   }
