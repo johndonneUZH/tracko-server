@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.models.user.UserLogin;
 import ch.uzh.ifi.hase.soprafs24.models.user.UserRegister;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,11 +32,13 @@ public class UserService {
     private final Logger log = LoggerFactory.getLogger(UserService.class);
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final ProjectService projectService;
     
     @Autowired
     private UserRepository userRepository;
 
-    UserService(JwtUtil jwtUtil) {
+    UserService(JwtUtil jwtUtil, @Lazy ProjectService projectService) {
+        this.projectService = projectService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -182,5 +186,31 @@ public class UserService {
         userById.setUsername(userUpdate.getUsername());
         userById.setPassword(passwordEncoder.encode(userUpdate.getPassword()));
         return userRepository.save(userById);
+    }
+
+    public List<Project> getUserProjects(String userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        return projectService.getProjectsByUserId(userId);
+    }
+
+    public void deleteProjectFromUser(String userId, String projectId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        user.getProjectIds().remove(projectId);
+        userRepository.save(user);
+    }
+
+    public void addProjectIdToUser(String userId, String projectId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        user.getProjectIds().add(projectId);
+        userRepository.save(user);
     }
 }

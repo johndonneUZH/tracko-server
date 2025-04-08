@@ -6,9 +6,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
@@ -37,6 +39,8 @@ public class ProjectService {
             }
         }
 
+        
+
         Project newProject = new Project();
 
         newProject.setOwnerId(userId);
@@ -45,8 +49,11 @@ public class ProjectService {
         newProject.setProjectMembers(new ArrayList<>());
         newProject.setCreatedAt(java.time.LocalDateTime.now());
         newProject.setUpdatedAt(java.time.LocalDateTime.now());
+        
+        Project savedProject = projectRepository.save(newProject);
+        userService.addProjectIdToUser(userId, savedProject.getProjectId());
 
-        return projectRepository.save(newProject);
+        return savedProject;
     }
 
     public Project authenticateProject(String projectId, String authHeader) {
@@ -62,6 +69,15 @@ public class ProjectService {
         }
 
         return project.get();
+    }
+
+    public List<Project> getProjectsByUserId(String userId) {
+        List<Project> projectOwned = projectRepository.findByOwnerId(userId);
+        List<Project> projectMember = projectRepository.findByProjectMembers(userId);
+        Set<Project> allProjects = new HashSet<>(projectOwned);
+        allProjects.addAll(projectMember);
+        return new ArrayList<>(allProjects);
+
     }
 
     public Project updateProject(String projectId, ProjectUpdate updatedProject, String authHeader) {
@@ -92,6 +108,23 @@ public class ProjectService {
         projectRepository.save(project);
         return project;
 
+    }
+
+    public void deleteProject(String projectId, String authHeader) {
+        Project project = authenticateProject(projectId, authHeader);
+
+        String userId = userService.getUserIdByToken(authHeader);
+        if (!project.getOwnerId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this project");
+        }
+
+        // Remove the project from all members
+        for (String memberId : project.getProjectMembers()) {
+            User projectmember = userService.getUserById(memberId);
+            userService.deleteProjectFromUser(projectmember.getId(), projectId);
+        }
+        userService.deleteProjectFromUser(userId, projectId);
+        projectRepository.deleteById(project.getProjectId());       
     }
 
 }

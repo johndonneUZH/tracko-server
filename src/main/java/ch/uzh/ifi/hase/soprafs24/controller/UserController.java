@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.models.user.UserUpdate;
 
@@ -8,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -53,6 +56,15 @@ public class UserController {
       return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
   }
   
+  @GetMapping("/{userId}/projects")
+  @PreAuthorize("hasAuthority('USER')")
+  public ResponseEntity<List<Project>> getUserProjects(@PathVariable String userId) {
+    List<Project> projects = userService.getUserProjects(userId);
+    if (projects == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+    }
+    return ResponseEntity.status(HttpStatus.OK).body(projects);
+  }
 }
 
 

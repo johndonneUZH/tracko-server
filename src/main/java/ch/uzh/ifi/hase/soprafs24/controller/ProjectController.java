@@ -13,6 +13,8 @@ import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
 import ch.uzh.ifi.hase.soprafs24.service.ProjectService;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -52,4 +54,10 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(project);
     }
     
+    @DeleteMapping("/{projectId}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Void> deleteProject(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
+        projectService.deleteProject(projectId, authHeader);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
