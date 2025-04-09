@@ -1,9 +1,13 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import ch.uzh.ifi.hase.soprafs24.models.comment.Comment;
 import ch.uzh.ifi.hase.soprafs24.models.comment.CommentRegister;
 import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
@@ -29,27 +33,55 @@ public class CommentService {
         return commentRepository.findByIdeaId(ideaId);
     }
 
-    public Comment createComment(String projectId, String ideaId, String commentId, String authHeader, CommentRegister comment) {
-        // Authenticate the project and idea
-        ideaService.getIdeaById(projectId, ideaId, authHeader);
+public Comment createComment(String projectId, String ideaId, String parentCommentId, String authHeader, CommentRegister comment) {
+    // Authenticate project and idea
+    ideaService.getIdeaById(projectId, ideaId, authHeader);
+    String userId = userService.getUserIdByToken(authHeader);
+
+    // Create new comment
+    Comment newComment = new Comment();
+    newComment.setCommentText(comment.getCommentText());
+    newComment.setIdeaId(ideaId);
+    newComment.setOwnerId(userId);
+    newComment.setReplies(new ArrayList<>()); // initialize empty replies list
+
+    // Save comment to get the new ID
+    Comment savedComment = commentRepository.save(newComment);
+
+    // If this is a reply, attach it to parent
+    if (parentCommentId != null) {
+        Comment parent = commentRepository.findById(parentCommentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent comment not found"));
+        List<String> replies = parent.getReplies();
+        replies.add(savedComment.getCommentId());
+        parent.setReplies(replies);
+        commentRepository.save(parent);
+    }
+
+    return savedComment;
+}
+
+    public Comment getCommentById(String projectId, String ideaId, String commentId, String authHeader) {
+    ideaService.getIdeaById(projectId, ideaId, authHeader);
+
+    return commentRepository.findById(commentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+}
+    public List<Comment> getRepliesOfComment(String projectId, String ideaId, String parentCommentId, String authHeader) {
+    ideaService.getIdeaById(projectId, ideaId, authHeader);
+    return commentRepository.findByParentCommentId(parentCommentId);
+}
+
+    public void deleteComment(String commentId, String authHeader) {
+        Comment comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
         String userId = userService.getUserIdByToken(authHeader);
+        if (!comment.getOwnerId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this comment");
+        }
 
-        Comment newComment = new Comment();
-        newComment.setCommentText(comment.getCommentText());
-        newComment.setIdeaId(ideaId);
-        newComment.setOwnerId(userId);
-        newComment.setProjectId(projectId);
-        newComment.setCreatedAt(java.time.LocalDateTime.now());
-        newComment.setParentCommentId(commentId);
+    commentRepository.delete(comment);
+}
 
-        return commentRepository.save(newComment);
-    }
-
-    public List<Comment> getCommentById(String projectId, String ideaId, String commentId, String authHeader) {
-        // Authenticate the project and idea
-        ideaService.getIdeaById(projectId, ideaId, authHeader);
-
-        // Get all commments with parentId = commentId
-        return commentRepository.findByParentCommentId(commentId);
-    }
 }

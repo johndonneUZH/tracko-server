@@ -12,6 +12,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,13 +69,27 @@ public class CommentController {
 
     @GetMapping("/{commentId}")
     @PreAuthorize("hasAuthority('USER')")
-    public ResponseEntity<List<Comment>> getCommentById(
+    public ResponseEntity<Comment> getCommentById(
             @PathVariable String projectId,
             @PathVariable String ideaId,
             @PathVariable String commentId,
             @RequestHeader("Authorization") String authHeader) {
-
-        List<Comment> comment = commentService.getCommentById(projectId, ideaId, commentId, authHeader);
+    
+        Comment comment = commentService.getCommentById(projectId, ideaId, commentId, authHeader);
         return ResponseEntity.status(HttpStatus.OK).body(comment);
     }
+
+    @DeleteMapping("/{commentId}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable String projectId,
+            @PathVariable String ideaId,
+            @PathVariable String commentId,
+            @RequestHeader("Authorization") String authHeader) {
+    
+        commentService.deleteComment(commentId, authHeader);
+        return ResponseEntity.noContent().build();
+    }
+    
+
 }
