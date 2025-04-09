@@ -10,10 +10,6 @@ import ch.uzh.ifi.hase.soprafs24.service.IdeaService;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaRegister;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaUpdate;
 import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 
 
 
@@ -71,17 +67,28 @@ public class IdeaController {
         return ResponseEntity.status(HttpStatus.OK).body(updatedIdeaObj);
     }
 
-    // Create sub-idea
-    @PostMapping("/{ideaId}")
+    @DeleteMapping("/{ideaId}")
     @PreAuthorize("hasAuthority('USER')")
-    public ResponseEntity<Idea> createSubIdea(
+    public ResponseEntity<Void> deleteIdea(
             @PathVariable String projectId,
             @PathVariable String ideaId,
-            @RequestBody IdeaRegister newIdea,
             @RequestHeader("Authorization") String authHeader) {
 
-        Idea savedIdea = ideaService.createSubIdea(projectId, ideaId, newIdea, authHeader);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedIdea);
+        ideaService.deleteIdea(projectId, ideaId, authHeader);
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
+
+    // // Create sub-idea
+    // @PostMapping("/{ideaId}")
+    // @PreAuthorize("hasAuthority('USER')")
+    // public ResponseEntity<Idea> createSubIdea(
+    //         @PathVariable String projectId,
+    //         @PathVariable String ideaId,
+    //         @RequestBody IdeaRegister newIdea,
+    //         @RequestHeader("Authorization") String authHeader) {
+
+    //     Idea savedIdea = ideaService.createSubIdea(projectId, ideaId, newIdea, authHeader);
+    //     return ResponseEntity.status(HttpStatus.CREATED).body(savedIdea);
+    // }
     
 }
