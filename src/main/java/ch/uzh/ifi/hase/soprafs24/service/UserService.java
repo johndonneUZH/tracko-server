@@ -211,6 +211,22 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         user.getProjectIds().add(projectId);
+     
         userRepository.save(user);
+    }
+
+    public List<User> getUserFriends(String userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        List<User> friends = new ArrayList<>();
+        for (String friendId : user.getFriendsIds()) {
+            User friend = userRepository.findById(friendId).orElse(null);
+            if (friend != null) {
+                friends.add(friend);
+            }
+        }
+        return friends;
     }
 }
