@@ -67,10 +67,10 @@ public Comment createComment(String projectId, String ideaId, String parentComme
     return commentRepository.findById(commentId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 }
-    public List<Comment> getRepliesOfComment(String projectId, String ideaId, String parentCommentId, String authHeader) {
-    ideaService.getIdeaById(projectId, ideaId, authHeader);
-    return commentRepository.findByParentCommentId(parentCommentId);
-}
+    // public List<Comment> getRepliesOfComment(String projectId, String ideaId, String parentCommentId, String authHeader) {
+    // ideaService.getIdeaById(projectId, ideaId, authHeader);
+    // return commentRepository.findByParentCommentId(parentCommentId);
+// }
 
     public void deleteComment(String commentId, String authHeader) {
         Comment comment = commentRepository.findById(commentId)

@@ -7,8 +7,8 @@ public class IdeaUpdate {
         
     private String ideaName;
     private String ideaDescription;
-    private float x;
-    private float y;
+    private Float x;
+    private Float y;
     private List<String>  upVotes;
     private List<String>  downVotes;
     private List<String> comments;
@@ -26,14 +26,14 @@ public class IdeaUpdate {
     public List<String> getDownVotes() { return downVotes; }
     public void setDownVotes(List<String> downVotes) { this.downVotes = downVotes; }
 
-    public float getX() { return x; }
-    public void setx(float x) { this.x = x; }
+    public Float getX() { return x; }
+    public void setx(Float x) { this.x = x; }
 
     public List<String> getComments() { return comments; }
     public void setComments(List<String> comments) { this.comments = comments; }
 
-    public float gety() { return y; }
-    public void sety(float y) { this.y = y; }
+    public Float gety() { return y; }
+    public void sety(Float y) { this.y = y; }
 
     // public List<String> getSubIdeas() { return subIdeas; }
     // public void setSubIdeas(List<String> subIdeas) { this.subIdeas = subIdeas; }

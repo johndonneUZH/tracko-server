@@ -97,9 +97,13 @@ public class IdeaService {
         }
     
         // These are floats, always update (even if 0)
-        idea.setx(inputIdea.getX());
-        idea.sety(inputIdea.gety());
-    
+        if (inputIdea.getX() != null) {
+            idea.setx(inputIdea.getX());
+        }
+        if (inputIdea.gety() != null) {
+            idea.sety(inputIdea.gety());
+        }
+        
         // Lists: update only if not null, else keep existing
         if (inputIdea.getUpVotes() != null) {
             idea.setUpVotes(inputIdea.getUpVotes());

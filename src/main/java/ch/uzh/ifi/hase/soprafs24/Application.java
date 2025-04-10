@@ -30,10 +30,14 @@ public class Application {
       @Override
       public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
-                .allowedMethods("*") // NOSONAR
-                .exposedHeaders("Authorization", "Userid");
+                .allowedOrigins("http://localhost:3000") // origen explícito
+                .allowedMethods("*")
+                .allowedHeaders("*")
+                .exposedHeaders("Authorization", "Userid")
+                .allowCredentials(true);
       }
     };
   }
 }
+
+
