@@ -49,6 +49,7 @@ public class ProjectService {
         newProject.setProjectMembers(new ArrayList<>());
         newProject.setCreatedAt(java.time.LocalDateTime.now());
         newProject.setUpdatedAt(java.time.LocalDateTime.now());
+        newProject.setProjectLogoUrl("University");
         
         Project savedProject = projectRepository.save(newProject);
         userService.addProjectIdToUser(userId, savedProject.getProjectId());
@@ -91,6 +92,7 @@ public class ProjectService {
         project.setProjectName(updatedProject.getProjectName());
         project.setProjectDescription(updatedProject.getProjectDescription());
         project.setUpdatedAt(java.time.LocalDateTime.now());
+        project.setProjectLogoUrl(updatedProject.getProjectLogoUrl());
 
         // Members logic
         HashSet<String> members = new HashSet<>(project.getProjectMembers());
