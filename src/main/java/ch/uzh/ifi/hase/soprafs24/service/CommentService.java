@@ -1,12 +1,15 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import ch.uzh.ifi.hase.soprafs24.models.comment.Comment;
 import ch.uzh.ifi.hase.soprafs24.models.comment.CommentRegister;
@@ -18,12 +21,15 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final IdeaService ideaService;
     private final UserService userService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public CommentService(CommentRepository commentRepository, IdeaService ideaService, UserService userService) {
+    public CommentService(CommentRepository commentRepository, IdeaService ideaService, UserService userService, SimpMessagingTemplate messagingTemplate) {
         this.commentRepository = commentRepository;
         this.ideaService = ideaService;
         this.userService = userService;
+        this.messagingTemplate = messagingTemplate;
     }
+
 
     public List<Comment> getCommentsByIdea(String projectId, String ideaId, String authHeader) {
         // Authenticate the project and idea
@@ -58,6 +64,15 @@ public Comment createComment(String projectId, String ideaId, String parentComme
         commentRepository.save(parent);
     }
 
+    // WebSocket payload: include comment and parentId (if any)
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("comment", savedComment);
+    if (parentCommentId != null) {
+        payload.put("parentId", parentCommentId);
+    }
+
+    messagingTemplate.convertAndSend("/topic/comments/" + ideaId, payload);
+
     return savedComment;
 }
 
@@ -82,6 +97,8 @@ public Comment createComment(String projectId, String ideaId, String parentComme
         }
 
     commentRepository.delete(comment);
+    messagingTemplate.convertAndSend("/topic/comments/" + comment.getIdeaId(), Map.of("deletedId", comment.getCommentId()));
+
 }
 
 }

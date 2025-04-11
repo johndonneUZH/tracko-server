@@ -3,7 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import java.util.ArrayList;
 
 import java.util.List;
-
+import java.util.Map;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +31,13 @@ public class IdeaService {
     private final UserService userService;
     private final ProjectService projectService;
 
-
+    private final SimpMessagingTemplate messagingTemplate;
 
     IdeaService(IdeaRepository ideaRepository, UserService userService, ProjectService projectService, SimpMessagingTemplate messagingTemplate) {
         this.ideaRepository = ideaRepository;
         this.userService = userService;
         this.projectService = projectService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public Idea createIdea(String projectId, IdeaRegister inputIdea, String authHeader, ArrayList<String> subIdeas) {
@@ -58,7 +59,8 @@ public class IdeaService {
     
         // Saves idea
         newIdea = ideaRepository.save(newIdea);
-        
+        messagingTemplate.convertAndSend("/topic/ideas/" + projectId, newIdea);
+
         return newIdea;
     }
     
@@ -115,7 +117,9 @@ public class IdeaService {
             idea.setComments(inputIdea.getComments());
         }
     
-        return ideaRepository.save(idea);
+        Idea saved = ideaRepository.save(idea);
+        messagingTemplate.convertAndSend("/topic/ideas/" + projectId, saved);
+        return saved;
     }
     
     
@@ -132,6 +136,8 @@ public class IdeaService {
         
 
         ideaRepository.deleteById(ideaId);
+        messagingTemplate.convertAndSend("/topic/ideas/" + projectId, Map.of("deletedId", ideaId));
+
     }
     
 }
