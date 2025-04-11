@@ -21,7 +21,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 // .setAllowedOrigins("*") // Configure with your frontend URL in production
-                .setAllowedOrigins("http://localhost:3000")
+                .setAllowedOrigins("http://localhost:3000", "https://sopra-fs25-group-46-client.vercel.app/")
                 .withSockJS(); // Fallback options for browsers that don't support WebSockets
 
         System.out.println("Websocket endpoint registered at /ws");
