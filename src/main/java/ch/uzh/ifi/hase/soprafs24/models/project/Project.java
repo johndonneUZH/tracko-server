@@ -17,6 +17,7 @@ public class Project {
     private String ownerId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String projectLogoUrl;
 
     public String getOwnerId() { return ownerId; }
     public void setOwnerId(String ownerId) { this.ownerId = ownerId; }
@@ -38,4 +39,7 @@ public class Project {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getProjectLogoUrl() { return projectLogoUrl; }
+    public void setProjectLogoUrl(String projectLogoUrl) { this.projectLogoUrl = projectLogoUrl; }
 }

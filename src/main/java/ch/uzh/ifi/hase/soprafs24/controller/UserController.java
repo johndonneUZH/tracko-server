@@ -65,6 +65,13 @@ public class UserController {
     }
     return ResponseEntity.status(HttpStatus.OK).body(projects);
   }
+
+  @GetMapping("/{userId}/friends")
+  @PreAuthorize("hasAuthority('USER')")
+  public ResponseEntity<List<User>> getUserFriends(@PathVariable String userId) {
+    List<User> friends = userService.getUserFriends(userId);
+    return ResponseEntity.status(HttpStatus.OK).body(friends);
+  }
 }
 
 
