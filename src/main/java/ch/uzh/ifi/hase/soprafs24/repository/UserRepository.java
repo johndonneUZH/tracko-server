@@ -1,12 +1,14 @@
 package ch.uzh.ifi.hase.soprafs24.repository;
 
-import ch.uzh.ifi.hase.soprafs24.entity.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
+import java.util.Optional;
 
-@Repository("userRepository")
-public interface UserRepository extends JpaRepository<User, Long> {
-  User findByName(String name);
-
-  User findByUsername(String username);
+public interface UserRepository extends MongoRepository<User, String> 
+{
+    User findByUsername(String username);
+    Optional<User> findById(String id);
+    User findByEmail(String email);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }

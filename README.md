@@ -116,3 +116,61 @@ First, pull (download) the image with the following command, replacing your user
 Then, run the image in a container with the following command, again replacing _<dockerhub_username>_ and _<dockerhub_repo_name>_ accordingly.
 
 ```docker run -p 3000:3000 <dockerhub_username>/<dockerhub_repo_name>```
+
+mongosh
+// Show databases
+show dbs
+
+// Switch to a database (creates it if it doesn't exist)
+use Tracko
+
+// Show collections (tables)
+show collections
+
+// Find all documents in a collection
+db.Users.find()
+
+// Find with pretty print formatting
+db.Users.find().pretty()
+
+// Count documents in a collection
+db.Users.countDocuments()
+
+// Insert a document
+db.Users.insertOne({ name: "Test User", username: "testuser", email: "test@example.com" })
+
+// Update a document
+db.Users.updateOne({ username: "testuser" }, { $set: { name: "Updated Name" } })
+
+// Delete a document
+db.Users.deleteOne({ username: "testuser" })
+
+// Delete all documents in a collection
+db.Users.deleteMany({})
+
+
+
+
+
+
+
+# Web sockets - On the frontend, you would connect to the WebSocket and subscribe to relevant topics:
+
+// Using STOMP.js and SockJS
+const socket = new SockJS('/ws');
+const stompClient = Stomp.over(socket);
+
+stompClient.connect({}, frame => {
+  console.log('Connected to WebSocket');
+  
+  // Subscribe to project updates
+  stompClient.subscribe(`/topic/projects/${projectId}/ideas`, message => {
+    const ideaUpdate = JSON.parse(message.body);
+    // Update your UI accordingly
+    if (ideaUpdate.action === 'CREATE') {
+      // Add new idea to the UI
+    } else if (ideaUpdate.action === 'UPDATE') {
+      // Update existing idea in the UI
+    }
+  });
+});
