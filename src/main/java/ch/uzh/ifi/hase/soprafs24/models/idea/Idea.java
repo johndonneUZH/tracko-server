@@ -1,13 +1,13 @@
 package ch.uzh.ifi.hase.soprafs24.models.idea;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import ch.uzh.ifi.hase.soprafs24.constant.IdeaStatus;
+
 
 @Document(collection = "Ideas")
 public class Idea {
@@ -18,12 +18,14 @@ public class Idea {
     @Indexed
     private String projectId;
     private String ownerId;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private IdeaStatus ideaStatus;
-    private Long upVotes;
-    private Long downVotes;
-    private List<String> subIdeas;
+    private Float x;
+    private Float y;
+    // private LocalDateTime createdAt;
+    // private LocalDateTime updatedAt;
+    // private IdeaStatus ideaStatus;
+    private List<String> upVotes;
+    private List<String> downVotes;
+    private List<String> comments;
 
     public String getIdeaId() { return ideaId; }
     public void setIdeaId(String ideaId) { this.ideaId = ideaId; }
@@ -40,22 +42,28 @@ public class Idea {
     public String getOwnerId() { return ownerId; }
     public void setOwnerId(String ownerId) { this.ownerId = ownerId; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    // public LocalDateTime getCreatedAt() { return createdAt; }
+    // public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    // public LocalDateTime getUpdatedAt() { return updatedAt; }
+    // public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public IdeaStatus getIdeaStatus() { return ideaStatus; }
-    public void setIdeaStatus(IdeaStatus ideaStatus) { this.ideaStatus = ideaStatus; }
+    // public IdeaStatus getIdeaStatus() { return ideaStatus; }
+    // public void setIdeaStatus(IdeaStatus ideaStatus) { this.ideaStatus = ideaStatus; }
 
-    public Long getUpVotes() { return upVotes; }
-    public void setUpVotes(Long upVotes) { this.upVotes = upVotes; }
+    public List<String> getUpVotes() { return upVotes; }
+    public void setUpVotes(List<String> upVotes) { this.upVotes = upVotes; }
 
-    public Long getDownVotes() { return downVotes; }
-    public void setDownVotes(Long downVotes) { this.downVotes = downVotes; }
+    public List<String> getDownVotes() { return downVotes; }
+    public void setDownVotes(List<String> downVotes) { this.downVotes = downVotes; }
 
-    public List<String> getSubIdeas() { return subIdeas; }
-    public void setSubIdeas(List<String> subIdeas) { this.subIdeas = subIdeas; }
+    public Float getX() { return x; }
+    public void setx(Float x) { this.x = x; }
+
+    public List<String> getComments() { return comments; }
+    public void setComments(List<String> comments) { this.comments = comments; }
+
+    public Float gety() { return y; }
+    public void sety(Float y) { this.y = y; }
 
 }
