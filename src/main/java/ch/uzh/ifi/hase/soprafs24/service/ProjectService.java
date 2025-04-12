@@ -1,25 +1,31 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
+import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
-import ch.uzh.ifi.hase.soprafs24.models.project.Project;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.List;
-import java.util.Optional;
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
-import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
-import org.springframework.http.HttpStatus;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
 @Service
 @Transactional
 public class ProjectService {
+
+    @Autowired
+    private UserRepository userRepository;
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
@@ -127,6 +133,23 @@ public class ProjectService {
         }
         userService.deleteProjectFromUser(userId, projectId);
         projectRepository.deleteById(project.getProjectId());       
+    }
+
+    public List<User> getProjectMembers(String projectId, String authHeader) {
+        Project project = authenticateProject(projectId, authHeader);
+        if (project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
+        }
+        User owner = userService.getUserById(project.getOwnerId());
+        List<User> members = new ArrayList<>();
+        members.add(owner);
+        for (String memberId : project.getProjectMembers()) {
+            User member = userRepository.findById(memberId).orElse(null);
+            if (member != null) {
+                members.add(member);
+            }
+        }
+        return members;
     }
 
 }
