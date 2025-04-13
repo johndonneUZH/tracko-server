@@ -47,15 +47,10 @@ public class ProjectService {
 
     public Project createProject(ProjectRegister inputProject, String authHeader) {
         String userId = userService.getUserIdByToken(authHeader);
-        List<Project> projects = projectRepository.findByOwnerId(userId);
-
-        for (Project project : projects) {
-            if (project.getProjectName().equals(inputProject.getProjectName())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Project with this name already exists");
-            }
-        }
-
-        
+        Project existingProject = projectRepository.findByOwnerIdAndProjectName(userId, inputProject.getProjectName());
+        if (existingProject != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Project with this name already exists");
+        }        
 
         Project newProject = new Project();
 

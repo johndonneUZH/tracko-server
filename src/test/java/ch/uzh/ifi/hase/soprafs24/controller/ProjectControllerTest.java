@@ -33,6 +33,7 @@ import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
+import ch.uzh.ifi.hase.soprafs24.service.ProjectAuthorizationService;
 import ch.uzh.ifi.hase.soprafs24.service.ProjectService;
 
 @WebMvcTest(ProjectController.class)
@@ -48,6 +49,9 @@ public class ProjectControllerTest {
 
     @MockBean
     private ProjectService projectService;
+
+    @MockBean
+    private ProjectAuthorizationService projectAuthorizationService;
 
     private final String AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
@@ -106,7 +110,7 @@ public class ProjectControllerTest {
     @WithMockUser(authorities = "USER")
     public void getProject_success() throws Exception {
         // given
-        when(projectService.authenticateProject(PROJECT_ID, AUTH_HEADER)).thenReturn(testProject);
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, AUTH_HEADER)).thenReturn(testProject);
 
         // when/then
         mockMvc.perform(get("/projects/{projectId}", PROJECT_ID)
@@ -122,7 +126,7 @@ public class ProjectControllerTest {
     @WithMockUser(authorities = "USER")
     public void getProject_notFound() throws Exception {
         // given
-        when(projectService.authenticateProject(PROJECT_ID, AUTH_HEADER))
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, AUTH_HEADER))
                 .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
 
         // when/then
@@ -135,7 +139,7 @@ public class ProjectControllerTest {
     @WithMockUser(authorities = "USER")
     public void getProject_forbidden() throws Exception {
         // given
-        when(projectService.authenticateProject(PROJECT_ID, AUTH_HEADER))
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, AUTH_HEADER))
                 .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a member of this project"));
 
         // when/then

@@ -41,14 +41,16 @@ public class ChangeServiceTest {
     @MockBean
     private UserService userService;
 
+    @MockBean
+    private ProjectAuthorizationService projectAuthorizationService;
+
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
-    private final String CHANGE_ID = "change-123";
     private final String USER_ID = "user-123";
 
     @BeforeEach
     public void setup() {
-        changeService = new ChangeService(changeRepository, projectService, userService);
+        changeService = new ChangeService(changeRepository, projectService, userService, projectAuthorizationService);
 
         // Mock authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
@@ -57,7 +59,7 @@ public class ChangeServiceTest {
         Project project = new Project();
         project.setProjectId(PROJECT_ID);
         project.setOwnerId(USER_ID);
-        when(projectService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER)).thenReturn(project);
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER)).thenReturn(project);
     }
 
     @Test
@@ -76,7 +78,7 @@ public class ChangeServiceTest {
         assertEquals(2, result.size());
         assertEquals("change-1", result.get(0).getChangeId());
         assertEquals("change-2", result.get(1).getChangeId());
-        verify(projectService, times(1)).authenticateProject(PROJECT_ID, VALID_AUTH_HEADER);
+        verify(projectAuthorizationService, times(1)).authenticateProject(PROJECT_ID, VALID_AUTH_HEADER);
     }
 
     @Test
@@ -84,24 +86,29 @@ public class ChangeServiceTest {
         // given
         ChangeRegister changeRegister = new ChangeRegister();
         changeRegister.setChangeType(ChangeType.ADDED_IDEA);
-        
-        Change createdChange = createTestChange(CHANGE_ID, ChangeType.ADDED_IDEA);
-        
-        when(changeRepository.save(any(Change.class))).thenReturn(createdChange);
-
+    
+        when(changeRepository.save(any(Change.class))).thenAnswer(invocation -> {
+            Change input = invocation.getArgument(0);
+            input.setChangeId("generated-change-id");  // mimic what DB might do
+            return input;
+        });
+    
         // when
         Change result = changeService.createChange(PROJECT_ID, changeRegister, VALID_AUTH_HEADER);
-
+    
         // then
         assertNotNull(result);
-        assertEquals(CHANGE_ID, result.getChangeId());
+        assertEquals("generated-change-id", result.getChangeId());
         assertEquals(ChangeType.ADDED_IDEA, result.getChangeType());
-        assertEquals("Added a new feature idea", result.getChangeDescription());
+        assertEquals("Added an idea", result.getChangeDescription());
         assertEquals(PROJECT_ID, result.getProjectId());
         assertEquals(USER_ID, result.getOwnerId());
-        verify(projectService, times(1)).authenticateProject(PROJECT_ID, VALID_AUTH_HEADER);
+        assertNotNull(result.getCreatedAt());
+    
+        verify(projectAuthorizationService, times(1)).authenticateProject(PROJECT_ID, VALID_AUTH_HEADER);
         verify(changeRepository, times(1)).save(any(Change.class));
     }
+    
 
     private Change createTestChange(String changeId, ChangeType changeType) {
         Change change = new Change();
