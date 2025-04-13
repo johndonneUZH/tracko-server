@@ -16,12 +16,15 @@ import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
+import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
 @Service
 @Transactional
 public class ProjectService {
+
+    private final IdeaRepository ideaRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -33,11 +36,12 @@ public class ProjectService {
 
     public ProjectService(ProjectRepository projectRepository, JwtUtil jwtUtil, 
                           UserService userService, ChangeService changeService, 
-                          ProjectAuthorizationService projectAuthorizationService) {
+                          ProjectAuthorizationService projectAuthorizationService, IdeaRepository ideaRepository) {
         this.projectAuthorizationService = projectAuthorizationService;
         this.changeService = changeService;
         this.projectRepository = projectRepository;
         this.userService = userService;
+        this.ideaRepository = ideaRepository;
     }
     
 
@@ -123,6 +127,7 @@ public class ProjectService {
             userService.deleteProjectFromUser(projectmember.getId(), projectId);
         }
         deleteProjectChanges(projectId, authHeader);
+        deleteProjectIdeas(projectId, authHeader);
         userService.deleteProjectFromUser(userId, projectId);
         projectRepository.deleteById(project.getProjectId());       
     }
@@ -150,5 +155,13 @@ public class ProjectService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
         }
         changeService.deleteChangesByProjectId(projectId);
+    }
+
+    public void deleteProjectIdeas(String projectId, String authHeader) {
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
+        if (project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
+        }
+        ideaRepository.deleteByProjectId(projectId);
     }
 }

@@ -1,7 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -46,5 +50,32 @@ public class ChangeService {
 
     public void deleteChangesByProjectId(String projectId) {
         changeRepository.deleteByProjectId(projectId);
+    }
+
+    public Map<LocalDate, Long> getContributionsByDate(String projectId, String authHeader) {
+        List<Change> changes = getChangesByProject(projectId, authHeader);
+        return changes.stream()
+            .collect(Collectors.groupingBy(
+                change -> change.getCreatedAt().toLocalDate(),
+                Collectors.counting()
+            ));
+    }
+
+    public record DailyContribution(LocalDate date, Long count) {}
+    
+    public List<DailyContribution> getDailyContributions(String projectId, String authHeader, Integer days) {
+        List<Change> changes = getChangesByProject(projectId, authHeader);
+        
+        return changes.stream()
+            .filter(change -> days == null || 
+                   change.getCreatedAt().isAfter(LocalDateTime.now().minusDays(days)))
+            .collect(Collectors.groupingBy(
+                change -> change.getCreatedAt().toLocalDate(),
+                Collectors.counting()
+            ))
+            .entrySet().stream()
+            .map(entry -> new DailyContribution(entry.getKey(), entry.getValue()))
+            .sorted((a, b) -> a.date().compareTo(b.date()))
+            .collect(Collectors.toList());
     }
 }

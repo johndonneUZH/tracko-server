@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.uzh.ifi.hase.soprafs24.models.change.Change;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -51,5 +55,33 @@ public class ChangeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedChange);
     }
     
-    
+    @GetMapping("/daily-contributions")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<List<ChangeService.DailyContribution>> getDailyContributions(
+            @PathVariable String projectId,
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(required = false) Integer days) {
+        
+        List<ChangeService.DailyContribution> contributions = 
+            changeService.getDailyContributions(projectId, authHeader, days);
+        return ResponseEntity.ok(contributions);
+    }
+
+    @GetMapping("/contributions")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Map<String, Long>> getContributionsByDate(
+            @PathVariable String projectId,
+            @RequestHeader("Authorization") String authHeader) {
+        List<Change> changes = changeService.getChangesByProject(projectId, authHeader);
+        
+        Map<String, Long> contributionsByDate = changes.stream()
+            .collect(Collectors.groupingBy(
+                change -> change.getCreatedAt().toLocalDate().toString(),
+                Collectors.counting()
+            ));
+            
+        return ResponseEntity.ok(contributionsByDate);
+    }
+
+
 }
