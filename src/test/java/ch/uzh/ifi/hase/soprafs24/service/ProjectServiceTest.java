@@ -44,6 +44,9 @@ public class ProjectServiceTest {
     @MockBean
     private UserService userService;
 
+    @MockBean
+    private ChangeService changeService;
+
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
     private final String USER_ID = "user-123";
@@ -52,10 +55,11 @@ public class ProjectServiceTest {
     private Project testProject;
     private ProjectRegister testProjectRegister;
     private ProjectUpdate testProjectUpdate;
+    
 
     @BeforeEach
     public void setup() {
-        projectService = new ProjectService(projectRepository, jwtUtil, userService);
+        projectService = new ProjectService(projectRepository, jwtUtil, userService, changeService);
 
         // Mock the authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);

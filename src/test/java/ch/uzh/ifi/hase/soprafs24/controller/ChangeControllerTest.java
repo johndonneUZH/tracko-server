@@ -56,8 +56,8 @@ public class ChangeControllerTest {
     @WithMockUser(authorities = "USER")
     public void getChangesByProject_success() throws Exception {
         // given
-        Change change1 = createTestChange("change-1", ChangeType.ADDED_IDEA, "Added a new feature idea");
-        Change change2 = createTestChange("change-2", ChangeType.CHANGED_PROJECT_SETTINGS, "Updated project name");
+        Change change1 = createTestChange("change-1", ChangeType.ADDED_IDEA);
+        Change change2 = createTestChange("change-2", ChangeType.CHANGED_PROJECT_SETTINGS);
         List<Change> changes = Arrays.asList(change1, change2);
 
         when(changeService.getChangesByProject(PROJECT_ID, AUTH_HEADER)).thenReturn(changes);
@@ -80,9 +80,8 @@ public class ChangeControllerTest {
         // given
         ChangeRegister changeRegister = new ChangeRegister();
         changeRegister.setChangeType(ChangeType.ADDED_IDEA);
-        changeRegister.setChangeDescription("Added a new feature idea");
 
-        Change createdChange = createTestChange(CHANGE_ID, ChangeType.ADDED_IDEA, "Added a new feature idea");
+        Change createdChange = createTestChange(CHANGE_ID, ChangeType.ADDED_IDEA);
 
         when(changeService.createChange(eq(PROJECT_ID), any(ChangeRegister.class), eq(AUTH_HEADER)))
                 .thenReturn(createdChange);
@@ -100,11 +99,11 @@ public class ChangeControllerTest {
                 .andExpect(jsonPath("$.ownerId").value(USER_ID));
     }
 
-    private Change createTestChange(String changeId, ChangeType changeType, String changeDescription) {
+    private Change createTestChange(String changeId, ChangeType changeType) {
         Change change = new Change();
         change.setChangeId(changeId);
         change.setChangeType(changeType);
-        change.setChangeDescription(changeDescription);
+        change.setChangeDescription(changeType.getDescription());
         change.setProjectId(PROJECT_ID);
         change.setOwnerId(USER_ID);
         change.setCreatedAt(LocalDateTime.now());

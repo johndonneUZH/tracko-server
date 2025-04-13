@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +20,19 @@ import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
 @Transactional
 public class CommentService {
     private final CommentRepository commentRepository;
-    private final IdeaService ideaService;
+    // private final IdeaService ideaService;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
+    private IdeaService ideaService; // No final
+
+    @Autowired
+    public void setIdeaService(IdeaService ideaService) {
+        this.ideaService = ideaService;
+    }
 
     public CommentService(CommentRepository commentRepository, IdeaService ideaService, UserService userService, SimpMessagingTemplate messagingTemplate) {
         this.commentRepository = commentRepository;
-        this.ideaService = ideaService;
+        // this.ideaService = ideaService;
         this.userService = userService;
         this.messagingTemplate = messagingTemplate;
     }
@@ -95,10 +102,17 @@ public Comment createComment(String projectId, String ideaId, String parentComme
         if (!comment.getOwnerId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this comment");
         }
-
+    deleteReplies(commentId, comment, authHeader);
     commentRepository.delete(comment);
     messagingTemplate.convertAndSend("/topic/comments/" + comment.getIdeaId(), Map.of("deletedId", comment.getCommentId()));
 
-}
+    }   
+
+    private void deleteReplies(String commentId, Comment comment, String authHeader) {
+        List<String> replies = comment.getReplies();
+        for (String replyId : replies) {
+            commentRepository.deleteById(replyId);
+        }
+    }
 
 }

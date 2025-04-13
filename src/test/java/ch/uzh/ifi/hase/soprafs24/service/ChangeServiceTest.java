@@ -63,8 +63,8 @@ public class ChangeServiceTest {
     @Test
     public void getChangesByProject_success() {
         // given
-        Change change1 = createTestChange("change-1", ChangeType.ADDED_IDEA, "Added a new feature idea");
-        Change change2 = createTestChange("change-2", ChangeType.CHANGED_PROJECT_SETTINGS, "Changed project name");
+        Change change1 = createTestChange("change-1", ChangeType.ADDED_IDEA);
+        Change change2 = createTestChange("change-2", ChangeType.CHANGED_PROJECT_SETTINGS);
         List<Change> changes = Arrays.asList(change1, change2);
         
         when(changeRepository.findByProjectId(PROJECT_ID)).thenReturn(changes);
@@ -84,9 +84,8 @@ public class ChangeServiceTest {
         // given
         ChangeRegister changeRegister = new ChangeRegister();
         changeRegister.setChangeType(ChangeType.ADDED_IDEA);
-        changeRegister.setChangeDescription("Added a new feature idea");
         
-        Change createdChange = createTestChange(CHANGE_ID, ChangeType.ADDED_IDEA, "Added a new feature idea");
+        Change createdChange = createTestChange(CHANGE_ID, ChangeType.ADDED_IDEA);
         
         when(changeRepository.save(any(Change.class))).thenReturn(createdChange);
 
@@ -104,11 +103,11 @@ public class ChangeServiceTest {
         verify(changeRepository, times(1)).save(any(Change.class));
     }
 
-    private Change createTestChange(String changeId, ChangeType changeType, String changeDescription) {
+    private Change createTestChange(String changeId, ChangeType changeType) {
         Change change = new Change();
         change.setChangeId(changeId);
         change.setChangeType(changeType);
-        change.setChangeDescription(changeDescription);
+        change.setChangeDescription(changeType.getDescription());
         change.setProjectId(PROJECT_ID);
         change.setOwnerId(USER_ID);
         change.setCreatedAt(LocalDateTime.now());

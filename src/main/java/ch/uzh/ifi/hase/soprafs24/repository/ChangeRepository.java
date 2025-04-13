@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ChangeRepository extends MongoRepository<Change, String> {
     List<Change> findByProjectId(String projectId);
-    List<Change> findByOwnerId(String ownerId);    
+    List<Change> findByOwnerId(String ownerId);  
+    void deleteByProjectId(String projectId);  
 }
