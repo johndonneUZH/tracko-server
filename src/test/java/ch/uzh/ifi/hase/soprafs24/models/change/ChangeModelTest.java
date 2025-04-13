@@ -42,16 +42,13 @@ public class ChangeModelTest {
     public void testChangeRegisterModel() {
         // Create test data
         ChangeType changeType = ChangeType.CHANGED_PROJECT_SETTINGS;
-        String changeDescription = "Changed project name";
 
         // Create and set ChangeRegister object
         ChangeRegister changeRegister = new ChangeRegister();
         changeRegister.setChangeType(changeType);
-        changeRegister.setChangeDescription(changeDescription);
 
         // Verify getters return correct values
         assertEquals(changeType, changeRegister.getChangeType());
-        assertEquals(changeDescription, changeRegister.getChangeDescription());
     }
 
     @Test

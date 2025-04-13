@@ -3,7 +3,6 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,7 @@ import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
+import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
@@ -24,28 +24,33 @@ import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 @Transactional
 public class ProjectService {
 
+    private final IdeaRepository ideaRepository;
+
     @Autowired
     private UserRepository userRepository;
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
+    private final ChangeService changeService;
+    private final ProjectAuthorizationService projectAuthorizationService;
 
-    public ProjectService(ProjectRepository projectRepository, JwtUtil jwtUtil, UserService userService) {
+    public ProjectService(ProjectRepository projectRepository, JwtUtil jwtUtil, 
+                          UserService userService, ChangeService changeService, 
+                          ProjectAuthorizationService projectAuthorizationService, IdeaRepository ideaRepository) {
+        this.projectAuthorizationService = projectAuthorizationService;
+        this.changeService = changeService;
         this.projectRepository = projectRepository;
         this.userService = userService;
+        this.ideaRepository = ideaRepository;
     }
+    
 
     public Project createProject(ProjectRegister inputProject, String authHeader) {
         String userId = userService.getUserIdByToken(authHeader);
-        List<Project> projects = projectRepository.findByOwnerId(userId);
-
-        for (Project project : projects) {
-            if (project.getProjectName().equals(inputProject.getProjectName())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Project with this name already exists");
-            }
-        }
-
-        
+        Project existingProject = projectRepository.findByOwnerIdAndProjectName(userId, inputProject.getProjectName());
+        if (existingProject != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Project with this name already exists");
+        }        
 
         Project newProject = new Project();
 
@@ -63,21 +68,6 @@ public class ProjectService {
         return savedProject;
     }
 
-    public Project authenticateProject(String projectId, String authHeader) {
-        String userId = userService.getUserIdByToken(authHeader);
-        Optional<Project> project = projectRepository.findById(projectId);
-
-        if (project.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
-        }
-
-        if (!project.get().getOwnerId().equals(userId) && !project.get().getProjectMembers().contains(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a member of this project");
-        }
-
-        return project.get();
-    }
-
     public List<Project> getProjectsByUserId(String userId) {
         List<Project> projectOwned = projectRepository.findByOwnerId(userId);
         List<Project> projectMember = projectRepository.findByProjectMembers(userId);
@@ -88,7 +78,7 @@ public class ProjectService {
     }
 
     public Project updateProject(String projectId, ProjectUpdate updatedProject, String authHeader) {
-        Project project = authenticateProject(projectId, authHeader);
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
 
         String userId = userService.getUserIdByToken(authHeader);
         if (!project.getOwnerId().equals(userId)) {
@@ -119,7 +109,7 @@ public class ProjectService {
     }
 
     public void deleteProject(String projectId, String authHeader) {
-        Project project = authenticateProject(projectId, authHeader);
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
 
         String userId = userService.getUserIdByToken(authHeader);
         if (!project.getOwnerId().equals(userId)) {
@@ -131,12 +121,14 @@ public class ProjectService {
             User projectmember = userService.getUserById(memberId);
             userService.deleteProjectFromUser(projectmember.getId(), projectId);
         }
+        deleteProjectChanges(projectId, authHeader);
+        deleteProjectIdeas(projectId, authHeader);
         userService.deleteProjectFromUser(userId, projectId);
         projectRepository.deleteById(project.getProjectId());       
     }
 
     public List<User> getProjectMembers(String projectId, String authHeader) {
-        Project project = authenticateProject(projectId, authHeader);
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
         if (project == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
         }
@@ -152,4 +144,19 @@ public class ProjectService {
         return members;
     }
 
+    public void deleteProjectChanges(String projectId, String authHeader) {
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
+        if (project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
+        }
+        changeService.deleteChangesByProjectId(projectId);
+    }
+
+    public void deleteProjectIdeas(String projectId, String authHeader) {
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
+        if (project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
+        }
+        ideaRepository.deleteByProjectId(projectId);
+    }
 }
