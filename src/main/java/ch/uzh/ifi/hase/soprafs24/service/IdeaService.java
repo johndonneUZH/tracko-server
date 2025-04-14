@@ -80,16 +80,12 @@ public class IdeaService {
     }
 
     public Idea updateIdea(String projectId, String ideaId, IdeaUpdate inputIdea, String authHeader) {
-        String userId = userService.getUserIdByToken(authHeader);
         Idea idea = ideaRepository.findById(ideaId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
     
         projectService.authenticateProject(projectId, authHeader);
     
-        if (!idea.getOwnerId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this idea");
-        }
-    
+
         // Only update non-null fields
         if (inputIdea.getIdeaName() != null) {
             idea.setIdeaName(inputIdea.getIdeaName());
@@ -125,15 +121,18 @@ public class IdeaService {
     
     public void deleteIdea(String projectId, String ideaId, String authHeader) {
         String userId = userService.getUserIdByToken(authHeader);
+
+        String ownerId = projectService.getOwnerIdByProjectId(projectId);
+
+        
         Idea idea = ideaRepository.findById(ideaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
-    
+
         projectService.authenticateProject(projectId, authHeader);
         
-        if (!idea.getOwnerId().equals(userId)) {
+        if (!idea.getOwnerId().equals(userId) || !userId.equals(ownerId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this idea");
         }
-        
 
         ideaRepository.deleteById(ideaId);
         messagingTemplate.convertAndSend("/topic/ideas/" + projectId, Map.of("deletedId", ideaId));
