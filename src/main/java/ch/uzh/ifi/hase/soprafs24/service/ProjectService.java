@@ -144,6 +144,15 @@ public class ProjectService {
         return members;
     }
 
+
+    public String getOwnerIdByProjectId(String projectId) {
+            Project project = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
+            return project.getOwnerId();
+        }
+    
+
+
     public void deleteProjectChanges(String projectId, String authHeader) {
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
         if (project == null) {
