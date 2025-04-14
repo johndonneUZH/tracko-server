@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaRegister;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaUpdate;
+import ch.uzh.ifi.hase.soprafs24.service.ProjectService;
 
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
@@ -33,17 +34,21 @@ public class IdeaService {
     private final CommentRepository commentRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ProjectService projectService;
+
 
     public IdeaService(IdeaRepository ideaRepository, 
                      UserService userService,
                      SimpMessagingTemplate messagingTemplate, 
                      ProjectAuthorizationService projectAuthorizationService,
-                     CommentRepository commentRepository) {
+                     CommentRepository commentRepository,
+                     ProjectService projectService) {
         this.ideaRepository = ideaRepository;
         this.userService = userService;
         this.messagingTemplate = messagingTemplate;
         this.projectAuthorizationService = projectAuthorizationService;
         this.commentRepository = commentRepository;
+        this.projectService = projectService; 
     }
 
     public Idea createIdea(String projectId, IdeaRegister inputIdea, String authHeader, ArrayList<String> subIdeas) {
