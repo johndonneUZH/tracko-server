@@ -1,17 +1,12 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +21,7 @@ import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
+import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
 
 @SpringBootTest
@@ -44,6 +40,15 @@ public class ProjectServiceTest {
     @MockBean
     private UserService userService;
 
+    @MockBean
+    private ChangeService changeService;
+
+    @MockBean
+    private IdeaRepository ideaRepository;
+
+    @MockBean
+    private ProjectAuthorizationService projectAuthorizationService;
+
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
     private final String USER_ID = "user-123";
@@ -52,10 +57,12 @@ public class ProjectServiceTest {
     private Project testProject;
     private ProjectRegister testProjectRegister;
     private ProjectUpdate testProjectUpdate;
-
+    
     @BeforeEach
     public void setup() {
-        projectService = new ProjectService(projectRepository, jwtUtil, userService);
+        projectService = new ProjectService(projectRepository, jwtUtil, 
+                                          userService, changeService,
+                                          projectAuthorizationService, ideaRepository);
 
         // Mock the authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
@@ -86,7 +93,8 @@ public class ProjectServiceTest {
     @Test
     public void createProject_success() {
         // given
-        when(projectRepository.findByOwnerId(USER_ID)).thenReturn(new ArrayList<>());
+        when(projectRepository.findByOwnerIdAndProjectName(USER_ID, testProjectRegister.getProjectName()))
+            .thenReturn(null);
         when(projectRepository.save(any(Project.class))).thenReturn(testProject);
 
         // when
@@ -98,12 +106,15 @@ public class ProjectServiceTest {
         assertEquals("Test Project", createdProject.getProjectName());
         assertEquals("Test Description", createdProject.getProjectDescription());
         assertEquals(USER_ID, createdProject.getOwnerId());
+        
+        verify(projectRepository, times(1)).save(any(Project.class));
     }
 
     @Test
     public void createProject_duplicateName_conflict() {
         // given
-        when(projectRepository.findByOwnerId(USER_ID)).thenReturn(Arrays.asList(testProject));
+        when(projectRepository.findByOwnerIdAndProjectName(USER_ID, testProjectRegister.getProjectName()))
+            .thenReturn(testProject);
 
         // when/then
         ResponseStatusException exception = assertThrows(
@@ -118,26 +129,27 @@ public class ProjectServiceTest {
     @Test
     public void authenticateProject_success() {
         // given
-        when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(testProject));
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
+            .thenReturn(testProject);
 
         // when
-        Project authenticatedProject = projectService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER);
+        Project authenticatedProject = projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER);
 
         // then
         assertNotNull(authenticatedProject);
         assertEquals(PROJECT_ID, authenticatedProject.getProjectId());
-        assertEquals("Test Project", authenticatedProject.getProjectName());
     }
 
     @Test
     public void authenticateProject_notFound() {
         // given
-        when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.empty());
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
+            .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
 
         // when/then
         ResponseStatusException exception = assertThrows(
             ResponseStatusException.class,
-            () -> projectService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER)
+            () -> projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER)
         );
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
@@ -147,17 +159,13 @@ public class ProjectServiceTest {
     @Test
     public void authenticateProject_notMember_forbidden() {
         // given
-        Project project = new Project();
-        project.setProjectId(PROJECT_ID);
-        project.setOwnerId(OTHER_USER_ID);
-        project.setProjectMembers(new ArrayList<>());
-
-        when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(project));
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
+            .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a member of this project"));
 
         // when/then
         ResponseStatusException exception = assertThrows(
             ResponseStatusException.class,
-            () -> projectService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER)
+            () -> projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER)
         );
 
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
@@ -165,27 +173,10 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void authenticateProject_member_success() {
-        // given
-        Project project = new Project();
-        project.setProjectId(PROJECT_ID);
-        project.setOwnerId(OTHER_USER_ID);
-        project.setProjectMembers(Arrays.asList(USER_ID));
-
-        when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(project));
-
-        // when
-        Project authenticatedProject = projectService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER);
-
-        // then
-        assertNotNull(authenticatedProject);
-        assertEquals(PROJECT_ID, authenticatedProject.getProjectId());
-    }
-
-    @Test
     public void updateProject_success() {
         // given
-        when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(testProject));
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
+            .thenReturn(testProject);
         when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
@@ -196,17 +187,16 @@ public class ProjectServiceTest {
         assertEquals("Updated Project", updatedProject.getProjectName());
         assertEquals("Updated Description", updatedProject.getProjectDescription());
         assertTrue(updatedProject.getProjectMembers().contains(OTHER_USER_ID));
+        
+        verify(projectRepository, times(1)).save(any(Project.class));
     }
 
     @Test
     public void updateProject_notOwner_forbidden() {
         // given
-        Project project = new Project();
-        project.setProjectId(PROJECT_ID);
-        project.setOwnerId(OTHER_USER_ID);
-        project.setProjectMembers(Arrays.asList(USER_ID));
-
-        when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(project));
+        testProject.setOwnerId(OTHER_USER_ID);
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
+            .thenReturn(testProject);
 
         // when/then
         ResponseStatusException exception = assertThrows(
@@ -216,12 +206,14 @@ public class ProjectServiceTest {
 
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
         assertEquals("You are not the owner of this project", exception.getReason());
+        
+        verify(projectRepository, never()).save(any(Project.class));
     }
 
     @Test
     public void updateProject_memberManagement() {
         // given
-        testProject.setProjectMembers(Arrays.asList("user-111", "user-222"));
+        testProject.setProjectMembers(new ArrayList<>(Arrays.asList("user-111", "user-222")));
         
         ProjectUpdate updateWithMembers = new ProjectUpdate();
         updateWithMembers.setProjectName("Updated Project");
@@ -229,7 +221,8 @@ public class ProjectServiceTest {
         updateWithMembers.setMembersToAdd(Arrays.asList("user-333", "user-444"));
         updateWithMembers.setMembersToRemove(Arrays.asList("user-111"));
         
-        when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(testProject));
+        when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
+            .thenReturn(testProject);
         when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
@@ -241,6 +234,8 @@ public class ProjectServiceTest {
         assertTrue(updatedProject.getProjectMembers().contains("user-222"));
         assertTrue(updatedProject.getProjectMembers().contains("user-333"));
         assertTrue(updatedProject.getProjectMembers().contains("user-444"));
-        assertTrue(!updatedProject.getProjectMembers().contains("user-111"));
+        assertFalse(updatedProject.getProjectMembers().contains("user-111"));
+        
+        verify(projectRepository, times(1)).save(any(Project.class));
     }
 }

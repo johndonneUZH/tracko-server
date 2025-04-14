@@ -19,6 +19,7 @@ import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
+import ch.uzh.ifi.hase.soprafs24.service.ProjectAuthorizationService;
 import ch.uzh.ifi.hase.soprafs24.service.ProjectService;
 
 
@@ -27,10 +28,12 @@ import ch.uzh.ifi.hase.soprafs24.service.ProjectService;
 @RequestMapping("/projects")
 public class ProjectController {
     
+    private final ProjectAuthorizationService projectAuthorizationService;
     private final ProjectService projectService;
 
-    ProjectController(ProjectService projectService) {
+    ProjectController(ProjectAuthorizationService projectAuthorizationService, ProjectService projectService) {
         this.projectService = projectService;
+        this.projectAuthorizationService = projectAuthorizationService;
     }
 
     @PostMapping("")
@@ -43,7 +46,7 @@ public class ProjectController {
     @GetMapping("/{projectId}")
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Project> getProject(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
-        Project project = projectService.authenticateProject(projectId, authHeader);
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(project);
     }
     
@@ -67,6 +70,13 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Void> deleteProject(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
         projectService.deleteProject(projectId, authHeader);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @DeleteMapping("/{projectId}/changes")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Void> deleteProjectChanges(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
+        projectService.deleteProjectChanges(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
