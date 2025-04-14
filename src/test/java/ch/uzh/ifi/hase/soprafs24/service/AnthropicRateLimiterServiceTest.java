@@ -1,113 +1,127 @@
-// package ch.uzh.ifi.hase.soprafs24.service;
+package ch.uzh.ifi.hase.soprafs24.service;
 
-// import static org.junit.jupiter.api.Assertions.assertFalse;
-// import static org.junit.jupiter.api.Assertions.assertTrue;
-// import static org.mockito.Mockito.verify;
-// import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-// import java.util.concurrent.ScheduledExecutorService;
-// import java.util.concurrent.Semaphore;
-// import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.Test;
-// import org.mockito.Mock;
-// import org.springframework.boot.test.context.SpringBootTest;
-// import org.springframework.boot.test.mock.mockito.MockBean;
-// import org.springframework.context.annotation.Import;
-// import org.springframework.test.context.ActiveProfiles;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
-// import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
-// @SpringBootTest
-// @Import(MongoTestConfig.class)
-// @ActiveProfiles("test")
-// public class AnthropicRateLimiterServiceTest {
+import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
+import ch.uzh.ifi.hase.soprafs24.config.AnthropicConfig;
 
-//     private AnthropicRateLimiterService rateLimiterService;
+@SpringBootTest(classes = {AnthropicConfig.class, AnthropicRateLimiterService.class})
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "anthropic.enabled=true",
+    "anthropic.api-key=test-api-key",
+    "anthropic.model=test-model",
+    "anthropic.max-tokens=1000",
+    "anthropic.temperature=0.7",
+    "anthropic.rate-limit=10"
+})
+public class AnthropicRateLimiterServiceTest {
 
-//     @MockBean
-//     private Semaphore semaphore;
+    private AnthropicRateLimiterService rateLimiterService;
 
-//     @MockBean
-//     private ScheduledExecutorService scheduler;
+    @MockBean
+    private Semaphore semaphore;
 
-//     private final int RATE_LIMIT = 5;
+    @MockBean
+    private ScheduledExecutorService scheduler;
 
-//     @BeforeEach
-//     public void setup() {
-//         rateLimiterService = new AnthropicRateLimiterService(semaphore, scheduler, RATE_LIMIT);
-//     }
+    private final int RATE_LIMIT = 5;
 
-//     @Test
-//     public void init_schedulesRateLimitReplenishment() {
-//         // when
-//         rateLimiterService.init();
+    @BeforeEach
+    public void setup() {
+        rateLimiterService = new AnthropicRateLimiterService(semaphore, scheduler, RATE_LIMIT);
+    }
 
-//         // then
-//         verify(scheduler).scheduleAtFixedRate(
-//             any(),
-//             eq(1L),
-//             eq(1L),
-//             eq(TimeUnit.MINUTES)
-//         );
-//     }
+    @Test
+    public void init_schedulesRateLimitReplenishment() {
+        // Reset the mock to clear previous invocations
+        reset(scheduler);
+        
+        // when
+        rateLimiterService.init();
 
-//     @Test
-//     public void acquirePermit_success() throws InterruptedException {
-//         // given
-//         when(semaphore.tryAcquire(10, TimeUnit.SECONDS)).thenReturn(true);
+        // then
+        verify(scheduler).scheduleAtFixedRate(
+            any(),
+            eq(1L),
+            eq(1L),
+            eq(TimeUnit.MINUTES)
+        );
+    }
 
-//         // when
-//         boolean result = rateLimiterService.acquirePermit();
+    @Test
+    public void acquirePermit_success() throws InterruptedException {
+        // given
+        when(semaphore.tryAcquire(10, TimeUnit.SECONDS)).thenReturn(true);
 
-//         // then
-//         assertTrue(result);
-//         verify(semaphore).tryAcquire(10, TimeUnit.SECONDS);
-//     }
+        // when
+        boolean result = rateLimiterService.acquirePermit();
 
-//     @Test
-//     public void acquirePermit_failure() throws InterruptedException {
-//         // given
-//         when(semaphore.tryAcquire(10, TimeUnit.SECONDS)).thenReturn(false);
+        // then
+        assertTrue(result);
+        verify(semaphore).tryAcquire(10, TimeUnit.SECONDS);
+    }
 
-//         // when
-//         boolean result = rateLimiterService.acquirePermit();
+    @Test
+    public void acquirePermit_failure() throws InterruptedException {
+        // given
+        when(semaphore.tryAcquire(10, TimeUnit.SECONDS)).thenReturn(false);
 
-//         // then
-//         assertFalse(result);
-//         verify(semaphore).tryAcquire(10, TimeUnit.SECONDS);
-//     }
+        // when
+        boolean result = rateLimiterService.acquirePermit();
 
-//     @Test
-//     public void acquirePermit_interrupted() throws InterruptedException {
-//         // given
-//         when(semaphore.tryAcquire(10, TimeUnit.SECONDS)).thenThrow(new InterruptedException());
+        // then
+        assertFalse(result);
+        verify(semaphore).tryAcquire(10, TimeUnit.SECONDS);
+    }
 
-//         // when
-//         boolean result = rateLimiterService.acquirePermit();
+    @Test
+    public void acquirePermit_interrupted() throws InterruptedException {
+        // given
+        when(semaphore.tryAcquire(10, TimeUnit.SECONDS)).thenThrow(new InterruptedException());
 
-//         // then
-//         assertFalse(result);
-//         verify(semaphore).tryAcquire(10, TimeUnit.SECONDS);
-//     }
+        // when
+        boolean result = rateLimiterService.acquirePermit();
 
-//     @Test
-//     public void cleanup_shutsDownScheduler() {
-//         // when
-//         rateLimiterService.cleanup();
+        // then
+        assertFalse(result);
+        verify(semaphore).tryAcquire(10, TimeUnit.SECONDS);
+    }
 
-//         // then
-//         verify(scheduler).shutdown();
-//     }
+    @Test
+    public void cleanup_shutsDownScheduler() {
+        // when
+        rateLimiterService.cleanup();
 
-//     // Help Mockito recognize 'any' matcher
-//     private static <T> T any() {
-//         return org.mockito.ArgumentMatchers.any();
-//     }
+        // then
+        verify(scheduler).shutdown();
+    }
+
+    // Help Mockito recognize 'any' matcher
+    private static <T> T any() {
+        return org.mockito.ArgumentMatchers.any();
+    }
     
-//     // Help Mockito recognize 'eq' matcher
-//     private static <T> T eq(T value) {
-//         return org.mockito.ArgumentMatchers.eq(value);
-//     }
-// }
+    // Help Mockito recognize 'eq' matcher
+    private static <T> T eq(T value) {
+        return org.mockito.ArgumentMatchers.eq(value);
+    }
+}

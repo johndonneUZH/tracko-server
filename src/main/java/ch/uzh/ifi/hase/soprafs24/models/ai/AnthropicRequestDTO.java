@@ -2,8 +2,12 @@ package ch.uzh.ifi.hase.soprafs24.models.ai;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class AnthropicRequestDTO {
     private String model;
+    
+    @JsonProperty("max_tokens")  // Make sure this annotation is present
     private Integer maxTokens;
     private Double temperature;
     private List<MessageDTO> messages;
