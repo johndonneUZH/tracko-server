@@ -85,10 +85,17 @@ public class ProjectService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this project");
         }
 
-        project.setProjectName(updatedProject.getProjectName());
-        project.setProjectDescription(updatedProject.getProjectDescription());
+        if (updatedProject.getProjectName() != null) {
+            project.setProjectName(updatedProject.getProjectName());
+        }
+        if (updatedProject.getProjectDescription() != null) {
+            project.setProjectDescription(updatedProject.getProjectDescription());
+        }
+        if (updatedProject.getProjectLogoUrl() != null) {
+            project.setProjectLogoUrl(updatedProject.getProjectLogoUrl());
+        }
+    
         project.setUpdatedAt(java.time.LocalDateTime.now());
-        project.setProjectLogoUrl(updatedProject.getProjectLogoUrl());
 
         // Members logic
         HashSet<String> members = new HashSet<>(project.getProjectMembers());
