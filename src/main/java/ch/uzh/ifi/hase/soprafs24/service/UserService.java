@@ -178,13 +178,19 @@ public class UserService {
             return null;
         }
 
-        userById.setName(userUpdate.getName());
-
+        if (userUpdate.getName() != null) {
+            userById.setName(userUpdate.getName());
+        }
         if (userByUsername != null && !userByUsername.getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
-        userById.setUsername(userUpdate.getUsername());
-        userById.setPassword(passwordEncoder.encode(userUpdate.getPassword()));
+        if (userUpdate.getUsername() != null) {
+            userById.setUsername(userUpdate.getUsername());
+        }
+        if (userUpdate.getBirthday() != null) {
+            userById.setBirthday(userUpdate.getBirthday());
+        }
+        
         return userRepository.save(userById);
     }
 
