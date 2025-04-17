@@ -102,10 +102,17 @@ public class ProjectService {
 
         if (updatedProject.getMembersToAdd() != null) {
             members.addAll(updatedProject.getMembersToAdd());
+            for (String memberId : updatedProject.getMembersToAdd()) {
+                userService.addProjectIdToUser(memberId, project.getProjectId());
+            }
         }
         
         if (updatedProject.getMembersToRemove() != null) {
             members.removeAll(updatedProject.getMembersToRemove());
+            for (String memberId : updatedProject.getMembersToRemove()) {
+                userService.deleteProjectFromUser(memberId, project.getProjectId());
+            }
+
         }
         
         project.setProjectMembers(new ArrayList<>(members));
