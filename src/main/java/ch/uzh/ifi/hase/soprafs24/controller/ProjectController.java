@@ -57,6 +57,13 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(members);
     }
 
+    @PutMapping("/{projectId}/members")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<List<User>> makeUserLeaveFromProject(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
+        projectService.makeUserLeaveFromProject(projectId, authHeader);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+    }
+
     @PutMapping("/{projectId}")
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Project> updateProject(@PathVariable String projectId, 

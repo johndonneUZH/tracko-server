@@ -78,7 +78,6 @@ public class UserServiceTest {
         testUserUpdate = new UserUpdate();
         testUserUpdate.setName("Updated User");
         testUserUpdate.setUsername("updateduser");
-        testUserUpdate.setPassword("newpassword");
     }
 
     @Test

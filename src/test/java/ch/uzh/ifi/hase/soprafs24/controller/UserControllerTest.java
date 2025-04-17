@@ -73,7 +73,6 @@ public class UserControllerTest {
         testUserUpdate = new UserUpdate();
         testUserUpdate.setName("Updated User");
         testUserUpdate.setUsername("updateduser");
-        testUserUpdate.setPassword("newpassword");
     }
 
     @Test
@@ -133,7 +132,6 @@ public class UserControllerTest {
         updatedUser.setId(testUser.getId());
         updatedUser.setName(testUserUpdate.getName());
         updatedUser.setUsername(testUserUpdate.getUsername());
-        updatedUser.setPassword(testUserUpdate.getPassword());
         updatedUser.setEmail(testUser.getEmail());
         updatedUser.setStatus(testUser.getStatus());
         updatedUser.setProjectIds(testUser.getProjectIds());

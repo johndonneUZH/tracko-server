@@ -43,7 +43,6 @@ public class ProjectService {
         this.userService = userService;
         this.ideaRepository = ideaRepository;
     }
-    
 
     public Project createProject(ProjectRegister inputProject, String authHeader) {
         String userId = userService.getUserIdByToken(authHeader);
@@ -172,5 +171,13 @@ public class ProjectService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
         }
         ideaRepository.deleteByProjectId(projectId);
+    }
+
+    public void makeUserLeaveFromProject(String projectId, String authHeader) {
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
+        String userId = userService.getUserIdByToken(authHeader);
+        project.getProjectMembers().remove(userId);
+        userService.deleteProjectFromUser(userId, projectId);
+        projectRepository.save(project);
     }
 }
