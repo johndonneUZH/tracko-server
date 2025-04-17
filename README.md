@@ -174,3 +174,18 @@ stompClient.connect({}, frame => {
     }
   });
 });
+
+
+# AI Integration
+
+to run the server for local development / production, change the application.properties 
+`anthropic.enabled=false`
+to 
+`anthropic.enabled=true`
+
+
+To refine an idea, your frontend would make a POST request to /api/ai/refine with a JSON body like:
+{
+  "ideaContent": 'The topic is \"Group meeting place\". I want to add the lake, so that we are close to the train station, we have a sushi place nearby and we can walk around the park once we are done. '
+}
+
