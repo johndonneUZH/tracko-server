@@ -43,7 +43,6 @@ public class ProjectService {
         this.userService = userService;
         this.ideaRepository = ideaRepository;
     }
-    
 
     public Project createProject(ProjectRegister inputProject, String authHeader) {
         String userId = userService.getUserIdByToken(authHeader);
@@ -57,13 +56,18 @@ public class ProjectService {
         newProject.setOwnerId(userId);
         newProject.setProjectName(inputProject.getProjectName());
         newProject.setProjectDescription(inputProject.getProjectDescription());
-        newProject.setProjectMembers(new ArrayList<>());
+        newProject.setProjectMembers(inputProject.getProjectMembers() != null ? inputProject.getProjectMembers() : new ArrayList<>());
         newProject.setCreatedAt(java.time.LocalDateTime.now());
         newProject.setUpdatedAt(java.time.LocalDateTime.now());
-        newProject.setProjectLogoUrl("University");
+        newProject.setProjectLogoUrl(inputProject.getProjectLogoUrl() != null ? inputProject.getProjectLogoUrl() : null);
         
         Project savedProject = projectRepository.save(newProject);
         userService.addProjectIdToUser(userId, savedProject.getProjectId());
+        if (inputProject.getProjectMembers() != null) {
+            for (String memberId : inputProject.getProjectMembers()) {
+                userService.addProjectIdToUser(memberId, savedProject.getProjectId());
+            }
+        }
 
         return savedProject;
     }
@@ -85,20 +89,34 @@ public class ProjectService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this project");
         }
 
-        project.setProjectName(updatedProject.getProjectName());
-        project.setProjectDescription(updatedProject.getProjectDescription());
+        if (updatedProject.getProjectName() != null) {
+            project.setProjectName(updatedProject.getProjectName());
+        }
+        if (updatedProject.getProjectDescription() != null) {
+            project.setProjectDescription(updatedProject.getProjectDescription());
+        }
+        if (updatedProject.getProjectLogoUrl() != null) {
+            project.setProjectLogoUrl(updatedProject.getProjectLogoUrl());
+        }
+    
         project.setUpdatedAt(java.time.LocalDateTime.now());
-        project.setProjectLogoUrl(updatedProject.getProjectLogoUrl());
 
         // Members logic
         HashSet<String> members = new HashSet<>(project.getProjectMembers());
 
         if (updatedProject.getMembersToAdd() != null) {
             members.addAll(updatedProject.getMembersToAdd());
+            for (String memberId : updatedProject.getMembersToAdd()) {
+                userService.addProjectIdToUser(memberId, project.getProjectId());
+            }
         }
         
         if (updatedProject.getMembersToRemove() != null) {
             members.removeAll(updatedProject.getMembersToRemove());
+            for (String memberId : updatedProject.getMembersToRemove()) {
+                userService.deleteProjectFromUser(memberId, project.getProjectId());
+            }
+
         }
         
         project.setProjectMembers(new ArrayList<>(members));
@@ -167,5 +185,13 @@ public class ProjectService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
         }
         ideaRepository.deleteByProjectId(projectId);
+    }
+
+    public void makeUserLeaveFromProject(String projectId, String authHeader) {
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
+        String userId = userService.getUserIdByToken(authHeader);
+        project.getProjectMembers().remove(userId);
+        userService.deleteProjectFromUser(userId, projectId);
+        projectRepository.save(project);
     }
 }
