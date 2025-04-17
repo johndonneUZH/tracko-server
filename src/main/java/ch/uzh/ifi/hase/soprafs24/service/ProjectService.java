@@ -56,13 +56,18 @@ public class ProjectService {
         newProject.setOwnerId(userId);
         newProject.setProjectName(inputProject.getProjectName());
         newProject.setProjectDescription(inputProject.getProjectDescription());
-        newProject.setProjectMembers(new ArrayList<>());
+        newProject.setProjectMembers(inputProject.getProjectMembers() != null ? inputProject.getProjectMembers() : new ArrayList<>());
         newProject.setCreatedAt(java.time.LocalDateTime.now());
         newProject.setUpdatedAt(java.time.LocalDateTime.now());
-        newProject.setProjectLogoUrl("University");
+        newProject.setProjectLogoUrl(inputProject.getProjectLogoUrl() != null ? inputProject.getProjectLogoUrl() : null);
         
         Project savedProject = projectRepository.save(newProject);
         userService.addProjectIdToUser(userId, savedProject.getProjectId());
+        if (inputProject.getProjectMembers() != null) {
+            for (String memberId : inputProject.getProjectMembers()) {
+                userService.addProjectIdToUser(memberId, savedProject.getProjectId());
+            }
+        }
 
         return savedProject;
     }
