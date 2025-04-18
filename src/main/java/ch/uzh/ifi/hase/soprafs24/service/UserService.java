@@ -126,6 +126,17 @@ public class UserService {
         return userRepository.findById(userId).orElse(null);
     }
 
+    public User getUserByToken(String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+
+        if (!jwtUtil.validateToken(token)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+        }
+
+        String userId = jwtUtil.extractUserId(token);
+        return userRepository.findById(userId).orElse(null);
+    }
+
 
     public void setStatus(String userId, UserStatus status) {
         User user = userRepository.findById(userId).orElse(null);

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ch.uzh.ifi.hase.soprafs24.models.messages.Message;
+import ch.uzh.ifi.hase.soprafs24.models.messages.MessageRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
@@ -85,5 +87,21 @@ public class ProjectController {
     public ResponseEntity<Void> deleteProjectChanges(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
         projectService.deleteProjectChanges(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/{projectId}/messages")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Message> createMessage(  @PathVariable String projectId, 
+                                                @RequestHeader("Authorization") String authHeader, 
+                                                @RequestBody MessageRegister message) {
+        Message msg = projectService.sendChatMessage(projectId, authHeader, message);
+        return ResponseEntity.status(HttpStatus.CREATED).body(msg);
+    }
+
+    @GetMapping("/{projectId}/messages")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<List<Message>> getMessages(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
+        List<Message> messages = projectService.getMessages(projectId, authHeader);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(messages);
     }
 }

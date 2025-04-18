@@ -12,11 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
+import ch.uzh.ifi.hase.soprafs24.models.messages.Message;
+import ch.uzh.ifi.hase.soprafs24.models.messages.MessageRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.MessageRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
@@ -33,10 +36,13 @@ public class ProjectService {
     private final UserService userService;
     private final ChangeService changeService;
     private final ProjectAuthorizationService projectAuthorizationService;
+    private final MessageRepository messageRepository;
 
     public ProjectService(ProjectRepository projectRepository, JwtUtil jwtUtil, 
                           UserService userService, ChangeService changeService, 
-                          ProjectAuthorizationService projectAuthorizationService, IdeaRepository ideaRepository) {
+                          ProjectAuthorizationService projectAuthorizationService, IdeaRepository ideaRepository,
+                          MessageRepository messageRepository) {
+        this.messageRepository = messageRepository;
         this.projectAuthorizationService = projectAuthorizationService;
         this.changeService = changeService;
         this.projectRepository = projectRepository;
@@ -194,4 +200,25 @@ public class ProjectService {
         userService.deleteProjectFromUser(userId, projectId);
         projectRepository.save(project);
     }
+
+    public Message sendChatMessage(String projectId, String authHeader, MessageRegister message) {
+        projectAuthorizationService.authenticateProject(projectId, authHeader);
+        User user = userService.getUserByToken(authHeader);
+
+        Message newMessage = new Message();
+        newMessage.setProjectId(projectId);
+        newMessage.setSenderId(user.getId());
+        newMessage.setUsername(user.getUsername());
+        newMessage.setContent(message.getContent());
+        newMessage.setCreatedAt(java.time.LocalDateTime.now());
+        Message savedMessage = messageRepository.save(newMessage);
+        return savedMessage;
+    }
+
+    public List<Message> getMessages(String projectId, String authHeader) {
+        projectAuthorizationService.authenticateProject(projectId, authHeader);
+        List<Message> messages = messageRepository.findByProjectIdOrderByCreatedAtAsc(projectId);
+        return messages;
+    }
+        
 }
