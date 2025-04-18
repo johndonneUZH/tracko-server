@@ -15,8 +15,12 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(requests -> requests
                 .antMatchers(HttpMethod.GET, "/users").authenticated()
-                .antMatchers(HttpMethod.GET, "/users/{userId}").authenticated()
-                .antMatchers(HttpMethod.PUT, "/users/{userId}").authenticated()
+                .antMatchers(HttpMethod.GET, "/users/**").authenticated()
+                .antMatchers(HttpMethod.PUT, "/users/**").authenticated()
+                .antMatchers(HttpMethod.DELETE, "/users/**").authenticated()
+                .antMatchers(HttpMethod.GET, "/projects/**").authenticated()
+                .antMatchers(HttpMethod.PUT, "/projects/**").authenticated()
+                .antMatchers(HttpMethod.DELETE, "/projects/**").authenticated()
                 .anyRequest().permitAll()) // Adjust this depending on your public endpoints
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
