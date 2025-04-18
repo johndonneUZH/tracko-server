@@ -235,4 +235,76 @@ public class UserService {
         }
         return friends;
     }
+
+    public void inviteFriend(String userId, String friendId) {
+        User user = userRepository.findById(userId).orElse(null);
+        User friend = userRepository.findById(friendId).orElse(null);
+        if (user == null || friend == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User or friend not found");
+        }
+        if (!user.getFriendRequestsSentIds().contains(friendId)) {
+            user.getFriendRequestsSentIds().add(friendId);
+            friend.getFriendRequestsIds().add(userId);
+            userRepository.save(user);
+            userRepository.save(friend);
+        }
+    }
+
+    public void acceptFriend(String userId, String friendId) {
+        User user = userRepository.findById(userId).orElse(null);
+        User friend = userRepository.findById(friendId).orElse(null);
+        if (user == null || friend == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User or friend not found");
+        }
+        if (user.getFriendRequestsIds().contains(friendId)) {
+            user.getFriendsIds().add(friendId);
+            friend.getFriendsIds().add(userId);
+            user.getFriendRequestsIds().remove(friendId);
+            friend.getFriendRequestsSentIds().remove(userId);
+            userRepository.save(user);
+            userRepository.save(friend);
+        }
+    }
+
+    public void rejectFriend(String userId, String friendId) {
+        User user = userRepository.findById(userId).orElse(null);
+        User friend = userRepository.findById(friendId).orElse(null);
+        if (user == null || friend == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User or friend not found");
+        }
+        if (user.getFriendRequestsIds().contains(friendId)) {
+            user.getFriendRequestsIds().remove(friendId);
+            friend.getFriendRequestsSentIds().remove(userId);
+            userRepository.save(user);
+            userRepository.save(friend);
+        }
+    }
+
+    public void removeFriend(String userId, String friendId) {
+        User user = userRepository.findById(userId).orElse(null);
+        User friend = userRepository.findById(friendId).orElse(null);
+        if (user == null || friend == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User or friend not found");
+        }
+        if (user.getFriendsIds().contains(friendId)) {
+            user.getFriendsIds().remove(friendId);
+            friend.getFriendsIds().remove(userId);
+            userRepository.save(user);
+            userRepository.save(friend);
+        }
+    }
+
+    public void cancelFriendRequest(String userId, String friendId) {
+        User user = userRepository.findById(userId).orElse(null);
+        User friend = userRepository.findById(friendId).orElse(null);
+        if (user == null || friend == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User or friend not found");
+        }
+        if (user.getFriendRequestsSentIds().contains(friendId)) {
+            user.getFriendRequestsSentIds().remove(friendId);
+            friend.getFriendRequestsIds().remove(userId);
+            userRepository.save(user);
+            userRepository.save(friend);
+        }
+    }
 }
