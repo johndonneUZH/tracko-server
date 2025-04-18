@@ -18,10 +18,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
 import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
+import ch.uzh.ifi.hase.soprafs24.models.messages.Message;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
 import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.MessageRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
 
 @SpringBootTest
@@ -47,6 +49,9 @@ public class ProjectServiceTest {
     private IdeaRepository ideaRepository;
 
     @MockBean
+    private MessageRepository messageRepository;
+
+    @MockBean
     private ProjectAuthorizationService projectAuthorizationService;
 
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
@@ -61,8 +66,9 @@ public class ProjectServiceTest {
     @BeforeEach
     public void setup() {
         projectService = new ProjectService(projectRepository, jwtUtil, 
-                                          userService, changeService,
-                                          projectAuthorizationService, ideaRepository);
+                                            userService, changeService,
+                                            projectAuthorizationService, ideaRepository,
+                                            messageRepository);
 
         // Mock the authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
