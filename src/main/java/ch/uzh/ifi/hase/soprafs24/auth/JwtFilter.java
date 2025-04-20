@@ -7,8 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.stereotype.Component;
@@ -37,11 +37,12 @@ public class JwtFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(token)) {
                 String userId = jwtUtil.extractUserId(token);
 
+                // Simplified authentication - no authorities needed
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
-                                userId,
+                                userId, 
                                 null,
-                                Collections.singletonList(new SimpleGrantedAuthority("USER")) // <-- key fix here
+                                Collections.singletonList(new SimpleGrantedAuthority("USER"))
                         );
 
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -49,9 +50,17 @@ public class JwtFilter extends OncePerRequestFilter {
             } 
             else {
                 SecurityContextHolder.clearContext();
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+                return;
             }
         } else {
-            SecurityContextHolder.clearContext();
+            // For protected endpoints, return 401 if no token is provided
+            if (request.getRequestURI().startsWith("/users") || 
+                request.getRequestURI().startsWith("/projects")) {
+                SecurityContextHolder.clearContext();
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header is missing");
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);

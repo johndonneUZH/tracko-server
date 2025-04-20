@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +30,6 @@ public class CommentController {
     }
 
     @GetMapping("")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<List<Comment>> getCommentsByIdeaId(
             @PathVariable String projectId,
             @PathVariable String ideaId,
@@ -43,7 +41,6 @@ public class CommentController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Comment> createRootComment(
             @PathVariable String projectId,
             @PathVariable String ideaId,
@@ -55,7 +52,6 @@ public class CommentController {
     }
 
     @PostMapping("/{commentId}")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Comment> createComment(
             @PathVariable String projectId,
             @PathVariable String ideaId,
@@ -68,7 +64,6 @@ public class CommentController {
     }
 
     @GetMapping("/{commentId}")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Comment> getCommentById(
             @PathVariable String projectId,
             @PathVariable String ideaId,
@@ -80,7 +75,6 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Void> deleteComment(
             @PathVariable String projectId,
             @PathVariable String ideaId,

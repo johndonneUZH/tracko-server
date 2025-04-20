@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,35 +38,30 @@ public class ProjectController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Project> createProject(@RequestBody ProjectRegister newProject, @RequestHeader("Authorization") String authHeader) {
         Project savedProject = projectService.createProject(newProject, authHeader);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedProject);
     }
 
     @GetMapping("/{projectId}")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Project> getProject(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(project);
     }
     
     @GetMapping("/{projectId}/members")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<List<User>> getProjectMembers(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
         List<User> members = projectService.getProjectMembers(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(members);
     }
 
-    @PutMapping("/{projectId}/members")
-    @PreAuthorize("hasAuthority('USER')")
+    @PutMapping("/{projectId}/members")    
     public ResponseEntity<List<User>> makeUserLeaveFromProject(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
         projectService.makeUserLeaveFromProject(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
     }
 
-    @PutMapping("/{projectId}")
-    @PreAuthorize("hasAuthority('USER')")
+    @PutMapping("/{projectId}")    
     public ResponseEntity<Project> updateProject(@PathVariable String projectId, 
                                                  @RequestBody ProjectUpdate updatedProject, 
                                                  @RequestHeader("Authorization") String authHeader) {
@@ -75,22 +69,19 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(project);
     }
     
-    @DeleteMapping("/{projectId}")
-    @PreAuthorize("hasAuthority('USER')")
+    @DeleteMapping("/{projectId}")    
     public ResponseEntity<Void> deleteProject(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
         projectService.deleteProject(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @DeleteMapping("/{projectId}/changes")
-    @PreAuthorize("hasAuthority('USER')")
+    @DeleteMapping("/{projectId}/changes")    
     public ResponseEntity<Void> deleteProjectChanges(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
         projectService.deleteProjectChanges(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/{projectId}/messages")
-    @PreAuthorize("hasAuthority('USER')")
+    @PostMapping("/{projectId}/messages")    
     public ResponseEntity<Message> createMessage(  @PathVariable String projectId, 
                                                 @RequestHeader("Authorization") String authHeader, 
                                                 @RequestBody MessageRegister message) {
@@ -98,8 +89,7 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(msg);
     }
 
-    @GetMapping("/{projectId}/messages")
-    @PreAuthorize("hasAuthority('USER')")
+    @GetMapping("/{projectId}/messages")    
     public ResponseEntity<List<Message>> getMessages(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
         List<Message> messages = projectService.getMessages(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(messages);

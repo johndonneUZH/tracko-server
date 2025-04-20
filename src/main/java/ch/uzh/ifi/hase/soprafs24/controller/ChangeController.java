@@ -10,7 +10,6 @@ import ch.uzh.ifi.hase.soprafs24.service.ChangeService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -35,7 +34,6 @@ public class ChangeController {
     }
 
     @GetMapping("")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<List<Change>> getChangesById(
             @PathVariable String projectId,
             @RequestHeader("Authorization") String authHeader) {
@@ -45,7 +43,6 @@ public class ChangeController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Change> createChange(
             @PathVariable String projectId,
             @RequestBody ChangeRegister newChange,
@@ -56,7 +53,6 @@ public class ChangeController {
     }
     
     @GetMapping("/daily-contributions")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<List<ChangeService.DailyContribution>> getDailyContributions(
             @PathVariable String projectId,
             @RequestHeader("Authorization") String authHeader,
@@ -68,7 +64,6 @@ public class ChangeController {
     }
 
     @GetMapping("/contributions")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Map<String, Long>> getContributionsByDate(
             @PathVariable String projectId,
             @RequestHeader("Authorization") String authHeader) {

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ch.uzh.ifi.hase.soprafs24.service.IdeaService;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaRegister;
@@ -24,7 +23,6 @@ public class IdeaController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Idea> createIdea(
             @PathVariable String projectId, 
             @RequestBody IdeaRegister newIdea, 
@@ -35,7 +33,6 @@ public class IdeaController {
     }
 
     @GetMapping("")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<?> getIdeasByProject(
             @PathVariable String projectId,
             @RequestHeader("Authorization") String authHeader) {
@@ -45,7 +42,6 @@ public class IdeaController {
     }
 
     @GetMapping("/{ideaId}")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Idea> getIdeaById(
             @PathVariable String projectId,
             @PathVariable String ideaId,
@@ -56,7 +52,6 @@ public class IdeaController {
     }
 
     @PutMapping("/{ideaId}")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Idea> updateIdea(
             @PathVariable String projectId,
             @PathVariable String ideaId,
@@ -68,7 +63,6 @@ public class IdeaController {
     }
 
     @DeleteMapping("/{ideaId}")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<Void> deleteIdea(
             @PathVariable String projectId,
             @PathVariable String ideaId,
@@ -80,7 +74,6 @@ public class IdeaController {
 
     // // Create sub-idea
     // @PostMapping("/{ideaId}")
-    // @PreAuthorize("hasAuthority('USER')")
     // public ResponseEntity<Idea> createSubIdea(
     //         @PathVariable String projectId,
     //         @PathVariable String ideaId,
