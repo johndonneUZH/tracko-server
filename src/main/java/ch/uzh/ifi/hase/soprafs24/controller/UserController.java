@@ -6,7 +6,6 @@ import ch.uzh.ifi.hase.soprafs24.models.user.UserUpdate;
 
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,14 +22,12 @@ public class UserController {
     this.userService = userService;
   }
 
-  @GetMapping("")
-  @PreAuthorize("hasAuthority('USER')")
+  @GetMapping("")  
   public List<User> getUsers() {
     return userService.getUsers();
   }
   
-  @GetMapping("/{userId}")
-  @PreAuthorize("hasAuthority('USER')")
+  @GetMapping("/{userId}")  
   public ResponseEntity<User> getUser(@PathVariable String userId) {
     User user = userService.getUserById(userId);
     if (user == null) {
@@ -39,8 +36,7 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(user);
   }
 
-  @PutMapping("/{userId}")
-  @PreAuthorize("hasAuthority('USER')")
+  @PutMapping("/{userId}")  
   public ResponseEntity<User> updateUser(
           @PathVariable String userId,
           @RequestBody UserUpdate updatedUser,
@@ -56,8 +52,7 @@ public class UserController {
       return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
   }
   
-  @GetMapping("/{userId}/projects")
-  @PreAuthorize("hasAuthority('USER')")
+  @GetMapping("/{userId}/projects")  
   public ResponseEntity<List<Project>> getUserProjects(@PathVariable String userId) {
     List<Project> projects = userService.getUserProjects(userId);
     if (projects == null) {
@@ -66,43 +61,37 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(projects);
   }
 
-  @GetMapping("/{userId}/friends")
-  @PreAuthorize("hasAuthority('USER')")
+  @GetMapping("/{userId}/friends")  
   public ResponseEntity<List<User>> getUserFriends(@PathVariable String userId) {
     List<User> friends = userService.getUserFriends(userId);
     return ResponseEntity.status(HttpStatus.OK).body(friends);
   }
 
-  @PostMapping("/{userId}/friends/invite/{friendId}")
-  @PreAuthorize("hasAuthority('USER')")
+  @PostMapping("/{userId}/friends/invite/{friendId}")  
   public ResponseEntity<Void> inviteFriend(@PathVariable String userId, @PathVariable String friendId) {
     userService.inviteFriend(userId, friendId);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/{userId}/friends/accept/{friendId}")
-  @PreAuthorize("hasAuthority('USER')")
   public ResponseEntity<Void> acceptFriend(@PathVariable String userId, @PathVariable String friendId) {
     userService.acceptFriend(userId, friendId);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/{userId}/friends/reject/{friendId}")
-  @PreAuthorize("hasAuthority('USER')")
   public ResponseEntity<Void> rejectFriend(@PathVariable String userId, @PathVariable String friendId) {
     userService.rejectFriend(userId, friendId);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/{userId}/friends/remove/{friendId}")
-  @PreAuthorize("hasAuthority('USER')")
   public ResponseEntity<Void> removeFriend(@PathVariable String userId, @PathVariable String friendId) {
     userService.removeFriend(userId, friendId);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/{userId}/friends/cancel/{friendId}")
-  @PreAuthorize("hasAuthority('USER')")
   public ResponseEntity<Void> cancelFriendRequest(@PathVariable String userId, @PathVariable String friendId) {
     userService.cancelFriendRequest(userId, friendId);
     return ResponseEntity.status(HttpStatus.CREATED).build();

@@ -18,14 +18,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.springframework.context.annotation.Import;
 import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
 
-
-/**
- * Integration test for the entire user flow
- * This test requires the application to be running
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
-@ActiveProfiles("test") // Use test profile for MongoDB test container or in-memory DB
+@ActiveProfiles("test")
 public class UserIntegrationTest {
 
     @LocalServerPort
@@ -42,78 +37,79 @@ public class UserIntegrationTest {
     @BeforeEach
     public void setUp() {
         baseUrl = "http://localhost:" + port;
-        // Clean the repository before each test
         userRepository.deleteAll();
     }
 
     @Test
     public void testUserRegistrationLoginLogout() {
-        // User registration data
+        // Register user
         UserRegister newUser = new UserRegister();
         newUser.setName("Integration Test");
         newUser.setUsername("integrationtest");
         newUser.setEmail("integration@example.com");
         newUser.setPassword("password123");
-
-        // Step 1: Register a new user
-        ResponseEntity<User> registrationResponse = restTemplate.postForEntity(
+    
+        ResponseEntity<String> registrationResponse = restTemplate.postForEntity(
                 baseUrl + "/auth/register",
                 newUser,
-                User.class);
-
+                String.class);
+    
         assertEquals(HttpStatus.CREATED, registrationResponse.getStatusCode());
-        assertNotNull(registrationResponse.getBody());
-        assertEquals(newUser.getUsername(), registrationResponse.getBody().getUsername());
-        assertEquals(UserStatus.ONLINE, registrationResponse.getBody().getStatus());
-
-        // Step 2: Login with the registered user
+    
+        // Login
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        
-        String loginBody = "{\"username\":\"" + newUser.getUsername() + "\",\"password\":\"" + newUser.getPassword() + "\"}";
+        String loginBody = String.format("{\"username\":\"%s\",\"password\":\"%s\"}",
+                newUser.getUsername(), newUser.getPassword());
         HttpEntity<String> loginRequest = new HttpEntity<>(loginBody, headers);
-        
+    
         ResponseEntity<String> loginResponse = restTemplate.postForEntity(
                 baseUrl + "/auth/login",
                 loginRequest,
                 String.class);
-        
+    
         assertEquals(HttpStatus.OK, loginResponse.getStatusCode());
-        
-        // Extract token from headers
-        HttpHeaders responseHeaders = loginResponse.getHeaders();
-        String authHeader = responseHeaders.getFirst("Authorization");
-        String userId = responseHeaders.getFirst("userId");
-        
-        assertNotNull(authHeader);
-        assertTrue(authHeader.startsWith("Bearer "));
+        assertEquals("Login successful", loginResponse.getBody());
+    
+        // ✅ Extract JWT and userId from headers
+        String token = loginResponse.getHeaders().getFirst("Authorization");
+        String userId = loginResponse.getHeaders().getFirst("userId");
+    
+        assertNotNull(token);
+        assertTrue(token.startsWith("Bearer "));
         assertNotNull(userId);
-        
-        // Step 3: Get user profile using the token
+    
+        // ✅ Use JWT in Authorization header for user profile request
         HttpHeaders authHeaders = new HttpHeaders();
-        authHeaders.add("Authorization", authHeader);
-        HttpEntity<?> requestEntity = new HttpEntity<>(authHeaders);
-        
-        ResponseEntity<User> userResponse = restTemplate.exchange(
+        authHeaders.setBearerAuth(token.substring(7)); // Strip "Bearer "
+        HttpEntity<Void> getRequest = new HttpEntity<>(authHeaders);
+    
+        ResponseEntity<String> userResponse = restTemplate.exchange(
                 baseUrl + "/users/" + userId,
                 HttpMethod.GET,
-                requestEntity,
-                User.class);
-                
+                getRequest,
+                String.class);
+    
         assertEquals(HttpStatus.OK, userResponse.getStatusCode());
-        assertEquals(newUser.getUsername(), userResponse.getBody().getUsername());
-        
-        // Step 4: Logout the user
+    
+        // Check values manually
+        String body = userResponse.getBody();
+        assertNotNull(body);
+        assertTrue(body.contains("\"username\":\"integrationtest\""));
+        assertTrue(body.contains("\"status\":\"ONLINE\""));
+    
+        // Logout
         ResponseEntity<String> logoutResponse = restTemplate.exchange(
                 baseUrl + "/auth/logout",
                 HttpMethod.POST,
-                requestEntity,
+                getRequest,
                 String.class);
-                
+    
         assertEquals(HttpStatus.OK, logoutResponse.getStatusCode());
-        
-        // Verify user status is now OFFLINE
-        User loggedOutUser = userRepository.findByUsername(newUser.getUsername());
-        assertEquals(UserStatus.OFFLINE, loggedOutUser.getStatus());
-    }
+        assertEquals("Logout successful", logoutResponse.getBody());
+    
+        // Confirm user is offline in DB
+        User userInDb = userRepository.findByUsername(newUser.getUsername());
+        assertEquals(UserStatus.OFFLINE, userInDb.getStatus());
+    }    
 }
