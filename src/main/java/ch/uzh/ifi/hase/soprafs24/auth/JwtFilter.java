@@ -29,6 +29,13 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        if (path.equals("/auth/login") || path.equals("/auth/register")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -54,14 +61,13 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
         } else {
-            // For protected endpoints, return 401 if no token is provided
-            if (request.getRequestURI().startsWith("/users") || 
-                request.getRequestURI().startsWith("/projects")) {
+            if (path.startsWith("/users") || path.startsWith("/projects")) {
                 SecurityContextHolder.clearContext();
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header is missing");
                 return;
             }
         }
+    
 
         filterChain.doFilter(request, response);
     }
