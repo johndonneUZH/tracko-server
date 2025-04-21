@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.config;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.StompWebSocketEndpointRegistration;
@@ -12,8 +13,9 @@ public class WebSocketConfigTest {
 
     @Test
     public void testWebSocketConfiguration() {
-        // Create the config instance manually
-        WebSocketConfig webSocketConfig = new WebSocketConfig();
+        // Mock the WebSocketAuthInterceptor
+        WebSocketAuthInterceptor mockInterceptor = Mockito.mock(WebSocketAuthInterceptor.class);
+        WebSocketConfig webSocketConfig = new WebSocketConfig(mockInterceptor);
         
         // Mock the broker registry
         MessageBrokerRegistry mockRegistry = mock(MessageBrokerRegistry.class);
