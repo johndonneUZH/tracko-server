@@ -38,11 +38,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*")); // Or specific origins
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://sopra-fs25-group-46-client.vercel.app")); // Or specific origins
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Userid"));
-        configuration.setAllowCredentials(false); // Set true if using cookies
+        configuration.setAllowCredentials(true); // Set true if using cookies
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
