@@ -3,11 +3,15 @@ package ch.uzh.ifi.hase.soprafs24.auth;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Collections;
 
 @Component
 public class JwtUtil {
@@ -15,7 +19,6 @@ public class JwtUtil {
     private final long EXPIRATION_TIME = 1000 * 60 * 60 * 3; // 3 hours
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
-        // Pad the key to 32 bytes (256 bits) if too short
         String paddedSecret = secret.length() < 32 ? 
             String.format("%-32s", secret).replace(' ', 'X') : 
             secret.substring(0, 32);
@@ -50,5 +53,14 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public Authentication getAuthentication(String token) {
+        String userId = extractUserId(token);
+        return new UsernamePasswordAuthenticationToken(
+            userId, 
+            null,
+            Collections.singletonList(new SimpleGrantedAuthority("USER"))
+        );
     }
 }
