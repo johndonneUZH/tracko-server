@@ -71,7 +71,6 @@ public class IdeaService {
         // Saves idea
         newIdea = ideaRepository.save(newIdea);
         messagingTemplate.convertAndSend("/topic/ideas/" + projectId, newIdea);
-
         return newIdea;
     }
     
@@ -139,10 +138,9 @@ public class IdeaService {
         Idea idea = ideaRepository.findById(ideaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
 
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
     
-        projectAuthorizationService.authenticateProject(projectId, authHeader);
-        
-        if (!idea.getOwnerId().equals(userId) || !userId.equals(ownerId)) {
+        if (!idea.getOwnerId().equals(userId) && !userId.equals(ownerId) && !project.getOwnerId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this idea");
         }
 
