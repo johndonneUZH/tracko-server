@@ -19,12 +19,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        // Enable simple broker (in-memory)
         config.enableSimpleBroker("/topic");
-        // Set prefix for application destinations
         config.setApplicationDestinationPrefixes("/app");
-        // Set user destination prefix
-        config.setUserDestinationPrefix("/user");
     }
 
     @Override
@@ -33,7 +29,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOriginPatterns("*") // Allow all origins
                 .withSockJS()
                 .setSupressCors(true) // Disable CORS for SockJS
-                .setHeartbeatTime(10000); // Match client heartbeat
+                .setHeartbeatTime(4000); // Match client heartbeat
     }
 
     @Override
