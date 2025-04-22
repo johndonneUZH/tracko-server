@@ -11,6 +11,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
+import javax.servlet.http.HttpServletResponse;
+
+import static org.springframework.security.config.Customizer.withDefaults; // Add this import
 
 @Configuration
 @EnableWebSecurity
@@ -25,28 +28,36 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeRequests(requests -> requests
-                        .antMatchers("/ws/**", "/app/**", "/topic/**", "/user/**").permitAll()
-                        .antMatchers("/users/**", "/projects/**").authenticated()
-                        .anyRequest().permitAll())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
+            .cors(withDefaults()) 
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .antMatchers("/ws/**").permitAll() // Allow handshake
+                .antMatchers("/app/**").authenticated() // Secure message endpoints
+                .antMatchers("/topic/**").permitAll() // Allow subscriptions
+                .anyRequest().permitAll()
+            )
+            .exceptionHandling(handling -> handling
+                .authenticationEntryPoint((request, response, ex) -> {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+                }))
+            .headers(headers -> headers.frameOptions().sameOrigin())
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
+        configuration.setAllowedOrigins(Arrays.asList(  
             "http://localhost:3000", 
+            "http://127.0.0.1:5500",
             "https://sopra-fs25-group-46-client.vercel.app",
             "https://*.vercel.app"
         ));
-        configuration.setAllowedMethods(Arrays.asList("*"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Access-Control-Allow-Origin"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Userid"));
         configuration.setAllowCredentials(true);
         
