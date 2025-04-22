@@ -33,7 +33,7 @@ public class SecurityConfig {
             .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .antMatchers("/ws/**").permitAll() // Allow handshake
-                .antMatchers("/app/**").authenticated() // Secure message endpoints
+                .antMatchers("/app/**").permitAll() // Secure message endpoints
                 .antMatchers("/topic/**").permitAll() // Allow subscriptions
                 .anyRequest().permitAll()
             )
