@@ -51,9 +51,22 @@ public class IdeaService {
         this.projectService = projectService; 
     }
 
+    private void broadcastIdeaUpdate(String projectId, Idea idea) {
+        messagingTemplate.convertAndSend(
+            "/topic/projects/" + projectId + "/ideas", 
+            idea
+        );
+    }
+
+    private void broadcastIdeaDeletion(String projectId, String ideaId) {
+        messagingTemplate.convertAndSend(
+            "/topic/projects/" + projectId + "/ideas",
+            Map.of("deletedId", ideaId)
+        );
+    }
+
     public Idea createIdea(String projectId, IdeaRegister inputIdea, String authHeader, ArrayList<String> subIdeas) {
-        String userId = userService.getUserIdByToken(authHeader);
-    
+        String userId = userService.getUserIdByToken(authHeader);    
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
     
         //  creates idea
@@ -70,7 +83,7 @@ public class IdeaService {
     
         // Saves idea
         newIdea = ideaRepository.save(newIdea);
-        messagingTemplate.convertAndSend("/topic/ideas/" + projectId, newIdea);
+        broadcastIdeaUpdate(projectId, newIdea);
         return newIdea;
     }
     
@@ -124,7 +137,7 @@ public class IdeaService {
         }
     
         Idea saved = ideaRepository.save(idea);
-        messagingTemplate.convertAndSend("/topic/ideas/" + projectId, saved);
+        broadcastIdeaUpdate(projectId, saved);
         return saved;
     }
     
@@ -145,7 +158,7 @@ public class IdeaService {
         commentRepository.deleteByIdeaId(ideaId);
 
         ideaRepository.deleteById(ideaId);
-        messagingTemplate.convertAndSend("/topic/ideas/" + projectId, Map.of("deletedId", ideaId));
+        broadcastIdeaDeletion(projectId, ideaId);
 
     }
     
