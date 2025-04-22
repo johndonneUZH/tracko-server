@@ -131,9 +131,7 @@ public class IdeaService {
     
     public void deleteIdea(String projectId, String ideaId, String authHeader) {
         String userId = userService.getUserIdByToken(authHeader);
-
         String ownerId = projectService.getOwnerIdByProjectId(projectId);
-
         
         Idea idea = ideaRepository.findById(ideaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
