@@ -55,7 +55,7 @@ public class SecurityConfig {
             "https://sopra-fs25-group-46-client.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Userid"));
         configuration.setAllowCredentials(true);
     
