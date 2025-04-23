@@ -14,5 +14,9 @@ resources:
 automatic_scaling:
   min_num_instances: 1
   max_num_instances: 2
+<<<<<<< HEAD
   cpu_utilization:
     target_utilization: 0.6
+=======
+
+>>>>>>> c6d9ec0173469410b5a4d8c3062a4f1608c3162d
