@@ -26,7 +26,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*") // Allow all origins
+                .setAllowedOrigins(
+                    "http://localhost:3000",
+                    "https://sopra-fs25-group-46-client.vercel.app"
+                )
                 .withSockJS()
                 .setSupressCors(true) // Disable CORS for SockJS
                 .setHeartbeatTime(4000); // Match client heartbeat
