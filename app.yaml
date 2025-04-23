@@ -1,22 +1,14 @@
 # https://cloud.google.com/appengine/docs/the-appengine-environments#comparing_high-level_features
 # https://cloud.google.com/appengine/docs/standard
 
-runtime: custom
+runtime: java
 env: flex
+runtime_config:
+  operating_system: ubuntu22
+  runtime_version: 17
+handlers:
+- url: /.*
+  script: this field is required, but ignored
 
-service: flexconfig  # or your service name if not default
-
-resources:
-  cpu: 1
-  memory_gb: 2
-  disk_size_gb: 10
-
-automatic_scaling:
-  min_num_instances: 1
-  max_num_instances: 2
-<<<<<<< HEAD
-  cpu_utilization:
-    target_utilization: 0.6
-=======
-
->>>>>>> c6d9ec0173469410b5a4d8c3062a4f1608c3162d
+manual_scaling:
+  instances: 1
