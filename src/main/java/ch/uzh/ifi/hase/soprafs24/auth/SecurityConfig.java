@@ -50,14 +50,19 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "http://127.0.0.1:5500",
+            "https://sopra-fs25-group-46-client.vercel.app"
+        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Userid"));
         configuration.setAllowCredentials(true);
-        
+    
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+    
 }
