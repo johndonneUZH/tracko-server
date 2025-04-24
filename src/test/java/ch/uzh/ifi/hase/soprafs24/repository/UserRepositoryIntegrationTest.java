@@ -1,7 +1,7 @@
 // package ch.uzh.ifi.hase.soprafs24.repository;
 
 // import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
-// import ch.uzh.ifi.hase.soprafs24.entity.User;
+// import ch.uzh.ifi.hase.soprafs24.models.user.User;
 // import org.junit.jupiter.api.Test;
 // import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -26,7 +26,7 @@
 //     user.setName("Firstname Lastname");
 //     user.setUsername("firstname@lastname");
 //     user.setStatus(UserStatus.OFFLINE);
-//     user.setToken("1");
+//     // user.setToken("1");
 
 //     entityManager.persist(user);
 //     entityManager.flush();
