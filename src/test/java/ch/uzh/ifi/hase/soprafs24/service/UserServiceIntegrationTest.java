@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.models.user.UserRegister;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,8 +22,9 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @see UserService
  */
-@WebAppConfiguration
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(MongoTestConfig.class)
+@ActiveProfiles("test")
 public class UserServiceIntegrationTest {
 
   @Qualifier("userRepository")
