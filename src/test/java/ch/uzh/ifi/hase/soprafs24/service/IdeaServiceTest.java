@@ -45,7 +45,7 @@ import ch.uzh.ifi.hase.soprafs24.service.IdeaService;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class IdeaServiceTest {
