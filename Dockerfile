@@ -4,7 +4,7 @@ FROM gradle:7.6-jdk17 AS build
 WORKDIR /app
 
 # Copy gradle files first to leverage cache
-COPY gradlew gradlew.bat gradle.properties /app/
+COPY gradlew gradlew.bat /app/
 COPY gradle /app/gradle
 RUN chmod +x ./gradlew
 
