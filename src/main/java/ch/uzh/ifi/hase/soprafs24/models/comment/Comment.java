@@ -1,7 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.models.comment;
 
+import java.time.LocalDateTime;
 import java.util.List;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,7 +13,9 @@ public class Comment {
     private String commentText;
     private String ideaId;
     private String ownerId;
+    private String projectId;
     private List<String> replies; 
+    private LocalDateTime createdAt;
 
 
 
@@ -32,12 +34,10 @@ public class Comment {
     public List<String> getReplies() { return replies; }
     public void setReplies(List<String> replies) { this.replies = replies; }
 
-    // public String getParentCommentId() { return parentCommentId; }
-    // public void setParentCommentId(String parentCommentId) { this.parentCommentId = parentCommentId; }
+    public String getProjectId() { return projectId; }
+    public void setProjectId(String projectId) { this.projectId = projectId; }
 
-    // public LocalDateTime getCreatedAt() { return createdAt; }
-    // public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    // public String getProjectId() { return projectId; }
-    // public void setProjectId(String projectId) { this.projectId = projectId; }
 }
