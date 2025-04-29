@@ -18,6 +18,7 @@ import ch.uzh.ifi.hase.soprafs24.models.ai.AnthropicResponseDTO;
 import ch.uzh.ifi.hase.soprafs24.models.ai.ContentDTO;
 import ch.uzh.ifi.hase.soprafs24.models.comment.Comment;
 import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
+import ch.uzh.ifi.hase.soprafs24.constant.ChangeType;
 import ch.uzh.ifi.hase.soprafs24.models.messages.Message;
 import ch.uzh.ifi.hase.soprafs24.models.messages.MessageRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
@@ -121,11 +122,16 @@ public class ProjectService {
         // Members logic
         HashSet<String> members = new HashSet<>(project.getProjectMembers());
 
+        boolean isMemberAdded = false;
+        boolean isMemberRemoved = false;
+
         if (updatedProject.getMembersToAdd() != null) {
             members.addAll(updatedProject.getMembersToAdd());
             for (String memberId : updatedProject.getMembersToAdd()) {
                 userService.addProjectIdToUser(memberId, project.getProjectId());
+
             }
+            isMemberAdded = true;
         }
         
         if (updatedProject.getMembersToRemove() != null) {
@@ -133,11 +139,19 @@ public class ProjectService {
             for (String memberId : updatedProject.getMembersToRemove()) {
                 userService.deleteProjectFromUser(memberId, project.getProjectId());
             }
+            isMemberRemoved = true;
 
         }
         
         project.setProjectMembers(new ArrayList<>(members));
-        
+
+        if (isMemberAdded) {
+            changeService.markChange(projectId, ChangeType.ADDED_MEMBER, authHeader, false, null);
+        } else if (isMemberRemoved) {
+            changeService.markChange(projectId, ChangeType.REMOVED_MEMBER, authHeader, false, null);
+        } else {
+            changeService.markChange(projectId, ChangeType.CHANGED_PROJECT_SETTINGS, authHeader, false, null);
+        }
         projectRepository.save(project);
         return project;
 
@@ -179,14 +193,11 @@ public class ProjectService {
         return members;
     }
 
-
     public String getOwnerIdByProjectId(String projectId) {
             Project project = projectRepository.findById(projectId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
             return project.getOwnerId();
         }
-    
-
 
     public void deleteProjectChanges(String projectId, String authHeader) {
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
@@ -210,6 +221,8 @@ public class ProjectService {
         project.getProjectMembers().remove(userId);
         userService.deleteProjectFromUser(userId, projectId);
         projectRepository.save(project);
+
+        changeService.markChange(projectId, ChangeType.LEFT_PROJECT, authHeader, false, null);
     }
 
     public Message sendChatMessage(String projectId, String authHeader, MessageRegister message) {

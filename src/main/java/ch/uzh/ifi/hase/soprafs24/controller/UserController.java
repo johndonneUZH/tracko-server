@@ -62,37 +62,37 @@ public class UserController {
   }
 
   @GetMapping("/{userId}/friends")  
-  public ResponseEntity<List<User>> getUserFriends(@PathVariable String userId) {
+  public ResponseEntity<List<User>> getUserFriends(@PathVariable String userId, @RequestHeader("Authorization") String authHeader) {
     List<User> friends = userService.getUserFriends(userId);
     return ResponseEntity.status(HttpStatus.OK).body(friends);
   }
 
   @PostMapping("/{userId}/friends/invite/{friendId}")  
-  public ResponseEntity<Void> inviteFriend(@PathVariable String userId, @PathVariable String friendId) {
-    userService.inviteFriend(userId, friendId);
+  public ResponseEntity<Void> inviteFriend(@PathVariable String userId, @PathVariable String friendId, @RequestHeader("Authorization") String authHeader) {
+    userService.inviteFriend(userId, friendId, authHeader);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/{userId}/friends/accept/{friendId}")
-  public ResponseEntity<Void> acceptFriend(@PathVariable String userId, @PathVariable String friendId) {
-    userService.acceptFriend(userId, friendId);
+  public ResponseEntity<Void> acceptFriend(@PathVariable String userId, @PathVariable String friendId, @RequestHeader("Authorization") String authHeader) {
+    userService.acceptFriend(userId, friendId, authHeader);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/{userId}/friends/reject/{friendId}")
-  public ResponseEntity<Void> rejectFriend(@PathVariable String userId, @PathVariable String friendId) {
-    userService.rejectFriend(userId, friendId);
+  public ResponseEntity<Void> rejectFriend(@PathVariable String userId, @PathVariable String friendId, @RequestHeader("Authorization") String authHeader) {
+    userService.rejectFriend(userId, friendId, authHeader);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/{userId}/friends/remove/{friendId}")
-  public ResponseEntity<Void> removeFriend(@PathVariable String userId, @PathVariable String friendId) {
-    userService.removeFriend(userId, friendId);
+  public ResponseEntity<Void> removeFriend(@PathVariable String userId, @PathVariable String friendId, @RequestHeader("Authorization") String authHeader) {
+    userService.removeFriend(userId, friendId, authHeader);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/{userId}/friends/cancel/{friendId}")
-  public ResponseEntity<Void> cancelFriendRequest(@PathVariable String userId, @PathVariable String friendId) {
+  public ResponseEntity<Void> cancelFriendRequest(@PathVariable String userId, @PathVariable String friendId, @RequestHeader("Authorization") String authHeader) {
     userService.cancelFriendRequest(userId, friendId);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
