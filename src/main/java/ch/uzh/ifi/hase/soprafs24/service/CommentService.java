@@ -46,6 +46,10 @@ public class CommentService {
         return commentRepository.findByIdeaId(ideaId);
     }
 
+    public List<Comment> getCommentsByIdeaId(String ideaId) {
+        return commentRepository.findByIdeaId(ideaId);
+    }
+
 public Comment createComment(String projectId, String ideaId, String parentCommentId, String authHeader, CommentRegister comment) {
     // Authenticate project and idea
     ideaService.getIdeaById(projectId, ideaId, authHeader);

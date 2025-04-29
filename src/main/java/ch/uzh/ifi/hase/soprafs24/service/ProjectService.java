@@ -4,14 +4,20 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
+import ch.uzh.ifi.hase.soprafs24.models.ai.AnthropicResponseDTO;
+import ch.uzh.ifi.hase.soprafs24.models.ai.ContentDTO;
+import ch.uzh.ifi.hase.soprafs24.models.comment.Comment;
+import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
 import ch.uzh.ifi.hase.soprafs24.models.messages.Message;
 import ch.uzh.ifi.hase.soprafs24.models.messages.MessageRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
@@ -37,11 +43,16 @@ public class ProjectService {
     private final ChangeService changeService;
     private final ProjectAuthorizationService projectAuthorizationService;
     private final MessageRepository messageRepository;
+    private final AnthropicService anthropicService;
+    private final CommentService commentService;
 
     public ProjectService(ProjectRepository projectRepository, JwtUtil jwtUtil, 
                           UserService userService, ChangeService changeService, 
                           ProjectAuthorizationService projectAuthorizationService, IdeaRepository ideaRepository,
-                          MessageRepository messageRepository) {
+                          MessageRepository messageRepository,
+                          AnthropicService anthropicService, @Lazy CommentService commentService) {
+        this.anthropicService = anthropicService;
+        this.commentService = commentService;
         this.messageRepository = messageRepository;
         this.projectAuthorizationService = projectAuthorizationService;
         this.changeService = changeService;
@@ -221,4 +232,97 @@ public class ProjectService {
         return messages;
     }
         
+
+    public ContentDTO generateReport(String projectId, String authHeader) {
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
+        if (project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
+        }
+    
+        List<Message> messages = messageRepository.findByProjectIdOrderByCreatedAtAsc(projectId);
+        List<Idea> ideas = ideaRepository.findByProjectId(projectId);
+    
+        List<Comment> comments = new ArrayList<>();
+        for (Idea idea : ideas) {
+            commentService.getCommentsByIdeaId(idea.getIdeaId()).forEach(comments::add);
+        }
+    
+        String ideaSummary = ideas.stream()
+            .map(idea -> String.format(
+                "Idea: %s\nDescription: %s\nUpvotes: %d, Downvotes: %d, Comments: %d\n",
+                idea.getIdeaName(),
+                idea.getIdeaDescription(),
+                idea.getUpVotes().size(),
+                idea.getDownVotes().size(),
+                idea.getComments().size()
+            ))
+            .collect(Collectors.joining("\n\n"));  // Added empty line between ideas
+    
+        String commentSummary = comments.stream()
+            .map(comment -> String.format(
+                "Comment: %s\nOn Idea ID: %s\n",
+                comment.getCommentText(),
+                comment.getIdeaId()
+            ))
+            .collect(Collectors.joining("\n\n"));  // Also space between comments
+    
+        String messageSummary = messages.stream()
+            .map(message -> String.format(
+                "Message: %s\nSent At: %s\n",
+                message.getContent(),
+                message.getCreatedAt()
+            ))
+            .collect(Collectors.joining("\n\n"));
+    
+        String template = String.format(
+            """
+            You are an assistant tasked with generating a summary report for a brainstorming session.
+    
+            Project Name: %s
+    
+            Ideas Summary:
+            %s
+    
+            Comments Summary:
+            %s
+    
+            Messages Summary:
+            %s
+    
+            Instructions:
+            1. Provide a brief, coherent overview of the brainstorming session.
+            2. Identify the top 3 ideas based on upvotes and engagement (comments).
+            3. For each top idea, mention the Pros and Cons.
+            4. Based on comments and discussions, give any useful recommendations for the project.
+    
+            Important: 
+            Format your response as **clean HTML** with:
+            - Title as <h2>
+            - Subsections as <h3>
+            - Bullet points for Pros and Cons
+            - Separate paragraphs (<p>) for recommendations
+            - Keep it neat, readable and professional.
+            - Use <strong> for important points.
+            - Avoid using double \n, use single \n for line breaks.
+            - Use <br> for line breaks in HTML.
+            - Use <ul> and <li> for lists.
+    
+            Be concise, professional, and insightful.
+            """,
+            project.getProjectName(),
+            ideaSummary,
+            commentSummary,
+            messageSummary
+        );
+    
+        // Here you would typically send the template to an AI model for processing.
+        AnthropicResponseDTO response = anthropicService.generateContent(template);
+        ContentDTO aiGeneratedSummary = response.getContent().get(0); 
+        String cleanHtml = aiGeneratedSummary.getText().replaceAll("\\n+", "");  // removes all \n
+    
+        ContentDTO dto = new ContentDTO();
+        dto.setType("text");
+        dto.setText(cleanHtml);
+        return dto; 
+    }
 }
