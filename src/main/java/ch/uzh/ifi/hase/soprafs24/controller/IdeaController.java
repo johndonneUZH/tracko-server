@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,11 +34,11 @@ public class IdeaController {
     }
 
     @GetMapping("")
-    public ResponseEntity<?> getIdeasByProject(
+    public ResponseEntity<List<Idea>> getIdeasByProject(
             @PathVariable String projectId,
             @RequestHeader("Authorization") String authHeader) {
 
-        var ideas = ideaService.getIdeasByProject(projectId, authHeader);
+        List<Idea> ideas = ideaService.getIdeasByProject(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.OK).body(ideas);
     }
 
