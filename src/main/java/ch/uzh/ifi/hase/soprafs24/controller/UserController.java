@@ -125,6 +125,16 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
   }
 
+  @GetMapping("/{userId}/reports/{reportId}")
+  public ResponseEntity<Report> getReport(@PathVariable String userId, @PathVariable String reportId, @RequestHeader("Authorization") String authHeader) {
+    userService.authenticateUser(userId, authHeader);
+    Report report = reportService.getReportById(reportId);
+    if (report == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+    return ResponseEntity.status(HttpStatus.OK).body(report);
+  }
+
   
 }
 
