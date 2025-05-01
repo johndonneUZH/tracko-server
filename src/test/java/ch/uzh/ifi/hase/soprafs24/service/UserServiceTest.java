@@ -50,6 +50,9 @@ public class UserServiceTest {
     @Mock
     private ProjectService projectService;
 
+    @Mock
+    private ChangeService changeService;
+
     @InjectMocks
     private UserService userService;
 
@@ -64,7 +67,7 @@ public class UserServiceTest {
     public void setup() {
         MockitoAnnotations.openMocks(this);
         
-        userService = new UserService(jwtUtil, projectService, userRepository);
+        userService = new UserService(jwtUtil, projectService, userRepository, changeService);
 
         // Create test user
         testUser = new User();
@@ -513,7 +516,7 @@ public class UserServiceTest {
 
         // Test method
         assertDoesNotThrow(() -> {
-            userService.inviteFriend("1", "2");
+            userService.inviteFriend("1", "2", "Bearer token");
         });
 
         // Verify that friend requests were updated for both users
@@ -533,7 +536,7 @@ public class UserServiceTest {
 
         // Test method
         assertDoesNotThrow(() -> {
-            userService.acceptFriend("1", "2");
+            userService.acceptFriend("1", "2", "Bearer token");
         });
 
         // Verify that friend lists were updated for both users
@@ -553,7 +556,7 @@ public class UserServiceTest {
 
         // Test method
         assertDoesNotThrow(() -> {
-            userService.rejectFriend("1", "2");
+            userService.rejectFriend("1", "2", "Bearer token");
         });
 
         // Verify that friend requests were removed
@@ -573,7 +576,7 @@ public class UserServiceTest {
 
         // Test method
         assertDoesNotThrow(() -> {
-            userService.removeFriend("1", "2");
+            userService.removeFriend("1", "2", "Bearer token");
         });
 
         // Verify that friendship was removed for both users

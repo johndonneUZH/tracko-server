@@ -70,6 +70,9 @@ public class IdeaServiceTest {
     @MockBean
     private ProjectAuthorizationService projectAuthorizationService;
 
+    @MockBean
+    private ChangeService changeService;
+
     @Mock
     private SimpMessagingTemplate messagingTemplate;
 
@@ -86,9 +89,10 @@ public class IdeaServiceTest {
             messagingTemplate,
             projectAuthorizationService,
             commentRepository,
-            projectService
+            projectService,
+            changeService
         );
-        
+
         // Mock the user authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
         

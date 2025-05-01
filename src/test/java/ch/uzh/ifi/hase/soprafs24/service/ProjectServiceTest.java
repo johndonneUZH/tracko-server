@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -51,13 +52,19 @@ public class ProjectServiceTest {
     private IdeaRepository ideaRepository;
 
     @MockBean
-    private UserRepository userRepository;
+    private AnthropicService anthropicService;
+
+    @MockBean
+    private CommentService commentService;
 
     @MockBean
     private MessageRepository messageRepository;
 
     @MockBean
     private ProjectAuthorizationService projectAuthorizationService;
+
+    @MockBean
+    private ReportService reportService;
 
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
@@ -78,7 +85,9 @@ public class ProjectServiceTest {
             projectAuthorizationService, 
             ideaRepository,
             messageRepository,
-            userRepository);
+            anthropicService,
+            commentService,
+            reportService);
 
         // Mock the authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);

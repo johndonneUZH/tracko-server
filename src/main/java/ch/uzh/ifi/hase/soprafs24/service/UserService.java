@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import ch.uzh.ifi.hase.soprafs24.constant.ChangeType;
 import ch.uzh.ifi.hase.soprafs24.constant.LoginStatus;
 
 import java.time.LocalDateTime;
@@ -33,16 +34,14 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ProjectService projectService;
-    
+    private final ChangeService changeService;
     private final UserRepository userRepository;
 
-    // STRING definition for sonar qube, no repeting of strings
-    private static final String BEARER = "Bearer ";
-
-    UserService(JwtUtil jwtUtil, @Lazy ProjectService projectService, UserRepository userRepository) {
+    UserService(JwtUtil jwtUtil, @Lazy ProjectService projectService, UserRepository userRepository, ChangeService changeService) {
+        this.userRepository = userRepository;
+        this.changeService = changeService;
         this.projectService = projectService;
         this.jwtUtil = jwtUtil;
-        this.userRepository = userRepository;
     }
 
 
@@ -130,7 +129,7 @@ public class UserService {
     }
 
     public User getUserByToken(String authHeader) {
-        String token = authHeader.replace(BEARER, "");
+        String token = authHeader.replace("Bearer ", "");
 
         if (!jwtUtil.validateToken(token)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
@@ -152,11 +151,11 @@ public class UserService {
     }
 
     public String getUserIdByToken(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith(BEARER)) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header");
         }
 
-        String token = authHeader.replace(BEARER, "");
+        String token = authHeader.replace("Bearer ", "");
 
         if (!jwtUtil.validateToken(token)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
@@ -167,11 +166,11 @@ public class UserService {
 
     public void authenticateUser(String userId, String authHeader) {
         /* Authenticates the User by making sure the token provided and userId are the same*/
-        if (authHeader == null || !authHeader.startsWith(BEARER)) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header");
         }
 
-        String token = authHeader.replace(BEARER, "");
+        String token = authHeader.replace("Bearer ", "");
 
         if (!jwtUtil.validateToken(token)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
@@ -250,7 +249,7 @@ public class UserService {
         return friends;
     }
 
-    public void inviteFriend(String userId, String friendId) {
+    public void inviteFriend(String userId, String friendId, String authHeader) {
         User user = userRepository.findById(userId).orElse(null);
         User friend = userRepository.findById(friendId).orElse(null);
         if (user == null || friend == null) {
@@ -262,9 +261,11 @@ public class UserService {
             userRepository.save(user);
             userRepository.save(friend);
         }
+
+        changeService.markChange(userId, ChangeType.SENT_FRIEND_REQUEST, authHeader, true, friendId);
     }
 
-    public void acceptFriend(String userId, String friendId) {
+    public void acceptFriend(String userId, String friendId, String authHeader) {
         User user = userRepository.findById(userId).orElse(null);
         User friend = userRepository.findById(friendId).orElse(null);
         if (user == null || friend == null) {
@@ -278,9 +279,11 @@ public class UserService {
             userRepository.save(user);
             userRepository.save(friend);
         }
+
+        changeService.markChange(userId, ChangeType.ACCEPTED_FRIEND_REQUEST, authHeader, true, friendId);
     }
 
-    public void rejectFriend(String userId, String friendId) {
+    public void rejectFriend(String userId, String friendId, String authHeader) {
         User user = userRepository.findById(userId).orElse(null);
         User friend = userRepository.findById(friendId).orElse(null);
         if (user == null || friend == null) {
@@ -292,9 +295,11 @@ public class UserService {
             userRepository.save(user);
             userRepository.save(friend);
         }
+
+        changeService.markChange(userId, ChangeType.REJECTED_FRIEND_REQUEST, authHeader, true, friendId);
     }
 
-    public void removeFriend(String userId, String friendId) {
+    public void removeFriend(String userId, String friendId, String authHeader) {
         User user = userRepository.findById(userId).orElse(null);
         User friend = userRepository.findById(friendId).orElse(null);
         if (user == null || friend == null) {
@@ -306,6 +311,8 @@ public class UserService {
             userRepository.save(user);
             userRepository.save(friend);
         }
+
+        changeService.markChange(userId, ChangeType.REMOVED_FRIEND, authHeader, true, friendId);
     }
 
     public void cancelFriendRequest(String userId, String friendId) {

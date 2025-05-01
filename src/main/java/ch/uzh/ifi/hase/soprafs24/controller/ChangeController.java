@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ch.uzh.ifi.hase.soprafs24.models.change.Change;
 import ch.uzh.ifi.hase.soprafs24.models.change.ChangeRegister;
 import ch.uzh.ifi.hase.soprafs24.service.ChangeService;
+import ch.uzh.ifi.hase.soprafs24.service.ChangeService.Contributions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
-
-
-
 
 @RestController
 @RequestMapping("/projects/{projectId}/changes")
@@ -78,5 +76,22 @@ public class ChangeController {
         return ResponseEntity.ok(contributionsByDate);
     }
 
+    @GetMapping("/analytics")
+    public ResponseEntity<List<Contributions>> getAnalytics(
+            @PathVariable String projectId,
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(defaultValue = "90") Integer days) {
+        List<Contributions> analytics = changeService.getAnalytics(projectId, authHeader, days);
+        return ResponseEntity.ok(analytics);
+    }
 
+    @GetMapping("/analytics/{userId}")
+    public ResponseEntity<List<Contributions>> getAnalyticsByUserId(
+            @PathVariable String projectId,
+            @PathVariable String userId,
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(defaultValue = "180") Integer days) {
+        List<Contributions> analytics = changeService.getAnalyticsByUserId(projectId, userId, authHeader, days);
+        return ResponseEntity.ok(analytics);
+    }
 }

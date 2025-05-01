@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,10 +21,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
 import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
 import ch.uzh.ifi.hase.soprafs24.models.comment.Comment;
 import ch.uzh.ifi.hase.soprafs24.models.comment.CommentRegister;
 import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
+import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
 import java.util.Optional;
 
@@ -45,7 +48,13 @@ public class CommentServiceTest {
     private UserService userService;
 
     @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
     private SimpMessagingTemplate messagingTemplate;
+
+    @MockBean
+    private ProjectAuthorizationService projectAuthorizationService;
 
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
@@ -57,6 +66,10 @@ public class CommentServiceTest {
     public void setup() {
         // Mock authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
+        when(jwtUtil.validateToken(anyString())).thenReturn(true);
+        when(jwtUtil.extractUserId(anyString())).thenReturn(USER_ID);
+        Project mockProject = new Project();
+        when(projectAuthorizationService.authenticateProject(anyString(), anyString())).thenReturn(mockProject);
 
         // Mock idea authentication
         Idea idea = new Idea();
