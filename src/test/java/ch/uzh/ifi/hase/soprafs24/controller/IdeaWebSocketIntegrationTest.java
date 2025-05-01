@@ -1,4 +1,4 @@
-// package ch.uzh.ifi.hase.soprafs24;
+// package ch.uzh.ifi.hase.soprafs24.controller;
 
 // // Spring WebSocket imports
 // import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -75,36 +75,51 @@
 //     private CompletableFuture<IdeaUpdateMessage> completableFuture;
 //     private String baseUrl;
 
-    
 //     // Inject the messaging template and send a test message
 //     @Autowired
 //     private SimpMessagingTemplate testTemplate;
 
 //     @BeforeEach
 //     public void setup() {
-//         System.out.println("====== TEST SETUP RUNNING ======");
-
 //         baseUrl = "http://localhost:" + port;
-//         websocketUrl = "ws://localhost:" + port + "/ws";
-//         completableFuture = new CompletableFuture<>();
-
-//         // Setup STOMP client
+//         websocketUrl = "http://localhost:" + port + "/ws";  // Use http instead of ws for SockJS
+        
+//         // Set up the STOMP client with SockJS support
 //         List<Transport> transports = new ArrayList<>();
 //         transports.add(new WebSocketTransport(new StandardWebSocketClient()));
 //         SockJsClient sockJsClient = new SockJsClient(transports);
-
+        
 //         stompClient = new WebSocketStompClient(sockJsClient);
 //         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
-
-//         System.out.println("SimpMessagingTemplate available: " + (testTemplate != null));
+        
+//         // Print connection URL for debugging
+//         System.out.println("WebSocket URL: " + websocketUrl);
+//         assertNotNull(testTemplate, "SimpMessagingTemplate should be available");
 //     }
 
 //     @Test
 //     public void testSimpleWebSocketMessage() throws Exception {
-//         // Connect to WebSocket
+//         // Use HTTP for SockJS (not WS protocol)
+//         String sockJsUrl = "http://localhost:" + port + "/ws";
+//         System.out.println("Connecting to: " + sockJsUrl);
+        
+//         // Connect with longer timeout and more debug information
 //         StompSession session = stompClient
-//                 .connect(websocketUrl, new StompSessionHandlerAdapter() {})
-//                 .get(5, TimeUnit.SECONDS);
+//                 .connect(sockJsUrl, new StompSessionHandlerAdapter() {
+//                     @Override
+//                     public void handleTransportError(StompSession session, Throwable exception) {
+//                         System.err.println("Transport error: " + exception.getMessage());
+//                         exception.printStackTrace();
+//                     }
+                    
+//                     @Override
+//                     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
+//                         System.out.println("Connected! Session ID: " + session.getSessionId());
+//                     }
+//                 })
+//                 .get(10, TimeUnit.SECONDS); // Increased timeout
+
+//         System.out.println("Connection established: " + session.isConnected());
 
 //         // Subscribe to a test topic
 //         CompletableFuture<String> simpleFuture = new CompletableFuture<>();
@@ -116,127 +131,129 @@
 
 //             @Override
 //             public void handleFrame(StompHeaders headers, Object payload) {
+//                 System.out.println("Received message: " + payload);
 //                 simpleFuture.complete((String) payload);
 //             }
 //         });
-
         
+//         System.out.println("Subscription created, sending test message...");
 //         testTemplate.convertAndSend("/topic/test", "Test Message");
+//         System.out.println("Message sent to broker");
 
-//         // Check if message is received
-//         String message = simpleFuture.get(5, TimeUnit.SECONDS);
+//         // Check if message is received with longer timeout
+//         String message = simpleFuture.get(10, TimeUnit.SECONDS);
 //         assertEquals("Test Message", message);
 //     }
 
-//     // @Test
-//     // public void testIdeaCreationWebSocketMessage() throws Exception {
-//     //     // First, create a user and project in the database that we can reference
-//     //     String userId = createTestUser();
-//     //     String projectId = createTestProject(userId);
+// //     // @Test
+// //     // public void testIdeaCreationWebSocketMessage() throws Exception {
+// //     //     // First, create a user and project in the database that we can reference
+// //     //     String userId = createTestUser();
+// //     //     String projectId = createTestProject(userId);
         
-//     //     // Now generate a token for this real user
-//     //     String testToken = jwtUtil.generateToken(userId);
+// //     //     // Now generate a token for this real user
+// //     //     String testToken = jwtUtil.generateToken(userId);
         
-//     //     // Connect to WebSocket
-//     //     StompSession session = stompClient
-//     //             .connect(websocketUrl, new StompSessionHandlerAdapter() {})
-//     //             .get(5, TimeUnit.SECONDS);
+// //     //     // Connect to WebSocket
+// //     //     StompSession session = stompClient
+// //     //             .connect(websocketUrl, new StompSessionHandlerAdapter() {})
+// //     //             .get(5, TimeUnit.SECONDS);
 
-//     //     // Subscribe to the topic
-//     //     session.subscribe("/topic/projects/" + projectId + "/ideas", new StompFrameHandler() {
-//     //         @Override
-//     //         public Type getPayloadType(StompHeaders headers) {
-//     //             return IdeaUpdateMessage.class;
-//     //         }
+// //     //     // Subscribe to the topic
+// //     //     session.subscribe("/topic/projects/" + projectId + "/ideas", new StompFrameHandler() {
+// //     //         @Override
+// //     //         public Type getPayloadType(StompHeaders headers) {
+// //     //             return IdeaUpdateMessage.class;
+// //     //         }
 
-//     //         @Override
-//     //         public void handleFrame(StompHeaders headers, Object payload) {
-//     //             completableFuture.complete((IdeaUpdateMessage) payload);
-//     //         }
-//     //     });
+// //     //         @Override
+// //     //         public void handleFrame(StompHeaders headers, Object payload) {
+// //     //             completableFuture.complete((IdeaUpdateMessage) payload);
+// //     //         }
+// //     //     });
 
-//     //     // Create test data
-//     //     IdeaRegister ideaToCreate = new IdeaRegister();
-//     //     ideaToCreate.setIdeaName("Test WebSocket Idea");
-//     //     ideaToCreate.setIdeaDescription("This idea should trigger a WebSocket message");
+// //     //     // Create test data
+// //     //     IdeaRegister ideaToCreate = new IdeaRegister();
+// //     //     ideaToCreate.setIdeaName("Test WebSocket Idea");
+// //     //     ideaToCreate.setIdeaDescription("This idea should trigger a WebSocket message");
         
-//     //     // Create HTTP headers with authentication
-//     //     HttpHeaders headers = new HttpHeaders();
-//     //     headers.set("Authorization", "Bearer " + testToken);
-//     //     headers.setContentType(MediaType.APPLICATION_JSON);
+// //     //     // Create HTTP headers with authentication
+// //     //     HttpHeaders headers = new HttpHeaders();
+// //     //     headers.set("Authorization", "Bearer " + testToken);
+// //     //     headers.setContentType(MediaType.APPLICATION_JSON);
 
-//     //     // Create the HTTP entity with headers and body
-//     //     HttpEntity<IdeaRegister> request = new HttpEntity<>(ideaToCreate, headers);
+// //     //     // Create the HTTP entity with headers and body
+// //     //     HttpEntity<IdeaRegister> request = new HttpEntity<>(ideaToCreate, headers);
         
-//     //     // Make the REST call to create the idea and print the response
-//     //     ResponseEntity<Idea> response = restTemplate.exchange(
-//     //         baseUrl + "/projects/{projectId}/ideas",
-//     //         HttpMethod.POST,
-//     //         request,
-//     //         Idea.class,
-//     //         projectId
-//     //     );
+// //     //     // Make the REST call to create the idea and print the response
+// //     //     ResponseEntity<Idea> response = restTemplate.exchange(
+// //     //         baseUrl + "/projects/{projectId}/ideas",
+// //     //         HttpMethod.POST,
+// //     //         request,
+// //     //         Idea.class,
+// //     //         projectId
+// //     //     );
         
-//     //     // Check if the HTTP request was successful
-//     //     assertTrue(response.getStatusCode().is2xxSuccessful(), 
-//     //             "HTTP request failed with status: " + response.getStatusCode());
+// //     //     // Check if the HTTP request was successful
+// //     //     assertTrue(response.getStatusCode().is2xxSuccessful(), 
+// //     //             "HTTP request failed with status: " + response.getStatusCode());
 
-//     //     // Wait for the WebSocket message and verify its content
-//     //     try {
-//     //         IdeaUpdateMessage receivedMessage = completableFuture.get(10, TimeUnit.SECONDS);
-//     //         assertNotNull(receivedMessage);
-//     //         assertEquals("CREATE", receivedMessage.getAction());
-//     //         assertEquals(projectId, receivedMessage.getProjectId());
-//     //         assertNotNull(receivedMessage.getIdeaId());
-//     //         assertEquals("Test WebSocket Idea", receivedMessage.getIdea().getIdeaName());
-//     //     } catch (TimeoutException e) {
-//     //         fail("WebSocket message was not received within the timeout period. Check if the WebSocket message is being sent properly.");
-//     //     }
-//     // }
+// //     //     // Wait for the WebSocket message and verify its content
+// //     //     try {
+// //     //         IdeaUpdateMessage receivedMessage = completableFuture.get(10, TimeUnit.SECONDS);
+// //     //         assertNotNull(receivedMessage);
+// //     //         assertEquals("CREATE", receivedMessage.getAction());
+// //     //         assertEquals(projectId, receivedMessage.getProjectId());
+// //     //         assertNotNull(receivedMessage.getIdeaId());
+// //     //         assertEquals("Test WebSocket Idea", receivedMessage.getIdea().getIdeaName());
+// //     //     } catch (TimeoutException e) {
+// //     //         fail("WebSocket message was not received within the timeout period. Check if the WebSocket message is being sent properly.");
+// //     //     }
+// //     // }
 
-//     // // Helper methods to set up test data
-//     // private String createTestUser() {
-//     //     // Create a user and return its ID
-//     //     UserRegister userRegister = new UserRegister();
-//     //     userRegister.setName("Test User");
-//     //     userRegister.setUsername("testuser" + System.currentTimeMillis());
-//     //     userRegister.setEmail("test" + System.currentTimeMillis() + "@example.com");
-//     //     userRegister.setPassword("password");
+// //     // // Helper methods to set up test data
+// //     // private String createTestUser() {
+// //     //     // Create a user and return its ID
+// //     //     UserRegister userRegister = new UserRegister();
+// //     //     userRegister.setName("Test User");
+// //     //     userRegister.setUsername("testuser" + System.currentTimeMillis());
+// //     //     userRegister.setEmail("test" + System.currentTimeMillis() + "@example.com");
+// //     //     userRegister.setPassword("password");
         
-//     //     ResponseEntity<User> response = restTemplate.postForEntity(
-//     //         baseUrl + "/auth/register",
-//     //         userRegister,
-//     //         User.class
-//     //     );
+// //     //     ResponseEntity<User> response = restTemplate.postForEntity(
+// //     //         baseUrl + "/auth/register",
+// //     //         userRegister,
+// //     //         User.class
+// //     //     );
         
-//     //     assertTrue(response.getStatusCode().is2xxSuccessful(), 
-//     //             "Failed to create test user: " + response.getStatusCode());
+// //     //     assertTrue(response.getStatusCode().is2xxSuccessful(), 
+// //     //             "Failed to create test user: " + response.getStatusCode());
         
-//     //     return response.getBody().getId();
-//     // }
+// //     //     return response.getBody().getId();
+// //     // }
 
-//     // private String createTestProject(String userId) {
-//     //     // Create a project and return its ID
-//     //     ProjectRegister projectRegister = new ProjectRegister();
-//     //     projectRegister.setProjectName("Test Project" + System.currentTimeMillis());
-//     //     projectRegister.setProjectDescription("Test Description");
+// //     // private String createTestProject(String userId) {
+// //     //     // Create a project and return its ID
+// //     //     ProjectRegister projectRegister = new ProjectRegister();
+// //     //     projectRegister.setProjectName("Test Project" + System.currentTimeMillis());
+// //     //     projectRegister.setProjectDescription("Test Description");
         
-//     //     HttpHeaders headers = new HttpHeaders();
-//     //     headers.set("Authorization", "Bearer " + jwtUtil.generateToken(userId));
+// //     //     HttpHeaders headers = new HttpHeaders();
+// //     //     headers.set("Authorization", "Bearer " + jwtUtil.generateToken(userId));
         
-//     //     HttpEntity<ProjectRegister> request = new HttpEntity<>(projectRegister, headers);
+// //     //     HttpEntity<ProjectRegister> request = new HttpEntity<>(projectRegister, headers);
         
-//     //     ResponseEntity<Project> response = restTemplate.exchange(
-//     //         baseUrl + "/projects",
-//     //         HttpMethod.POST,
-//     //         request,
-//     //         Project.class
-//     //     );
+// //     //     ResponseEntity<Project> response = restTemplate.exchange(
+// //     //         baseUrl + "/projects",
+// //     //         HttpMethod.POST,
+// //     //         request,
+// //     //         Project.class
+// //     //     );
         
-//     //     assertTrue(response.getStatusCode().is2xxSuccessful(), 
-//     //             "Failed to create test project: " + response.getStatusCode());
+// //     //     assertTrue(response.getStatusCode().is2xxSuccessful(), 
+// //     //             "Failed to create test project: " + response.getStatusCode());
         
-//     //     return response.getBody().getProjectId();
-//     // }
+// //     //     return response.getBody().getProjectId();
+// //     // }
 // }
 
