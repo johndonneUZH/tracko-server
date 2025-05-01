@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
@@ -44,13 +45,16 @@ public class ChangeServiceTest {
     @MockBean
     private ProjectAuthorizationService projectAuthorizationService;
 
+    @MockBean
+    private SimpMessagingTemplate messagingTemplate;
+
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
     private final String USER_ID = "user-123";
 
     @BeforeEach
     public void setup() {
-        changeService = new ChangeService(changeRepository, projectService, userService, projectAuthorizationService);
+        changeService = new ChangeService(changeRepository, projectService, userService, projectAuthorizationService, messagingTemplate);
 
         // Mock authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);

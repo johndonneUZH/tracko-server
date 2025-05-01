@@ -35,11 +35,10 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ProjectService projectService;
     private final ChangeService changeService;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    UserService(JwtUtil jwtUtil, @Lazy ProjectService projectService, ChangeService changeService) {
+    UserService(JwtUtil jwtUtil, @Lazy ProjectService projectService, UserRepository userRepository, ChangeService changeService) {
+        this.userRepository = userRepository;
         this.changeService = changeService;
         this.projectService = projectService;
         this.jwtUtil = jwtUtil;
