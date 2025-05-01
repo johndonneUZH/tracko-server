@@ -46,3 +46,4 @@ local.properties
 /bin
 src/main/resources/application.properties
 src/main/java/ch/uzh/ifi/hase/soprafs24/service/test.html
+.env.local
