@@ -37,6 +37,8 @@ public class IdeaService {
     private final ProjectService projectService;
     private final ChangeService changeService; 
 
+    // For sonarqube, so we don't use the same constant multiple times
+    private static final String IDEA_NOT_FOUND = "Idea not found";
 
     public IdeaService(IdeaRepository ideaRepository, 
                      UserService userService,
@@ -103,12 +105,12 @@ public class IdeaService {
         projectAuthorizationService.authenticateProject(projectId, authHeader);
 
         return ideaRepository.findById(ideaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, IDEA_NOT_FOUND));
     }
 
     public Idea updateIdea(String projectId, String ideaId, IdeaUpdate inputIdea, String authHeader) {
         Idea idea = ideaRepository.findById(ideaId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, IDEA_NOT_FOUND));
     
         projectAuthorizationService.authenticateProject(projectId, authHeader);
     
@@ -166,7 +168,7 @@ public class IdeaService {
         String ownerId = projectService.getOwnerIdByProjectId(projectId);
         
         Idea idea = ideaRepository.findById(ideaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, IDEA_NOT_FOUND));
 
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
     

@@ -24,6 +24,7 @@ import ch.uzh.ifi.hase.soprafs24.models.messages.MessageRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
+import ch.uzh.ifi.hase.soprafs24.models.report.ReportRegister;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.MessageRepository;
@@ -46,12 +47,15 @@ public class ProjectService {
     private final MessageRepository messageRepository;
     private final AnthropicService anthropicService;
     private final CommentService commentService;
+    private final ReportService reportService;
 
     public ProjectService(ProjectRepository projectRepository, JwtUtil jwtUtil, 
                           UserService userService, ChangeService changeService, 
                           ProjectAuthorizationService projectAuthorizationService, IdeaRepository ideaRepository,
                           MessageRepository messageRepository,
-                          AnthropicService anthropicService, @Lazy CommentService commentService) {
+                          AnthropicService anthropicService, @Lazy CommentService commentService,
+                          ReportService reportService) {
+        this.reportService = reportService;
         this.anthropicService = anthropicService;
         this.commentService = commentService;
         this.messageRepository = messageRepository;
@@ -336,6 +340,12 @@ public class ProjectService {
         ContentDTO dto = new ContentDTO();
         dto.setType("text");
         dto.setText(cleanHtml);
+
+        ReportRegister reportRegister = new ReportRegister();
+        reportRegister.setReportContent(cleanHtml);
+        String userId = userService.getUserIdByToken(authHeader);
+        reportService.createReport(reportRegister, userId, projectId);
+
         return dto; 
     }
 }

@@ -4,10 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-// import org.springframework.boot.test.context.TestConfiguration;
-// import org.springframework.context.annotation.Bean;
-// import org.springframework.context.annotation.Import;
-// import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
@@ -28,12 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
     "anthropic.rate-limit=10"
 })
 public class AnthropicConfigTest {
-
-    // @TestConfiguration
-    // @Import(AnthropicConfig.class)
-    // static class TestConfig {
-    //     // Empty test configuration to import AnthropicConfig
-    // }
 
     @Autowired
     private AnthropicConfig anthropicConfig;

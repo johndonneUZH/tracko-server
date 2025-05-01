@@ -22,9 +22,11 @@ import ch.uzh.ifi.hase.soprafs24.models.messages.Message;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.MessageRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
@@ -49,6 +51,9 @@ public class ProjectServiceTest {
     private IdeaRepository ideaRepository;
 
     @MockBean
+    private UserRepository userRepository;
+
+    @MockBean
     private MessageRepository messageRepository;
 
     @MockBean
@@ -65,10 +70,15 @@ public class ProjectServiceTest {
     
     @BeforeEach
     public void setup() {
-        projectService = new ProjectService(projectRepository, jwtUtil, 
-                                            userService, changeService,
-                                            projectAuthorizationService, ideaRepository,
-                                            messageRepository);
+        projectService = new ProjectService(
+            projectRepository, 
+            jwtUtil,                         
+            userService, 
+            changeService,
+            projectAuthorizationService, 
+            ideaRepository,
+            messageRepository,
+            userRepository);
 
         // Mock the authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
