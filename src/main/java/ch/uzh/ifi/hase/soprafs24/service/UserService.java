@@ -34,12 +34,15 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ProjectService projectService;
     
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    UserService(JwtUtil jwtUtil, @Lazy ProjectService projectService) {
+    // STRING definition for sonar qube, no repeting of strings
+    private static final String BEARER = "Bearer ";
+
+    UserService(JwtUtil jwtUtil, @Lazy ProjectService projectService, UserRepository userRepository) {
         this.projectService = projectService;
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
 
@@ -127,7 +130,7 @@ public class UserService {
     }
 
     public User getUserByToken(String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
+        String token = authHeader.replace(BEARER, "");
 
         if (!jwtUtil.validateToken(token)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
@@ -149,11 +152,11 @@ public class UserService {
     }
 
     public String getUserIdByToken(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith(BEARER)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header");
         }
 
-        String token = authHeader.replace("Bearer ", "");
+        String token = authHeader.replace(BEARER, "");
 
         if (!jwtUtil.validateToken(token)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
@@ -164,11 +167,11 @@ public class UserService {
 
     public void authenticateUser(String userId, String authHeader) {
         /* Authenticates the User by making sure the token provided and userId are the same*/
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith(BEARER)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header");
         }
 
-        String token = authHeader.replace("Bearer ", "");
+        String token = authHeader.replace(BEARER, "");
 
         if (!jwtUtil.validateToken(token)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");

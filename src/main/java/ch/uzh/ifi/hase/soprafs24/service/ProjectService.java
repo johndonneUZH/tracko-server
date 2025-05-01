@@ -29,25 +29,26 @@ public class ProjectService {
 
     private final IdeaRepository ideaRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
+    
     private final ProjectRepository projectRepository;
     private final UserService userService;
     private final ChangeService changeService;
     private final ProjectAuthorizationService projectAuthorizationService;
     private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
 
     public ProjectService(ProjectRepository projectRepository, JwtUtil jwtUtil, 
                           UserService userService, ChangeService changeService, 
                           ProjectAuthorizationService projectAuthorizationService, IdeaRepository ideaRepository,
-                          MessageRepository messageRepository) {
+                          MessageRepository messageRepository,
+                          UserRepository userRepository) {
         this.messageRepository = messageRepository;
         this.projectAuthorizationService = projectAuthorizationService;
         this.changeService = changeService;
         this.projectRepository = projectRepository;
         this.userService = userService;
         this.ideaRepository = ideaRepository;
+        this.userRepository = userRepository;
     }
 
     public Project createProject(ProjectRegister inputProject, String authHeader) {
