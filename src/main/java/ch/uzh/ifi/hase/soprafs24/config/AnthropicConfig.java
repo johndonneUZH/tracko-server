@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct;
 @ConditionalOnProperty(name = "anthropic.enabled", havingValue = "true", matchIfMissing = false)
 public class AnthropicConfig {
 
-    @Value("${anthropic.api-key}")
+    @Value("${ANTHROPIC_API_KEY}")
     private String apiKey;
 
     @PostConstruct
