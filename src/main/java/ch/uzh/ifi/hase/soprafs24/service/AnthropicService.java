@@ -73,6 +73,8 @@ public class AnthropicService {
         
         // Make API call
         HttpEntity<AnthropicRequestDTO> entity = new HttpEntity<>(request, headers);
+
+        log.info("Sending request to Anthropic API: {}", entity);
         
         try {
             return restTemplate.postForObject(API_URL, entity, AnthropicResponseDTO.class);
