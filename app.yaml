@@ -6,13 +6,14 @@ env: flex
 runtime_config:
   operating_system: ubuntu22
   runtime_version: 17
-handlers:
-- url: /.*
-  script: this field is required, but ignored
 
 manual_scaling:
   instances: 1
 
+env_variables:
+  SPRING_PROFILES_ACTIVE: "prod"
+
+# Secret Manager integration
 secret_environment_variables:
   ANTHROPIC_API_KEY: 
     secretName: ANTHROPIC_API_KEY
