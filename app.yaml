@@ -12,9 +12,4 @@ manual_scaling:
 
 env_variables:
   SPRING_PROFILES_ACTIVE: "prod"
-
-# Secret Manager integration
-secret_environment_variables:
-  ANTHROPIC_API_KEY: 
-    secretName: ANTHROPIC_API_KEY
-    version: latest
+  ANTHROPIC_API_KEY: "projects/sopra-fs25-group-46-server/secrets/ANTHROPIC_API_KEY/versions/latest"
