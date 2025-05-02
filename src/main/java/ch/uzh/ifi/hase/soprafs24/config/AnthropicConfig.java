@@ -12,11 +12,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @ConditionalOnProperty(name = "anthropic.enabled", havingValue = "true", matchIfMissing = false)
 public class AnthropicConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(AnthropicConfig.class);
     private static final String SECRET_NAME_PREFIX = "projects/sopra-fs25-group-46-server/secrets/";
     private static final String SECRET_VERSION_SUFFIX = "/versions/latest";
 
@@ -25,37 +28,37 @@ public class AnthropicConfig {
 
     @PostConstruct
     public void validateConfig() throws IOException {
-        if (apiKey == null || apiKey.isEmpty()) {
-            // Try getting from environment directly as fallback
+        if (apiKey == null || apiKey.trim().isEmpty()) {
             apiKey = System.getenv("ANTHROPIC_API_KEY");
             
-            if (apiKey == null || apiKey.isEmpty()) {
-                throw new IllegalStateException("Anthropic API key is not configured");
+            if (apiKey == null || apiKey.trim().isEmpty()) {
+                logger.warn("Anthropic API key is not configured - Anthropic features will be disabled");
+                return;  
             }
         }
-
-        // If the value is a secret path (starts with projects/), fetch the actual secret
+        
         if (apiKey.startsWith(SECRET_NAME_PREFIX)) {
-            this.apiKey = fetchSecretFromManager(apiKey);
+            try {
+                this.apiKey = fetchSecretFromManager(apiKey);
+            } catch (IOException e) {
+                logger.error("Failed to fetch secret from manager", e);
+                throw new IllegalStateException("Failed to fetch Anthropic API key from secret manager", e);
+            }
         }
     }
 
     private String fetchSecretFromManager(String secretPath) throws IOException {
         try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
-            // Remove the prefix if present (just to be safe)
-            String fullSecretName = secretPath;
-            
-            // Ensure it has the version suffix
-            if (!fullSecretName.endsWith(SECRET_VERSION_SUFFIX)) {
-                fullSecretName += SECRET_VERSION_SUFFIX;
+            // Ensure the path is properly formatted
+            if (!secretPath.endsWith(SECRET_VERSION_SUFFIX)) {
+                secretPath += SECRET_VERSION_SUFFIX;
             }
-
-            SecretVersionName name = SecretVersionName.parse(fullSecretName);
+            
+            SecretVersionName name = SecretVersionName.parse(secretPath);
             AccessSecretVersionResponse response = client.accessSecretVersion(name);
             return response.getPayload().getData().toStringUtf8();
         }
     }
-
 
     @Value("${anthropic.model:claude-3-7-sonnet-20250219}")
     private String model = "claude-3-7-sonnet-20250219";
@@ -68,11 +71,6 @@ public class AnthropicConfig {
 
     @Value("${anthropic.rate-limit:5}")
     private int rateLimit = 5;
-
-    // Default constructor that explicitly sets defaults
-    public AnthropicConfig() {
-        // Defaults already set with field initialization
-    }
 
     @Bean
     public RestTemplate restTemplate() {
