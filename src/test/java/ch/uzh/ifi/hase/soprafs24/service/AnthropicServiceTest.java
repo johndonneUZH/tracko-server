@@ -4,9 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
@@ -27,7 +24,6 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import ch.uzh.ifi.hase.soprafs24.config.AnthropicConfig;
-import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
 import ch.uzh.ifi.hase.soprafs24.exceptions.AnthropicApiException;
 import ch.uzh.ifi.hase.soprafs24.exceptions.AnthropicRateLimitException;
 import ch.uzh.ifi.hase.soprafs24.exceptions.AnthropicTimeoutException;
@@ -196,7 +192,7 @@ public class AnthropicServiceTest {
         
         // Verify the prompt includes our instructions
         String capturedPrompt = requestCaptor.getValue().getBody().getMessages().get(0).getContent().get(0).getText();
-        assertTrue(capturedPrompt.startsWith("Transform my freehand brainstorm into an Idea Card"));
+        assertTrue(capturedPrompt.startsWith("Refine this idea into a more innovative and detailed concept:"));
         assertTrue(capturedPrompt.contains("Raw idea"));
     }
 

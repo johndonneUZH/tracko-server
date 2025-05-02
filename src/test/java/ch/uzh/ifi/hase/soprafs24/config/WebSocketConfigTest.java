@@ -23,8 +23,9 @@ public class WebSocketConfigTest {
         MessageBrokerRegistry mockRegistry = mock(MessageBrokerRegistry.class);
         webSocketConfig.configureMessageBroker(mockRegistry);
         
-        verify(mockRegistry).enableSimpleBroker("/topic");
+        verify(mockRegistry).enableSimpleBroker("/topic", "/queue");
         verify(mockRegistry).setApplicationDestinationPrefixes("/app");
+        verify(mockRegistry).setUserDestinationPrefix("/user");
 
         // Mock the endpoint registry and registration
         StompEndpointRegistry mockEndpointRegistry = mock(StompEndpointRegistry.class);

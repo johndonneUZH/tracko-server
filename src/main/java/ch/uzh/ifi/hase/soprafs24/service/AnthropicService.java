@@ -99,25 +99,31 @@ public class AnthropicService {
     
     // Define specific methods for your use cases
     public AnthropicResponseDTO refineIdea(String ideaContent) {
-        String prompt = "Transform my freehand brainstorm into an Idea Card with a title and short description will bullet points. Keep the response in short card format.\n" 
-                        + ideaContent;
+        String prompt = "Refine this idea into a more innovative and detailed concept:\n" +
+                       "Original idea: " + ideaContent + "\n" +
+                        "Refined idea: make sure to return only the description of the idea, i.e. a cohesive text without bullet points or any other formatting.";
         return generateContent(prompt);
     }
     
     public AnthropicResponseDTO combineIdeas(String ideaOne, String ideaTwo) {
         String prompt = "Combine these two ideas into a new innovative concept:\nIdea 1: " + 
-                       ideaOne + "\nIdea 2: " + ideaTwo;
+                       ideaOne + "\nIdea 2: " + ideaTwo
+                       + "\nCombined idea: make sure to return only the description of the idea, i.e. a cohesive text without bullet points or any other formatting.";
         return generateContent(prompt);
     }
     
     public AnthropicResponseDTO generateFromTemplate(String template) {
-        String prompt = "Transform my freehand brainstorm into an Idea Card with a title and short description with bullet points. Keep the response in short card format.\nThe topic is: " + template;
+        String prompt = "Transform my freehand brainstorm into an Idea Card with a title and short description.\n" 
+                        + "The topic is: " + template + "\n\n"
+                        + "Respond in exactly this format:\n"
+                        + "Title: [Your generated title here]\n"
+                        + "Description: [Your generated description here]";
         return generateContent(prompt);
     }
-    
     public AnthropicResponseDTO suggestRelatedIdea(String originalIdea, String twist) {
         String prompt = "Suggest a new idea based on this original concept but with the following twist: " +
-                       "Original idea: " + originalIdea + "\nTwist: " + twist;
+                       "Original idea: " + originalIdea + "\nTwist: " + twist
+                       + "\nNew idea: make sure to return only the description of the idea, i.e. a cohesive text without bullet points or any other formatting.";
         return generateContent(prompt);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,9 +23,11 @@ import ch.uzh.ifi.hase.soprafs24.models.messages.Message;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.MessageRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.ProjectRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
@@ -49,10 +52,19 @@ public class ProjectServiceTest {
     private IdeaRepository ideaRepository;
 
     @MockBean
+    private AnthropicService anthropicService;
+
+    @MockBean
+    private CommentService commentService;
+
+    @MockBean
     private MessageRepository messageRepository;
 
     @MockBean
     private ProjectAuthorizationService projectAuthorizationService;
+
+    @MockBean
+    private ReportService reportService;
 
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
@@ -65,10 +77,17 @@ public class ProjectServiceTest {
     
     @BeforeEach
     public void setup() {
-        projectService = new ProjectService(projectRepository, jwtUtil, 
-                                            userService, changeService,
-                                            projectAuthorizationService, ideaRepository,
-                                            messageRepository);
+        projectService = new ProjectService(
+            projectRepository, 
+            jwtUtil,                         
+            userService, 
+            changeService,
+            projectAuthorizationService, 
+            ideaRepository,
+            messageRepository,
+            anthropicService,
+            commentService,
+            reportService);
 
         // Mock the authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);

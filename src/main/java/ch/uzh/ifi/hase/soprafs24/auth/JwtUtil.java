@@ -16,7 +16,7 @@ import java.util.Collections;
 @Component
 public class JwtUtil {
     private final SecretKey secretKey;
-    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 3; // 3 hours
+    private final long EXPIRATION_TIME = (long)1000 * 60 * 60 * 3; // 3 hours
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
         String paddedSecret = secret.length() < 32 ? 

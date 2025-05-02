@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ch.uzh.ifi.hase.soprafs24.models.ai.ContentDTO;
 import ch.uzh.ifi.hase.soprafs24.models.messages.Message;
 import ch.uzh.ifi.hase.soprafs24.models.messages.MessageRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
@@ -80,6 +81,13 @@ public class ProjectController {
         projectService.deleteProjectChanges(projectId, authHeader);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @GetMapping("/{projectId}/report")
+    public ResponseEntity<ContentDTO> generateReport(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
+        ContentDTO project = projectService.generateReport(projectId, authHeader);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(project);
+    }   
+    
 
     @PostMapping("/{projectId}/messages")    
     public ResponseEntity<Message> createMessage(  @PathVariable String projectId, 

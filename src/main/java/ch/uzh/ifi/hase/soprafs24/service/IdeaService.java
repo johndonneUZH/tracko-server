@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
+import ch.uzh.ifi.hase.soprafs24.constant.ChangeType;
 import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaRegister;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaUpdate;
@@ -35,14 +35,19 @@ public class IdeaService {
     private final ProjectAuthorizationService projectAuthorizationService;
     private final SimpMessagingTemplate messagingTemplate;
     private final ProjectService projectService;
+    private final ChangeService changeService; 
 
+    // For sonarqube, so we don't use the same constant multiple times
+    private static final String IDEA_NOT_FOUND = "Idea not found";
 
     public IdeaService(IdeaRepository ideaRepository, 
                      UserService userService,
                      SimpMessagingTemplate messagingTemplate, 
                      ProjectAuthorizationService projectAuthorizationService,
                      CommentRepository commentRepository,
-                     ProjectService projectService) {
+                     ProjectService projectService,
+                     ChangeService changeService) {
+        this.changeService = changeService;
         this.ideaRepository = ideaRepository;
         this.userService = userService;
         this.messagingTemplate = messagingTemplate;
@@ -84,6 +89,7 @@ public class IdeaService {
         // Saves idea
         newIdea = ideaRepository.save(newIdea);
         broadcastIdeaUpdate(projectId, newIdea);
+        changeService.markChange(projectId, ChangeType.ADDED_IDEA, authHeader, false, null);
         return newIdea;
     }
     
@@ -99,22 +105,25 @@ public class IdeaService {
         projectAuthorizationService.authenticateProject(projectId, authHeader);
 
         return ideaRepository.findById(ideaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, IDEA_NOT_FOUND));
     }
 
     public Idea updateIdea(String projectId, String ideaId, IdeaUpdate inputIdea, String authHeader) {
         Idea idea = ideaRepository.findById(ideaId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, IDEA_NOT_FOUND));
     
         projectAuthorizationService.authenticateProject(projectId, authHeader);
     
+        boolean actualChange = false;
 
         // Only update non-null fields
         if (inputIdea.getIdeaName() != null) {
             idea.setIdeaName(inputIdea.getIdeaName());
+            actualChange = true;
         }
         if (inputIdea.getIdeaDescription() != null) {
             idea.setIdeaDescription(inputIdea.getIdeaDescription());
+            actualChange = true;
         }
     
         // These are floats, always update (even if 0)
@@ -124,13 +133,18 @@ public class IdeaService {
         if (inputIdea.gety() != null) {
             idea.sety(inputIdea.gety());
         }
+
+        boolean upVote = false;
+        boolean downVote = false;
         
         // Lists: update only if not null, else keep existing
         if (inputIdea.getUpVotes() != null) {
             idea.setUpVotes(inputIdea.getUpVotes());
+            upVote = true;
         }
         if (inputIdea.getDownVotes() != null) {
             idea.setDownVotes(inputIdea.getDownVotes());
+            downVote = true;
         }
         if (inputIdea.getComments() != null) {
             idea.setComments(inputIdea.getComments());
@@ -138,6 +152,13 @@ public class IdeaService {
     
         Idea saved = ideaRepository.save(idea);
         broadcastIdeaUpdate(projectId, saved);
+        if (actualChange) {
+            changeService.markChange(projectId, ChangeType.MODIFIED_IDEA, authHeader, false, null);
+        } else if (upVote) {
+            changeService.markChange(projectId, ChangeType.UPVOTE, authHeader, false, null);
+        } else if (downVote) {
+            changeService.markChange(projectId, ChangeType.DOWNVOTE, authHeader, false, null);
+        }
         return saved;
     }
     
@@ -147,7 +168,7 @@ public class IdeaService {
         String ownerId = projectService.getOwnerIdByProjectId(projectId);
         
         Idea idea = ideaRepository.findById(ideaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, IDEA_NOT_FOUND));
 
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
     
@@ -156,9 +177,9 @@ public class IdeaService {
         }
 
         commentRepository.deleteByIdeaId(ideaId);
-
         ideaRepository.deleteById(ideaId);
         broadcastIdeaDeletion(projectId, ideaId);
+        changeService.markChange(projectId, ChangeType.CLOSED_IDEA, authHeader, false, null);
 
     }
     

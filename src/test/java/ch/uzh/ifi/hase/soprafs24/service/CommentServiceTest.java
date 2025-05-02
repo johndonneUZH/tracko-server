@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,11 +21,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
 import ch.uzh.ifi.hase.soprafs24.config.MongoTestConfig;
 import ch.uzh.ifi.hase.soprafs24.models.comment.Comment;
 import ch.uzh.ifi.hase.soprafs24.models.comment.CommentRegister;
 import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
+import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
+import java.util.Optional;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
@@ -44,7 +48,13 @@ public class CommentServiceTest {
     private UserService userService;
 
     @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
     private SimpMessagingTemplate messagingTemplate;
+
+    @MockBean
+    private ProjectAuthorizationService projectAuthorizationService;
 
     private final String VALID_AUTH_HEADER = "Bearer valid-token";
     private final String PROJECT_ID = "project-123";
@@ -56,6 +66,10 @@ public class CommentServiceTest {
     public void setup() {
         // Mock authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
+        when(jwtUtil.validateToken(anyString())).thenReturn(true);
+        when(jwtUtil.extractUserId(anyString())).thenReturn(USER_ID);
+        Project mockProject = new Project();
+        when(projectAuthorizationService.authenticateProject(anyString(), anyString())).thenReturn(mockProject);
 
         // Mock idea authentication
         Idea idea = new Idea();
@@ -105,35 +119,23 @@ public class CommentServiceTest {
         verify(commentRepository, times(1)).save(any(Comment.class));
     }
 
-    // @Test
-    // public void createComment_replyComment_success() {
-    //     // given
-    //     CommentRegister commentRegister = new CommentRegister();
-    //     commentRegister.setCommentText("Reply comment");
-        
-    //     Comment createdComment = createTestComment("reply-123", "Reply comment", COMMENT_ID);
-        
-    //     when(commentRepository.save(any(Comment.class))).thenReturn(createdComment);
-
-    //     // when
-    //     Comment result = commentService.createComment(PROJECT_ID, IDEA_ID, COMMENT_ID, VALID_AUTH_HEADER, commentRegister);
-
-    //     // then
-    //     assertNotNull(result);
-    //     assertEquals("reply-123", result.getCommentId());
-    //     assertEquals("Reply comment", result.getCommentText());
-    //     assertEquals(IDEA_ID, result.getIdeaId());
-
-    //     verify(ideaService, times(1)).getIdeaById(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER);
-    //     verify(commentRepository, times(1)).save(any(Comment.class));
-    // }
-
     @Test
     public void getCommentById_success() {
         // given
-
-
-
+        String commentId = "comment-123";
+        Comment expectedComment = createTestComment(commentId, "Test comment text", null);
+        
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(expectedComment));
+        
+        // when
+        Comment result = commentService.getCommentById(PROJECT_ID, IDEA_ID, commentId, VALID_AUTH_HEADER);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(commentId, result.getCommentId());
+        assertEquals("Test comment text", result.getCommentText());
+        assertEquals(IDEA_ID, result.getIdeaId());
+        verify(ideaService, times(1)).getIdeaById(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER);
     }
 
     private Comment createTestComment(String commentId, String commentText, String parentCommentId) {

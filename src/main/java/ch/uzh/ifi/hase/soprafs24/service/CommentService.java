@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import ch.uzh.ifi.hase.soprafs24.constant.ChangeType;
 import ch.uzh.ifi.hase.soprafs24.models.comment.Comment;
 import ch.uzh.ifi.hase.soprafs24.models.comment.CommentRegister;
 import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
@@ -24,25 +26,34 @@ public class CommentService {
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
     private IdeaService ideaService; // No final
+    private final ChangeService changesService;
 
     @Autowired
     public void setIdeaService(IdeaService ideaService) {
         this.ideaService = ideaService;
     }
 
-    public CommentService(CommentRepository commentRepository, IdeaService ideaService, UserService userService, SimpMessagingTemplate messagingTemplate) {
+    public CommentService(  CommentRepository commentRepository, 
+                            IdeaService ideaService, 
+                            UserService userService, 
+                            SimpMessagingTemplate messagingTemplate,
+                            ChangeService changesService) {
+        this.changesService = changesService;
         this.commentRepository = commentRepository;
         // this.ideaService = ideaService;
         this.userService = userService;
         this.messagingTemplate = messagingTemplate;
     }
 
-
     public List<Comment> getCommentsByIdea(String projectId, String ideaId, String authHeader) {
         // Authenticate the project and idea
         ideaService.getIdeaById(projectId, ideaId, authHeader);
 
         // Return comments linked to the provided ideaId
+        return commentRepository.findByIdeaId(ideaId);
+    }
+
+    public List<Comment> getCommentsByIdeaId(String ideaId) {
         return commentRepository.findByIdeaId(ideaId);
     }
 
@@ -57,6 +68,8 @@ public Comment createComment(String projectId, String ideaId, String parentComme
     newComment.setIdeaId(ideaId);
     newComment.setOwnerId(userId);
     newComment.setReplies(new ArrayList<>()); // initialize empty replies list
+    newComment.setProjectId(projectId);
+    newComment.setCreatedAt(LocalDateTime.now()); // Set creation timestamp
 
     // Save comment to get the new ID
     Comment savedComment = commentRepository.save(newComment);
@@ -80,6 +93,9 @@ public Comment createComment(String projectId, String ideaId, String parentComme
 
     messagingTemplate.convertAndSend("/topic/comments/" + ideaId, payload);
 
+    // Broadcast the change
+    changesService.markChange(projectId, ChangeType.ADDED_COMMENT, authHeader, false, null);
+
     return savedComment;
 }
 
@@ -89,10 +105,6 @@ public Comment createComment(String projectId, String ideaId, String parentComme
     return commentRepository.findById(commentId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 }
-    // public List<Comment> getRepliesOfComment(String projectId, String ideaId, String parentCommentId, String authHeader) {
-    // ideaService.getIdeaById(projectId, ideaId, authHeader);
-    // return commentRepository.findByParentCommentId(parentCommentId);
-// }
 
     public void deleteComment(String commentId, String authHeader) {
         Comment comment = commentRepository.findById(commentId)
@@ -102,10 +114,12 @@ public Comment createComment(String projectId, String ideaId, String parentComme
         if (!comment.getOwnerId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this comment");
         }
-    deleteReplies(commentId, comment, authHeader);
-    commentRepository.delete(comment);
-    messagingTemplate.convertAndSend("/topic/comments/" + comment.getIdeaId(), Map.of("deletedId", comment.getCommentId()));
+        deleteReplies(commentId, comment, authHeader);
+        commentRepository.delete(comment);
+        messagingTemplate.convertAndSend("/topic/comments/" + comment.getIdeaId(), Map.of("deletedId", comment.getCommentId()));
 
+
+        changesService.markChange(comment.getProjectId(), ChangeType.DELETED_COMMENT, authHeader, false, null);
     }   
 
     private void deleteReplies(String commentId, Comment comment, String authHeader) {

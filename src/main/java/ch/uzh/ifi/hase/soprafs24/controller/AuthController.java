@@ -24,7 +24,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserRegister newUser) {
+    public ResponseEntity<Object> registerUser(@RequestBody UserRegister newUser) {
 
         if (userService.checkIfUserExists(newUser)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
@@ -35,7 +35,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody UserLogin loginRequest) {
+    public ResponseEntity<String> loginUser(@RequestBody UserLogin loginRequest) {
     
         LoginStatus status = userService.checkLoginRequest(loginRequest);
     
@@ -49,16 +49,19 @@ public class AuthController {
         }
     
         // Only runs if status == SUCCESS
+
         HashMap<String, String> userDetails = userService.getTokenById(loginRequest);
-        userService.setStatus(userDetails.get("userId"), UserStatus.ONLINE);
+        final String USER_ID_KEY = "userId";
+
+        userService.setStatus(userDetails.get(USER_ID_KEY), UserStatus.ONLINE);
         return ResponseEntity.status(HttpStatus.OK)
                              .header("Authorization", "Bearer " + userDetails.get("token"))
-                             .header("userId", userDetails.get("userId"))
+                             .header(USER_ID_KEY, userDetails.get(USER_ID_KEY))
                              .body("Login successful");
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<String> logoutUser(@RequestHeader("Authorization") String authHeader) {
         String userId = userService.getUserIdByToken(authHeader);
         userService.setStatus(userId, UserStatus.OFFLINE);
         return ResponseEntity.status(HttpStatus.OK).body("Logout successful");

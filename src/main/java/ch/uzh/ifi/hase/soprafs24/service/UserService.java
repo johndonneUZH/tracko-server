@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import ch.uzh.ifi.hase.soprafs24.constant.ChangeType;
 import ch.uzh.ifi.hase.soprafs24.constant.LoginStatus;
 
 import java.time.LocalDateTime;
@@ -33,11 +34,12 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ProjectService projectService;
-    
-    @Autowired
-    private UserRepository userRepository;
+    private final ChangeService changeService;
+    private final UserRepository userRepository;
 
-    UserService(JwtUtil jwtUtil, @Lazy ProjectService projectService) {
+    UserService(JwtUtil jwtUtil, @Lazy ProjectService projectService, UserRepository userRepository, ChangeService changeService) {
+        this.userRepository = userRepository;
+        this.changeService = changeService;
         this.projectService = projectService;
         this.jwtUtil = jwtUtil;
     }
@@ -247,7 +249,7 @@ public class UserService {
         return friends;
     }
 
-    public void inviteFriend(String userId, String friendId) {
+    public void inviteFriend(String userId, String friendId, String authHeader) {
         User user = userRepository.findById(userId).orElse(null);
         User friend = userRepository.findById(friendId).orElse(null);
         if (user == null || friend == null) {
@@ -259,9 +261,11 @@ public class UserService {
             userRepository.save(user);
             userRepository.save(friend);
         }
+
+        changeService.markChange(userId, ChangeType.SENT_FRIEND_REQUEST, authHeader, true, friendId);
     }
 
-    public void acceptFriend(String userId, String friendId) {
+    public void acceptFriend(String userId, String friendId, String authHeader) {
         User user = userRepository.findById(userId).orElse(null);
         User friend = userRepository.findById(friendId).orElse(null);
         if (user == null || friend == null) {
@@ -275,9 +279,11 @@ public class UserService {
             userRepository.save(user);
             userRepository.save(friend);
         }
+
+        changeService.markChange(userId, ChangeType.ACCEPTED_FRIEND_REQUEST, authHeader, true, friendId);
     }
 
-    public void rejectFriend(String userId, String friendId) {
+    public void rejectFriend(String userId, String friendId, String authHeader) {
         User user = userRepository.findById(userId).orElse(null);
         User friend = userRepository.findById(friendId).orElse(null);
         if (user == null || friend == null) {
@@ -289,9 +295,11 @@ public class UserService {
             userRepository.save(user);
             userRepository.save(friend);
         }
+
+        changeService.markChange(userId, ChangeType.REJECTED_FRIEND_REQUEST, authHeader, true, friendId);
     }
 
-    public void removeFriend(String userId, String friendId) {
+    public void removeFriend(String userId, String friendId, String authHeader) {
         User user = userRepository.findById(userId).orElse(null);
         User friend = userRepository.findById(friendId).orElse(null);
         if (user == null || friend == null) {
@@ -303,6 +311,8 @@ public class UserService {
             userRepository.save(user);
             userRepository.save(friend);
         }
+
+        changeService.markChange(userId, ChangeType.REMOVED_FRIEND, authHeader, true, friendId);
     }
 
     public void cancelFriendRequest(String userId, String friendId) {
