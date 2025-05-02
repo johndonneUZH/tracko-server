@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
+import javax.annotation.PostConstruct;
 
 @Configuration
 @ConditionalOnProperty(name = "anthropic.enabled", havingValue = "true", matchIfMissing = false)
@@ -16,6 +17,18 @@ public class AnthropicConfig {
 
     @Value("${anthropic.api-key}")
     private String apiKey;
+
+    @PostConstruct
+    public void validateConfig() {
+        if (apiKey == null || apiKey.isEmpty()) {
+            // Try getting from environment directly as fallback
+            apiKey = System.getenv("ANTHROPIC_API_KEY");
+            
+            if (apiKey == null || apiKey.isEmpty()) {
+                throw new IllegalStateException("Anthropic API key is not configured");
+            }
+        }
+    }
 
     @Value("${anthropic.model:claude-3-7-sonnet-20250219}")
     private String model = "claude-3-7-sonnet-20250219";
