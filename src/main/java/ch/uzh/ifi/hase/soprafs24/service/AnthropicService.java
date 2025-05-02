@@ -54,6 +54,7 @@ public class AnthropicService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("x-api-key", anthropicConfig.getApiKey());
         headers.set("anthropic-version", "2023-06-01");
+        headers.set("content-type", "application/json");
         
         // Prepare message content
         ContentDTO contentItem = new ContentDTO();
@@ -73,6 +74,8 @@ public class AnthropicService {
         
         // Make API call
         HttpEntity<AnthropicRequestDTO> entity = new HttpEntity<>(request, headers);
+
+        log.info("Sending request to Anthropic API: {}", request);
         
         try {
             return restTemplate.postForObject(API_URL, entity, AnthropicResponseDTO.class);
