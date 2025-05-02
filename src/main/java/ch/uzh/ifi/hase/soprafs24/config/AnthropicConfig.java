@@ -44,9 +44,6 @@ public class AnthropicConfig {
         try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
             // Remove the prefix if present (just to be safe)
             String fullSecretName = secretPath;
-            if (secretPath.startsWith(SECRET_NAME_PREFIX)) {
-                fullSecretName = secretPath.substring(SECRET_NAME_PREFIX.length());
-            }
             
             // Ensure it has the version suffix
             if (!fullSecretName.endsWith(SECRET_VERSION_SUFFIX)) {
