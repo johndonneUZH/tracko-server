@@ -15,4 +15,4 @@ manual_scaling:
   instances: 1
 
 env_variables:
-  ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
+  ANTHROPIC_API_KEY: "projects/sopra-fs25-group-46-server/secrets/ANTHROPIC_API_KEY/versions/latest"
