@@ -1,36 +1,99 @@
-# SoPra RESTful Service Template FS25
 
-## Getting started with Spring Boot
--   Documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/index.html
--   Guides: http://spring.io/guides
-    -   Building a RESTful Web Service: http://spring.io/guides/gs/rest-service/
-    -   Building REST services with Spring: https://spring.io/guides/tutorials/rest/
 
-## Setup this Template with your IDE of choice
-Download your IDE of choice (e.g., [IntelliJ](https://www.jetbrains.com/idea/download/), [Visual Studio Code](https://code.visualstudio.com/), or [Eclipse](http://www.eclipse.org/downloads/)). Make sure Java 17 is installed on your system (for Windows, please make sure your `JAVA_HOME` environment variable is set to the correct version of Java).
 
-### IntelliJ
-If you consider to use IntelliJ as your IDE of choice, you can make use of your free educational license [here](https://www.jetbrains.com/community/education/#students).
-1. File -> Open... -> SoPra server template
-2. Accept to import the project as a `gradle project`
-3. To build right click the `build.gradle` file and choose `Run Build`
+# Tracko - Collaborative Brainstorming Management Platform
+Tracko is an innovative collaborative web application designed to streamline team-based project development from ideation to execution. The platform integrates artificial intelligence with intuitive collaboration tools to help teams:
+1.  **AI-Assisted Ideation**
+    -   Generate project ideas with Claude AI's intelligent suggestions
+    -   Develop concepts through collaborative brainstorming sessions
+    -   Refine ideas with AI-powered recommendation
+        
+2.  **Decision Making Tools**
+    
+    -   Conduct democratic voting on project directions
+    -   Track decision history with timestamps and rationale
+    -   Visualize consensus through real-time voting analytics
+        
+3.  **Team Communication**
+    
+    -   Sidebar live-chat for every project
+    -   Real-time lobby on the project where users can see eachother's cursor
 
-### VS Code
-The following extensions can help you get started more easily:
--   `vmware.vscode-spring-boot`
--   `vscjava.vscode-spring-initializr`
--   `vscjava.vscode-spring-boot-dashboard`
--   `vscjava.vscode-java-pack`
+        
+4.  **Progress Tracking**
+    
+    -   Report generation based on current state of the project
+    -   Milestone tracking with progress indicators
+    -   Activity feeds showing recent project changes
+   
 
-**Note:** You'll need to build the project first with Gradle, just click on the `build` command in the _Gradle Tasks_ extension. Then check the _Spring Boot Dashboard_ extension if it already shows `soprafs24` and hit the play button to start the server. If it doesn't show up, restart VS Code and check again.
+## Technologies
+
+- **Backend**: Spring Boot
+- **Database**: MongoDB
+- **Authentication**: JWT Spring Security
+- **AI Integration**: Claude
+- **Build Tool**: Gradle
+
+## Project Structure
+
+The application follows a layered architecture:
+
+```
+- Controllers (UserController, ProjectController, etc.)
+  - Services
+    - Repositories
+```
+Each endpoint is managed by a dedicated controller, which delegates business logic to services and data access to repositories. All requests require an `Authorization` header with a valid JWT token.
+
+### Authentication Flow
+
+1.  **Registration**
+```mermaid
+sequenceDiagram
+Client->>+Server: POST /auth/register (name, email, password)
+Server->>Database: Check user exists
+Database-->>Server: User not found
+Server->>Database: Create new user (hashed password)
+Server-->>-Client: 201 Created + User DTO
+```
+    
+2.  **Login**
+```mermaid
+sequenceDiagram
+Client->>+Server: POST /auth/login (email, password)
+Server->>Database: Verify credentials
+Database-->>Server: User record
+Server->>Server: Generate JWT (24h expiry)
+Server-->>-Client: 200 OK + {token, user}
+```
+    
+4.  **Authenticated Request**
+```mermaid
+sequenceDiagram
+	Client->>+Server: GET /projects (Authorization: Bearer {token})
+	Server->>Server: Validate JWT signature
+	Server->>Database: Query projects
+	Database-->>Server: Project data
+	Server-->>-Client: 200 OK + Projects list   
+```
+## Prerequisites
+-   **Java 17 JDK**
+    
+-   **Gradle 7.6+**
+    
+-   **MongoDB 6.0+**
+    
+-   **Docker** (optional)
 
 ## Building with Gradle
-You can use the local Gradle Wrapper to build the application.
--   macOS: `./gradlew`
--   Linux: `./gradlew`
--   Windows: `./gradlew.bat`
 
-More Information about [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) and [Gradle](https://gradle.org/docs/).
+You can use the local Gradle Wrapper to build the application.
+
+- macOS/Linux: `./gradlew`
+- Windows: `./gradlew.bat`
+
+More information about [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) and [Gradle](https://gradle.org/docs/).
 
 ### Build
 
@@ -46,146 +109,94 @@ More Information about [Gradle Wrapper](https://docs.gradle.org/current/userguid
 
 You can verify that the server is running by visiting `localhost:8080` in your browser.
 
-### Test
-
-```bash
-./gradlew test
-```
-
-### Development Mode
-You can start the backend in development mode, this will automatically trigger a new build and reload the application
-once the content of a file has been changed.
-
-Start two terminal windows and run:
-
-`./gradlew build --continuous`
-
-and in the other one:
-
-`./gradlew bootRun`
-
-If you want to avoid running all tests with every change, use the following command instead:
-
-`./gradlew build --continuous -xtest`
-
-## API Endpoint Testing with Postman
-We recommend using [Postman](https://www.getpostman.com) to test your API Endpoints.
-
-## Debugging
-If something is not working and/or you don't know what is going on. We recommend using a debugger and step-through the process step-by-step.
-
-To configure a debugger for SpringBoot's Tomcat servlet (i.e. the process you start with `./gradlew bootRun` command), do the following:
-
-1. Open Tab: **Run**/Edit Configurations
-2. Add a new Remote Configuration and name it properly
-3. Start the Server in Debug mode: `./gradlew bootRun --debug-jvm`
-4. Press `Shift + F9` or the use **Run**/Debug "Name of your task"
-5. Set breakpoints in the application where you need it
-6. Step through the process one step at a time
-
-## Testing
-Have a look here: https://www.baeldung.com/spring-boot-testing
-
-<br>
-<br>
-<br>
-
 ## Docker
 
-### Introduction
-This year, for the first time, Docker will be used to ease the process of deployment.\
-Docker is a tool that uses containers as isolated environments, ensuring that the application runs consistently and uniformly across different devices.\
-Everything in this repository is already set up to minimize your effort for deployment.\
-All changes to the main branch will automatically be pushed to dockerhub and optimized for production.
+Ensure that [Docker](https://www.docker.com/) is installed on your machine.
 
-### Setup
-1. **One** member of the team should create an account on [dockerhub](https://hub.docker.com/), _incorporating the group number into the account name_, for example, `SoPra_group_XX`.\
-2. This account then creates a repository on dockerhub with the _same name as the group's Github repository name_.\
-3. Finally, the person's account details need to be added as [secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository) to the group's repository:
-    - dockerhub_username (the username of the dockerhub account from step 1, for example, `SoPra_group_XX`)
-    - dockerhub_password (a generated PAT([personal access token](https://docs.docker.com/docker-hub/access-tokens/)) of the account with read and write access)
-    - dockerhub_repo_name (the name of the dockerhub repository from step 2)
+### Pull the image
 
-### Pull and run
-Once the image is created and has been successfully pushed to dockerhub, the image can be run on any machine.\
-Ensure that [Docker](https://www.docker.com/) is installed on the machine you wish to run the container.\
-First, pull (download) the image with the following command, replacing your username and repository name accordingly.
+```docker pull johndonneuzh/sopra-group-46-server```
 
-```docker pull <dockerhub_username>/<dockerhub_repo_name>```
+### Run the container
 
-Then, run the image in a container with the following command, again replacing _<dockerhub_username>_ and _<dockerhub_repo_name>_ accordingly.
+```docker run -p 3000:3000 johndonneuzh/sopra-group-46-server```
 
-```docker run -p 3000:3000 <dockerhub_username>/<dockerhub_repo_name>```
+## API Documentation
 
-mongosh
-// Show databases
-show dbs
+All API endpoints require an `Authorization` header with a valid JWT token. The server implements Spring Security for authentication and authorization.
 
-// Switch to a database (creates it if it doesn't exist)
-use Tracko
+### Authentication
 
-// Show collections (tables)
-show collections
+| Endpoint       | Method | Parameters                     | Status | Response                     | Description                     |
+|----------------|--------|--------------------------------|--------|------------------------------|---------------------------------|
+| `/auth/login`  | POST   | username, password (Body)      | 200    | token, userID                | Verify credentials              |
+| `/auth/register` | POST | name, username, email, password (Body) | 201 | User | Create new user |
+| `/auth/logout` | POST   | token (Header)                 | 200    | -                            | Set user OFFLINE                |
 
-// Find all documents in a collection
-db.Users.find()
+### User Management
 
-// Find with pretty print formatting
-db.Users.find().pretty()
+| Endpoint              | Method | Parameters                     | Status | Response                     | Description                     |
+|-----------------------|--------|--------------------------------|--------|------------------------------|---------------------------------|
+| `/users`             | GET    | -                             | 200    | List<User>                   | Fetch all users                 |
+| `/users/{userID}`    | GET    | userID (Query)                | 200    | User                         | Fetch specific user             |
+| `/users/{userID}`    | PUT    | token (Header), userID (Query), userUpdate (Body) | 202 | User | Update user |
 
-// Count documents in a collection
-db.Users.countDocuments()
+### Project Management
 
-// Insert a document
-db.Users.insertOne({ name: "Test User", username: "testuser", email: "test@example.com" })
+| Endpoint                          | Method | Parameters                     | Status | Response                     | Description                     |
+|-----------------------------------|--------|--------------------------------|--------|------------------------------|---------------------------------|
+| `/projects`                      | POST   | token (Header), project (Body) | 201    | Project                      | Create project                  |
+| `/projects/{projectID}`          | GET    | token (Header), projectID (Query) | 200 | Project | Get project |
+| `/projects/{projectID}`          | PUT    | token (Header), projectID (Query), updates (Body) | 202 | Project | Modify project |
+| `/projects/{projectID}`          | DELETE | token (Header), projectID (Query) | 204 | - | Delete project |
+| `/projects/{projectID}/changes`  | GET    | token (Header), projectID (Query) | 200 | List<Change> | Get project changes |
+| `/projects/{projectID}/messages` | POST   | token (Header), projectID (Query), message | 201 | - | Send message |
+| `/projects/{projectID}/ideas`    | POST   | token (Header), idea (Body), projectID | 201 | Idea | Create idea |
 
-// Update a document
-db.Users.updateOne({ username: "testuser" }, { $set: { name: "Updated Name" } })
+### Idea Management
 
-// Delete a document
-db.Users.deleteOne({ username: "testuser" })
+| Endpoint                                  | Method | Parameters                     | Status | Response                     | Description                     |
+|-------------------------------------------|--------|--------------------------------|--------|------------------------------|---------------------------------|
+| `/projects/{projectID}/ideas`            | GET    | token (Header), projectID      | 200    | List<Idea>                   | Get all ideas                   |
+| `/projects/{projectID}/ideas/{ideaID}`   | GET    | token (Header), projectID, ideaID | 200 | Idea | Get specific idea |                               |
+| `/projects/{projectID}/ideas/{ideaID}`   | PUT    | token (Header), updates (Body), ideaID, projectID | 200 | Idea | Modify idea |
+| `/projects/{projectID}/ideas/{ideaID}`   | DELETE | token (Header), projectID, ideaID | 204 | - | Delete idea |
 
-// Delete all documents in a collection
-db.Users.deleteMany({})
+### Comments
 
+| Endpoint                                              | Method | Parameters                     | Status | Response                     | Description                     |
+|-------------------------------------------------------|--------|--------------------------------|--------|------------------------------|---------------------------------|
+| `/projects/{projectID}/ideas/{ideaID}/comments`      | GET    | token (Header), ideaID, projectID | 200 | List<Comment> | Get all comments |
+| `/projects/{projectID}/ideas/{ideaID}/comments`      | POST   | token (Header), comment (Body), projectID | 201 | Comment | Create comment |
+| `/projects/{projectID}/ideas/{ideaID}/comments/{commentID}` | GET | token (Header), projectID, commentID | 200 | Comment | Get comment replies |
+| `/projects/{projectID}/ideas/{ideaID}/comments/{commentID}` | POST | token (Header), comment (Body), projectID, commentID | 201 | Comment | Reply to comment |
+| `/projects/{projectID}/ideas/{ideaID}/comments/{commentID}` | DELETE | token (Header), ideaID, projectID, commentID | 204 | - | Delete comment |
 
+### Changes Endpoints
 
-
-
-
-
-# Web sockets - On the frontend, you would connect to the WebSocket and subscribe to relevant topics:
-
-// Using STOMP.js and SockJS
-const socket = new SockJS('/ws');
-const stompClient = Stomp.over(socket);
-
-stompClient.connect({}, frame => {
-  console.log('Connected to WebSocket');
-  
-  // Subscribe to project updates
-  stompClient.subscribe(`/topic/projects/${projectId}/ideas`, message => {
-    const ideaUpdate = JSON.parse(message.body);
-    // Update your UI accordingly
-    if (ideaUpdate.action === 'CREATE') {
-      // Add new idea to the UI
-    } else if (ideaUpdate.action === 'UPDATE') {
-      // Update existing idea in the UI
-    }
-  });
-});
+| Endpoint                                      | Method | Parameters                     | Status | Response                     | Description                     |
+|-----------------------------------------------|--------|--------------------------------|--------|------------------------------|---------------------------------|
+| `/projects/{projectID}/changes`              | GET    | token (Header), projectID      | 200    | List(Change)                 | Get all project changes         |
+| `/projects/{projectID}/changes`              | POST   | token (Header), change (Body), projectID | 201 | Change | Commit a change |
+| `/projects/{projectID}/changes/daily-contributions` | GET | token (Header), projectID | 200 | List(Change) | Get daily changes |
+| `/projects/{projectID}/changes/contributions` | GET    | token (Header), projectID      | 200    | List(Change)                  | Get all contributions           |
 
 
-# AI Integration
-
-to run the server for local development / production, change the application.properties 
-`anthropic.enabled=false`
-to 
-`anthropic.enabled=true`
 
 
-To refine an idea, your frontend would make a POST request to /api/ai/refine with a JSON body like:
-{
-  "ideaContent": 'The topic is \"Group meeting place\". I want to add the lake, so that we are close to the train station, we have a sushi place nearby and we can walk around the park once we are done. '
-}
+
+## Authors and acknowledgment
+
+-   [Matteo Adam](https://github.com/johndonneUZH)
+-   [Miguel Vite](https://github.com/JMAVITE)
+-   [Manuel Tuor](https://github.com/manueltuor)
+-   [Ronald Domi](https://github.com/RonaldDomi)
+-   [Fabio Di Meo](https://github.com/fabiotilor)
+
+We thank [Youssef Farag](https://github.com/Figo2003) for his guidance and knowledge, as well as all teaching assistants of the module Software Engineering at the University of Zurich for their feedback and considerations on our project.
+
+## License
+## License
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/johndonneUZH/sopra-fs25-group-46-server/blob/main/LICENSE) file for details.
+
 
