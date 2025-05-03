@@ -2,7 +2,11 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -12,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,9 +35,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import ch.uzh.ifi.hase.soprafs24.auth.JwtUtil;
+import ch.uzh.ifi.hase.soprafs24.models.ai.ContentDTO;
+import ch.uzh.ifi.hase.soprafs24.models.messages.Message;
+import ch.uzh.ifi.hase.soprafs24.models.messages.MessageRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectRegister;
 import ch.uzh.ifi.hase.soprafs24.models.project.ProjectUpdate;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.service.ProjectAuthorizationService;
 import ch.uzh.ifi.hase.soprafs24.service.ProjectService;
 
@@ -62,6 +71,10 @@ public class ProjectControllerTest {
     private Project testProject;
     private ProjectRegister testProjectRegister;
     private ProjectUpdate testProjectUpdate;
+    private List<User> testMembers;
+    private MessageRegister testMessageRegister;
+    private List<Message> testMessages;
+    private ContentDTO testReport;
 
     @BeforeEach
     public void setup() {
@@ -86,6 +99,46 @@ public class ProjectControllerTest {
         testProjectUpdate.setProjectDescription("Updated Description");
         testProjectUpdate.setMembersToAdd(Arrays.asList("user-456"));
         testProjectUpdate.setMembersToRemove(new ArrayList<>());
+        
+        // Create test members
+        testMembers = new ArrayList<>();
+        User member1 = new User();
+        member1.setId(USER_ID);
+        member1.setUsername("testuser1");
+        member1.setEmail("test1@example.com");
+        
+        User member2 = new User();
+        member2.setId("user-456");
+        member2.setUsername("testuser2");
+        member2.setEmail("test2@example.com");
+        
+        testMembers.add(member1);
+        testMembers.add(member2);
+        
+        // Create test message register
+        testMessageRegister = new MessageRegister();
+        // testMessageRegister.setContent("Test message content");
+        
+        // Create test messages
+        testMessages = new ArrayList<>();
+        Message message1 = new Message();
+        message1.setId("message-123");
+        message1.setContent("Test message 1");
+        message1.setSenderId(USER_ID);
+        message1.setCreatedAt(LocalDateTime.now());
+        
+        Message message2 = new Message();
+        message2.setId("message-456");
+        message2.setContent("Test message 2");
+        message2.setSenderId("user-456");
+        message2.setCreatedAt(LocalDateTime.now());
+        
+        testMessages.add(message1);
+        testMessages.add(message2);
+        
+        // Create test report
+        testReport = new ContentDTO();
+        // testReport.setContent("Test project report content");
     }
 
     @Test
@@ -189,5 +242,117 @@ public class ProjectControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(testProjectUpdate)))
                 .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    @WithMockUser(authorities = "USER")
+    public void getProjectMembers_success() throws Exception {
+        // given
+        when(projectService.getProjectMembers(PROJECT_ID, AUTH_HEADER)).thenReturn(testMembers);
+
+        // when/then
+        mockMvc.perform(get("/projects/{projectId}/members", PROJECT_ID)
+                .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(USER_ID))
+                .andExpect(jsonPath("$[0].username").value("testuser1"))
+                .andExpect(jsonPath("$[1].id").value("user-456"))
+                .andExpect(jsonPath("$[1].username").value("testuser2"));
+    }
+    
+    @Test
+    @WithMockUser(authorities = "USER")
+    public void makeUserLeaveFromProject_success() throws Exception {
+        // given
+        doNothing().when(projectService).makeUserLeaveFromProject(PROJECT_ID, AUTH_HEADER);
+
+        // when/then
+        mockMvc.perform(put("/projects/{projectId}/members", PROJECT_ID)
+                .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isAccepted());
+        
+        verify(projectService, times(1)).makeUserLeaveFromProject(PROJECT_ID, AUTH_HEADER);
+    }
+    
+    @Test
+    @WithMockUser(authorities = "USER")
+    public void deleteProject_success() throws Exception {
+        // given
+        doNothing().when(projectService).deleteProject(PROJECT_ID, AUTH_HEADER);
+
+        // when/then
+        mockMvc.perform(delete("/projects/{projectId}", PROJECT_ID)
+                .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isNoContent());
+        
+        verify(projectService, times(1)).deleteProject(PROJECT_ID, AUTH_HEADER);
+    }
+    
+    @Test
+    @WithMockUser(authorities = "USER")
+    public void deleteProjectChanges_success() throws Exception {
+        // given
+        doNothing().when(projectService).deleteProjectChanges(PROJECT_ID, AUTH_HEADER);
+
+        // when/then
+        mockMvc.perform(delete("/projects/{projectId}/changes", PROJECT_ID)
+                .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isNoContent());
+        
+        verify(projectService, times(1)).deleteProjectChanges(PROJECT_ID, AUTH_HEADER);
+    }
+    
+    // @Test
+    // @WithMockUser(authorities = "USER")
+    // public void generateReport_success() throws Exception {
+    //     // given
+    //     when(projectService.generateReport(PROJECT_ID, AUTH_HEADER)).thenReturn(testReport);
+
+    //     // when/then
+    //     mockMvc.perform(get("/projects/{projectId}/report", PROJECT_ID)
+    //             .header("Authorization", AUTH_HEADER))
+    //             .andExpect(status().isAccepted())
+    //             .andExpect(jsonPath("$.text").value("Test project report content"));
+    // }
+    
+    @Test
+    @WithMockUser(authorities = "USER")
+    public void createMessage_success() throws Exception {
+        // given
+        Message savedMessage = testMessages.get(0);
+        when(projectService.sendChatMessage(eq(PROJECT_ID), eq(AUTH_HEADER), any(MessageRegister.class)))
+            .thenReturn(savedMessage);
+
+        // when/then
+        mockMvc.perform(post("/projects/{projectId}/messages", PROJECT_ID)
+                .header("Authorization", AUTH_HEADER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(testMessageRegister)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value("message-123"))
+                .andExpect(jsonPath("$.content").value("Test message 1"))
+                .andExpect(jsonPath("$.senderId").value(USER_ID));
+    }
+    
+    @Test
+    @WithMockUser(authorities = "USER")
+    public void getMessages_success() throws Exception {
+        // given
+        when(projectService.getMessages(PROJECT_ID, AUTH_HEADER)).thenReturn(testMessages);
+
+        // when/then
+        mockMvc.perform(get("/projects/{projectId}/messages", PROJECT_ID)
+                .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value("message-123"))
+                .andExpect(jsonPath("$[0].content").value("Test message 1"))
+                .andExpect(jsonPath("$[0].senderId").value(USER_ID))
+                .andExpect(jsonPath("$[1].id").value("message-456"))
+                .andExpect(jsonPath("$[1].content").value("Test message 2"))
+                .andExpect(jsonPath("$[1].senderId").value("user-456"));
     }
 }
