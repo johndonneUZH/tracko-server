@@ -196,7 +196,6 @@ All API endpoints require an `Authorization` header with a valid JWT token. The 
 We thank [Youssef Farag](https://github.com/Figo2003) for his guidance and knowledge, as well as all teaching assistants of the module Software Engineering at the University of Zurich for their feedback and considerations on our project.
 
 ## License
-## License
 This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/johndonneUZH/sopra-fs25-group-46-server/blob/main/LICENSE) file for details.
 
 
