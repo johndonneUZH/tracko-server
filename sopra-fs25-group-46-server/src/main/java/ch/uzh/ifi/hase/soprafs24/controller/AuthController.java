@@ -63,5 +63,11 @@ public class AuthController {
         userService.setStatus(userId, UserStatus.OFFLINE);
         return ResponseEntity.status(HttpStatus.OK).body("Logout successful");
     }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkUser(@RequestBody String email) {
+        User user = userService.checkIfEmailExists(email);
+        return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
     
 }

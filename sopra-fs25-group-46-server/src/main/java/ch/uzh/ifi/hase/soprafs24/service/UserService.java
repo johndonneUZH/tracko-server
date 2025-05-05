@@ -318,4 +318,12 @@ public class UserService {
             userRepository.save(friend);
         }
     }
+
+    public User checkIfEmailExists(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        return user;
+    }
 }
