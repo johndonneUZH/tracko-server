@@ -248,20 +248,25 @@ public class UserService {
         }
         return friends;
     }
-
     public void inviteFriend(String userId, String friendId, String authHeader) {
-        User user = userRepository.findById(userId).orElse(null);
-        User friend = userRepository.findById(friendId).orElse(null);
-        if (user == null || friend == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User or friend not found");
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        User friend = userRepository.findById(friendId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Friend not found"));
+    
+        // Check if request already exists
+        if (user.getFriendRequestsSentIds().contains(friendId) || 
+            friend.getFriendRequestsIds().contains(userId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Friend request already exists");
         }
-        if (!user.getFriendRequestsSentIds().contains(friendId)) {
-            user.getFriendRequestsSentIds().add(friendId);
-            friend.getFriendRequestsIds().add(userId);
-            userRepository.save(user);
-            userRepository.save(friend);
-        }
-
+    
+        // Update both sides of the relationship
+        user.getFriendRequestsSentIds().add(friendId);
+        friend.getFriendRequestsIds().add(userId);
+    
+        // Save both entities
+        userRepository.saveAll(List.of(user, friend));
+    
         changeService.markChange(userId, ChangeType.SENT_FRIEND_REQUEST, authHeader, true, friendId);
     }
 
