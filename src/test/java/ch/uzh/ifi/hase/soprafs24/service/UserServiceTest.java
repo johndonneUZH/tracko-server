@@ -11,6 +11,7 @@ import ch.uzh.ifi.hase.soprafs24.models.user.UserUpdate;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -512,7 +514,7 @@ public class UserServiceTest {
         // Configure mocks
         when(userRepository.findById("1")).thenReturn(Optional.of(testUser));
         when(userRepository.findById("2")).thenReturn(Optional.of(testFriend));
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Test method
         assertDoesNotThrow(() -> {
@@ -520,7 +522,10 @@ public class UserServiceTest {
         });
 
         // Verify that friend requests were updated for both users
-        verify(userRepository, times(2)).save(any(User.class));
+        verify(userRepository, times(1)).saveAll(anyList());
+        ArgumentCaptor<List<User>> captor = ArgumentCaptor.forClass(List.class);
+        verify(userRepository).saveAll(captor.capture());
+        assertEquals(2, captor.getValue().size()); // Verify 2 users were saved
     }
 
     @Test
