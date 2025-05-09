@@ -203,6 +203,14 @@ public class UserService {
         if (userUpdate.getBirthday() != null) {
             userById.setBirthday(userUpdate.getBirthday());
         }
+
+        if (userUpdate.getEmail() != null) {
+            userById.setEmail(userUpdate.getEmail());
+        }
+
+        if (userUpdate.getPassword() != null) {
+            userById.setPassword(passwordEncoder.encode(userUpdate.getPassword()));
+        }
         
         return userRepository.save(userById);
     }
