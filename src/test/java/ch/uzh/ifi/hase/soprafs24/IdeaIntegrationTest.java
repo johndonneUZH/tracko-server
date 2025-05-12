@@ -64,12 +64,10 @@ public class IdeaIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        // Clear databases
         ideaRepository.deleteAll();
         projectRepository.deleteAll();
         userRepository.deleteAll();
 
-        // Register a test user
         UserRegister userRegister = new UserRegister();
         userRegister.setName("Test User");
         userRegister.setUsername("testuser");
@@ -79,11 +77,9 @@ public class IdeaIntegrationTest {
         User createdUser = userService.createUser(userRegister);
         userId = createdUser.getId();
 
-        // Create auth header
         String token = jwtUtil.generateToken(userId);
         authHeader = "Bearer " + token;
 
-        // Create a project
         ProjectRegister projectRegister = new ProjectRegister();
         projectRegister.setProjectName("Test Project");
         projectRegister.setProjectDescription("This is a test project");
@@ -94,7 +90,6 @@ public class IdeaIntegrationTest {
 
     @Test
     public void testCreateAndRetrieveIdea() {
-        // Create an idea
         IdeaRegister ideaRegister = new IdeaRegister();
         ideaRegister.setIdeaName("Test Idea");
         ideaRegister.setIdeaDescription("This is a test idea");
@@ -106,12 +101,7 @@ public class IdeaIntegrationTest {
         assertEquals("This is a test idea", createdIdea.getIdeaDescription());
         assertEquals(projectId, createdIdea.getProjectId());
         assertEquals(userId, createdIdea.getOwnerId());
-        // assertEquals(IdeaStatus.OPEN, createdIdea.getIdeaStatus());
-        // assertEquals(0L, createdIdea.getUpVotes());
-        // assertEquals(0L, createdIdea.getDownVotes());
-        // assertTrue(createdIdea.getSubIdeas().isEmpty());
 
-        // Retrieve the idea and verify
         Idea retrievedIdea = ideaService.getIdeaById(projectId, createdIdea.getIdeaId(), authHeader);
         assertEquals(createdIdea.getIdeaId(), retrievedIdea.getIdeaId());
         assertEquals(createdIdea.getIdeaName(), retrievedIdea.getIdeaName());
@@ -120,61 +110,24 @@ public class IdeaIntegrationTest {
 
     @Test
     public void testUpdateIdea() {
-        // Create an idea
         IdeaRegister ideaRegister = new IdeaRegister();
         ideaRegister.setIdeaName("Original Idea");
         ideaRegister.setIdeaDescription("Original Description");
 
         Idea createdIdea = ideaService.createIdea(projectId, ideaRegister, authHeader, new ArrayList<>());
         
-        // Update the idea
         IdeaUpdate ideaUpdate = new IdeaUpdate();
         ideaUpdate.setIdeaName("Updated Idea");
         ideaUpdate.setIdeaDescription("Updated Description");
-        // ideaUpdate.setIdeaStatus(IdeaStatus.CLOSED);
-        // ideaUpdate.setUpVotes(5L);
-        // ideaUpdate.setDownVotes(2L);
-        // ideaUpdate.setSubIdeas(new ArrayList<>());
 
         Idea updatedIdea = ideaService.updateIdea(projectId, createdIdea.getIdeaId(), ideaUpdate, authHeader);
         
-        // Verify updates
         assertEquals("Updated Idea", updatedIdea.getIdeaName());
         assertEquals("Updated Description", updatedIdea.getIdeaDescription());
-        // assertEquals(IdeaStatus.CLOSED, updatedIdea.getIdeaStatus());
-        // assertEquals(5L, updatedIdea.getUpVotes());
-        // assertEquals(2L, updatedIdea.getDownVotes());
     }
 
-    // @Test
-    // public void testCreateSubIdea() {
-    //     // Create a parent idea
-    //     IdeaRegister parentIdeaRegister = new IdeaRegister();
-    //     parentIdeaRegister.setIdeaName("Parent Idea");
-    //     parentIdeaRegister.setIdeaDescription("Parent Description");
-
-    //     Idea parentIdea = ideaService.createIdea(projectId, parentIdeaRegister, authHeader, new ArrayList<>());
-        
-    //     // Create a sub-idea
-    //     IdeaRegister subIdeaRegister = new IdeaRegister();
-    //     subIdeaRegister.setIdeaName("Sub Idea");
-    //     subIdeaRegister.setIdeaDescription("Sub Description");
-
-    //     Idea subIdea = ideaService.createSubIdea(projectId, parentIdea.getIdeaId(), subIdeaRegister, authHeader);
-        
-    //     // Verify sub-idea creation
-    //     assertNotNull(subIdea);
-    //     assertEquals("Sub Idea", subIdea.getIdeaName());
-        
-    //     // Verify parent idea has the sub-idea
-    //     Idea updatedParentIdea = ideaService.getIdeaById(projectId, parentIdea.getIdeaId(), authHeader);
-    //     assertEquals(1, updatedParentIdea.getSubIdeas().size());
-    //     assertEquals(subIdea.getIdeaId(), updatedParentIdea.getSubIdeas().get(0));
-    // }
-    
     @Test
     public void testUnauthorizedAccess() {
-        // Create a second user and project
         UserRegister secondUserRegister = new UserRegister();
         secondUserRegister.setName("Second User");
         secondUserRegister.setUsername("seconduser");
@@ -185,20 +138,17 @@ public class IdeaIntegrationTest {
         String secondUserId = secondUser.getId();
         String secondUserToken = "Bearer " + jwtUtil.generateToken(secondUserId);
         
-        // Create an idea owned by the first user
         IdeaRegister ideaRegister = new IdeaRegister();
         ideaRegister.setIdeaName("First User's Idea");
         ideaRegister.setIdeaDescription("This idea belongs to the first user");
 
         Idea createdIdea = ideaService.createIdea(projectId, ideaRegister, authHeader, new ArrayList<>());
         
-        // Try to update the idea as the second user - should fail
         IdeaUpdate ideaUpdate = new IdeaUpdate();
         ideaUpdate.setIdeaName("Attempted Update");
         
         try {
             ideaService.updateIdea(projectId, createdIdea.getIdeaId(), ideaUpdate, secondUserToken);
-            // If we reach here, the test has failed
             assertTrue(false, "Second user should not be able to update first user's idea");
         } 
         catch (ResponseStatusException e) {

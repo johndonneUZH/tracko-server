@@ -12,7 +12,6 @@ public class ChangeModelTest {
 
     @Test
     public void testChangeModel() {
-        // Create test data
         String changeId = "change-123";
         String projectId = "project-123";
         String ownerId = "user-123";
@@ -20,7 +19,6 @@ public class ChangeModelTest {
         String changeDescription = "Added a new feature idea";
         LocalDateTime createdAt = LocalDateTime.now();
 
-        // Create and set Change object
         Change change = new Change();
         change.setChangeId(changeId);
         change.setProjectId(projectId);
@@ -29,7 +27,6 @@ public class ChangeModelTest {
         change.setChangeDescription(changeDescription);
         change.setCreatedAt(createdAt);
 
-        // Verify getters return correct values
         assertEquals(changeId, change.getChangeId());
         assertEquals(projectId, change.getProjectId());
         assertEquals(ownerId, change.getOwnerId());
@@ -40,20 +37,16 @@ public class ChangeModelTest {
 
     @Test
     public void testChangeRegisterModel() {
-        // Create test data
         ChangeType changeType = ChangeType.CHANGED_PROJECT_SETTINGS;
 
-        // Create and set ChangeRegister object
         ChangeRegister changeRegister = new ChangeRegister();
         changeRegister.setChangeType(changeType);
 
-        // Verify getters return correct values
         assertEquals(changeType, changeRegister.getChangeType());
     }
 
     @Test
     public void testAllChangeTypes() {
-        // Test different change types and their descriptions
         Change modifiedIdeaChange = new Change();
         modifiedIdeaChange.setChangeType(ChangeType.MODIFIED_IDEA);
         assertEquals(ChangeType.MODIFIED_IDEA, modifiedIdeaChange.getChangeType());

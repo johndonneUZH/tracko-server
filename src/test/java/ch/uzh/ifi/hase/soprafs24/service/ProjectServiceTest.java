@@ -107,18 +107,14 @@ public class ProjectServiceTest {
 
         ReflectionTestUtils.setField(projectService, "userRepository", userRepository);
 
-
-        // Mock the authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
 
-        // Create test user
         testUser = new User();
         testUser.setId(USER_ID);
         testUser.setUsername("testuser");
         when(userService.getUserByToken(VALID_AUTH_HEADER)).thenReturn(testUser);
         when(userService.getUserById(USER_ID)).thenReturn(testUser);
 
-        // Create test project
         testProject = new Project();
         testProject.setProjectId(PROJECT_ID);
         testProject.setProjectName("Test Project");
@@ -128,12 +124,10 @@ public class ProjectServiceTest {
         testProject.setCreatedAt(LocalDateTime.now());
         testProject.setUpdatedAt(LocalDateTime.now());
 
-        // Create test project registration
         testProjectRegister = new ProjectRegister();
         testProjectRegister.setProjectName("Test Project");
         testProjectRegister.setProjectDescription("Test Description");
 
-        // Create test project update
         testProjectUpdate = new ProjectUpdate();
         testProjectUpdate.setProjectName("Updated Project");
         testProjectUpdate.setProjectDescription("Updated Description");
@@ -143,15 +137,12 @@ public class ProjectServiceTest {
 
     @Test
     public void createProject_success() {
-        // given
         when(projectRepository.findByOwnerIdAndProjectName(USER_ID, testProjectRegister.getProjectName()))
             .thenReturn(null);
         when(projectRepository.save(any(Project.class))).thenReturn(testProject);
 
-        // when
         Project createdProject = projectService.createProject(testProjectRegister, VALID_AUTH_HEADER);
 
-        // then
         assertNotNull(createdProject);
         assertEquals(PROJECT_ID, createdProject.getProjectId());
         assertEquals("Test Project", createdProject.getProjectName());
@@ -164,11 +155,9 @@ public class ProjectServiceTest {
 
     @Test
     public void createProject_duplicateName_conflict() {
-        // given
         when(projectRepository.findByOwnerIdAndProjectName(USER_ID, testProjectRegister.getProjectName()))
             .thenReturn(testProject);
 
-        // when/then
         ResponseStatusException exception = assertThrows(
             ResponseStatusException.class,
             () -> projectService.createProject(testProjectRegister, VALID_AUTH_HEADER)
@@ -180,21 +169,17 @@ public class ProjectServiceTest {
 
     @Test
     public void authenticateProject_success() {
-        // given
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
             .thenReturn(testProject);
 
-        // when
         Project authenticatedProject = projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER);
 
-        // then
         assertNotNull(authenticatedProject);
         assertEquals(PROJECT_ID, authenticatedProject.getProjectId());
     }
 
     @Test
     public void getProjectsByUserId_success() {
-        // given
         List<Project> ownedProjects = new ArrayList<>();
         ownedProjects.add(testProject);
         
@@ -209,10 +194,8 @@ public class ProjectServiceTest {
         when(projectRepository.findByOwnerId(USER_ID)).thenReturn(ownedProjects);
         when(projectRepository.findByProjectMembers(USER_ID)).thenReturn(memberProjects);
         
-        // when
         List<Project> projects = projectService.getProjectsByUserId(USER_ID);
         
-        // then
         assertEquals(2, projects.size());
         assertTrue(projects.contains(testProject));
         assertTrue(projects.contains(memberProject));
@@ -220,15 +203,12 @@ public class ProjectServiceTest {
 
     @Test
     public void updateProject_success() {
-        // given
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
             .thenReturn(testProject);
         when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // when
         Project updatedProject = projectService.updateProject(PROJECT_ID, testProjectUpdate, VALID_AUTH_HEADER);
 
-        // then
         assertNotNull(updatedProject);
         assertEquals("Updated Project", updatedProject.getProjectName());
         assertEquals("Updated Description", updatedProject.getProjectDescription());
@@ -241,12 +221,10 @@ public class ProjectServiceTest {
 
     @Test
     public void updateProject_notOwner_forbidden() {
-        // given
         testProject.setOwnerId(OTHER_USER_ID);
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
             .thenReturn(testProject);
 
-        // when/then
         ResponseStatusException exception = assertThrows(
             ResponseStatusException.class,
             () -> projectService.updateProject(PROJECT_ID, testProjectUpdate, VALID_AUTH_HEADER)
@@ -260,7 +238,6 @@ public class ProjectServiceTest {
 
     @Test
     public void updateProject_memberManagement() {
-        // given
         testProject.setProjectMembers(new ArrayList<>(Arrays.asList("user-111", "user-222")));
         
         ProjectUpdate updateWithMembers = new ProjectUpdate();
@@ -273,10 +250,8 @@ public class ProjectServiceTest {
             .thenReturn(testProject);
         when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // when
         Project updatedProject = projectService.updateProject(PROJECT_ID, updateWithMembers, VALID_AUTH_HEADER);
 
-        // then
         assertNotNull(updatedProject);
         assertEquals(3, updatedProject.getProjectMembers().size());
         assertTrue(updatedProject.getProjectMembers().contains("user-222"));
@@ -293,7 +268,6 @@ public class ProjectServiceTest {
     
     @Test
     public void deleteProject_success() {
-        // given
         testProject.setProjectMembers(Arrays.asList(OTHER_USER_ID));
         User otherUser = new User();
         otherUser.setId(OTHER_USER_ID);
@@ -302,10 +276,8 @@ public class ProjectServiceTest {
             .thenReturn(testProject);
         when(userService.getUserById(OTHER_USER_ID)).thenReturn(otherUser);
         
-        // when
         projectService.deleteProject(PROJECT_ID, VALID_AUTH_HEADER);
         
-        // then
         verify(userService, times(1)).deleteProjectFromUser(OTHER_USER_ID, PROJECT_ID);
         verify(userService, times(1)).deleteProjectFromUser(USER_ID, PROJECT_ID);
         verify(changeService, times(1)).deleteChangesByProjectId(PROJECT_ID);
@@ -315,12 +287,10 @@ public class ProjectServiceTest {
     
     @Test
     public void deleteProject_notOwner_forbidden() {
-        // given
         testProject.setOwnerId(OTHER_USER_ID);
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
             .thenReturn(testProject);
         
-        // when/then
         ResponseStatusException exception = assertThrows(
             ResponseStatusException.class,
             () -> projectService.deleteProject(PROJECT_ID, VALID_AUTH_HEADER)
@@ -334,7 +304,6 @@ public class ProjectServiceTest {
     
     @Test
     public void getProjectMembers_success() {
-        // given
         testProject.setProjectMembers(Arrays.asList(OTHER_USER_ID));
         User otherUser = new User();
         otherUser.setId(OTHER_USER_ID);
@@ -343,33 +312,25 @@ public class ProjectServiceTest {
             .thenReturn(testProject);
         when(userService.getUserById(OTHER_USER_ID)).thenReturn(otherUser);
         
-        // when
         List<User> members = projectService.getProjectMembers(PROJECT_ID, VALID_AUTH_HEADER);
         
-        // then
         assertEquals(1, members.size());
         assertTrue(members.contains(testUser));
-        // assertTrue(members.contains(otherUser));
     }
     
     @Test
     public void getOwnerIdByProjectId_success() {
-        // given
         when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(testProject));
         
-        // when
         String ownerId = projectService.getOwnerIdByProjectId(PROJECT_ID);
         
-        // then
         assertEquals(USER_ID, ownerId);
     }
     
     @Test
     public void getOwnerIdByProjectId_notFound() {
-        // given
         when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.empty());
         
-        // when/then
         ResponseStatusException exception = assertThrows(
             ResponseStatusException.class,
             () -> projectService.getOwnerIdByProjectId(PROJECT_ID)
@@ -381,17 +342,14 @@ public class ProjectServiceTest {
     
     @Test
     public void makeUserLeaveFromProject_success() {
-        // given
         testProject.setProjectMembers(new ArrayList<>(Arrays.asList(USER_ID, OTHER_USER_ID)));
         
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
             .thenReturn(testProject);
         when(projectRepository.save(any(Project.class))).thenReturn(testProject);
         
-        // when
         projectService.makeUserLeaveFromProject(PROJECT_ID, VALID_AUTH_HEADER);
         
-        // then
         verify(userService, times(1)).deleteProjectFromUser(USER_ID, PROJECT_ID);
         verify(projectRepository, times(1)).save(testProject);
         verify(changeService, times(1)).markChange(eq(PROJECT_ID), eq(ChangeType.LEFT_PROJECT), eq(VALID_AUTH_HEADER), eq(false), eq(null));
@@ -400,7 +358,6 @@ public class ProjectServiceTest {
     
     @Test
     public void sendChatMessage_success() {
-        // given
         MessageRegister messageRegister = new MessageRegister();
         
         Message newMessage = new Message();
@@ -415,10 +372,8 @@ public class ProjectServiceTest {
             .thenReturn(testProject);
         when(messageRepository.save(any(Message.class))).thenReturn(newMessage);
         
-        // when
         Message result = projectService.sendChatMessage(PROJECT_ID, VALID_AUTH_HEADER, messageRegister);
         
-        // then
         assertNotNull(result);
         assertEquals(newMessage.getId(), result.getId());
         assertEquals(newMessage.getContent(), result.getContent());
@@ -428,7 +383,6 @@ public class ProjectServiceTest {
     
     @Test
     public void getMessages_success() {
-        // given
         List<Message> messages = new ArrayList<>();
         Message message1 = new Message();
         message1.setId("message-123");
@@ -439,17 +393,14 @@ public class ProjectServiceTest {
             .thenReturn(testProject);
         when(messageRepository.findByProjectIdOrderByCreatedAtAsc(PROJECT_ID)).thenReturn(messages);
         
-        // when
         List<Message> result = projectService.getMessages(PROJECT_ID, VALID_AUTH_HEADER);
         
-        // then
         assertEquals(1, result.size());
         assertEquals("message-123", result.get(0).getId());
     }
     
     @Test
     public void generateReport_success() {
-        // given
         List<Message> messages = new ArrayList<>();
         Message message = new Message();
         message.setContent("Test message");
@@ -487,10 +438,8 @@ public class ProjectServiceTest {
         when(commentService.getCommentsByIdeaId("idea-123")).thenReturn(comments);
         when(anthropicService.generateContent(any())).thenReturn(anthropicResponse);
         
-        // when
         ContentDTO result = projectService.generateReport(PROJECT_ID, VALID_AUTH_HEADER);
         
-        // then
         assertNotNull(result);
         assertEquals("text", result.getType());
         assertEquals("<h2>Project Report</h2><p>This is a test report</p>", result.getText());

@@ -29,13 +29,11 @@ public class ChangeRepositoryTest {
     
     @BeforeEach
     public void setup() {
-        // Clear the test database before each test
         changeRepository.deleteAll();
     }
     
     @Test
     public void testMongoConnection() {
-        // Create a test change
         Change testChange = new Change();
         testChange.setChangeType(ChangeType.ADDED_IDEA);
         testChange.setChangeDescription("This is a test change");
@@ -43,13 +41,10 @@ public class ChangeRepositoryTest {
         testChange.setOwnerId("user-123");
         testChange.setCreatedAt(LocalDateTime.now());
         
-        // Save to repository
         Change savedChange = changeRepository.save(testChange);
         
-        // Verify the change was saved
         assertNotNull(savedChange.getChangeId());
         
-        // Retrieve and verify
         Optional<Change> retrievedChange = changeRepository.findById(savedChange.getChangeId());
         assertTrue(retrievedChange.isPresent());
         assertEquals(ChangeType.ADDED_IDEA, retrievedChange.get().getChangeType());
@@ -58,7 +53,6 @@ public class ChangeRepositoryTest {
 
     @Test
     public void findByProjectId_success() {
-        // given
         String projectId = "project-" + System.currentTimeMillis();
         
         Change change1 = new Change();
@@ -78,10 +72,8 @@ public class ChangeRepositoryTest {
         changeRepository.save(change1);
         changeRepository.save(change2);
 
-        // when
         List<Change> foundChanges = changeRepository.findByProjectId(projectId);
 
-        // then
         assertEquals(2, foundChanges.size());
         assertTrue(foundChanges.stream().anyMatch(change -> change.getChangeDescription().equals("Change 1")));
         assertTrue(foundChanges.stream().anyMatch(change -> change.getChangeDescription().equals("Change 2")));
@@ -89,7 +81,6 @@ public class ChangeRepositoryTest {
     
     @Test
     public void findByOwnerId_success() {
-        // given
         String ownerId = "owner-" + System.currentTimeMillis();
         
         Change change1 = new Change();
@@ -109,10 +100,8 @@ public class ChangeRepositoryTest {
         changeRepository.save(change1);
         changeRepository.save(change2);
 
-        // when
         List<Change> foundChanges = changeRepository.findByOwnerId(ownerId);
 
-        // then
         assertEquals(2, foundChanges.size());
         assertTrue(foundChanges.stream().anyMatch(change -> change.getChangeDescription().equals("Change 1")));
         assertTrue(foundChanges.stream().anyMatch(change -> change.getChangeDescription().equals("Change 2")));
@@ -120,7 +109,6 @@ public class ChangeRepositoryTest {
     
     @Test
     public void testMultipleChangeTypes() {
-        // given
         String projectId = "project-" + System.currentTimeMillis();
         
         Change modifiedIdeaChange = new Change();
@@ -164,10 +152,8 @@ public class ChangeRepositoryTest {
         changeRepository.save(closedIdeaChange);
         changeRepository.save(addedCommentChange);
 
-        // when
         List<Change> foundChanges = changeRepository.findByProjectId(projectId);
 
-        // then
         assertEquals(5, foundChanges.size());
         assertTrue(foundChanges.stream().anyMatch(change -> change.getChangeType() == ChangeType.MODIFIED_IDEA));
         assertTrue(foundChanges.stream().anyMatch(change -> change.getChangeType() == ChangeType.ADDED_IDEA));

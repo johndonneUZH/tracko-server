@@ -71,7 +71,6 @@ public class UserControllerTest {
 
     @BeforeEach
     public void setup() {
-        // Create test user
         testUser = new User();
         testUser.setId("1");
         testUser.setName("Test User");
@@ -81,19 +80,16 @@ public class UserControllerTest {
         testUser.setStatus(UserStatus.ONLINE);
         testUser.setProjectIds(new ArrayList<>());
 
-        // Create test user update
         testUserUpdate = new UserUpdate();
         testUserUpdate.setName("Updated User");
         testUserUpdate.setUsername("updateduser");
 
-        // Create test report
         testReport = new Report();
         testReport.setReportId("report-1");
         testReport.setUserId("1");
         testReport.setReportContent("<h2>Test Report</h2><p>Test content</p>");
         testReport.setCreatedAt(LocalDateTime.now());
 
-        // Create test report register
         testReportRegister = new ReportRegister();
         testReportRegister.setReportContent("<h2>Updated Report</h2><p>Updated content</p>");
 
@@ -103,10 +99,8 @@ public class UserControllerTest {
 
     @Test
     public void getUsers_validRequest_success() throws Exception {
-        // given
         List<User> allUsers = Arrays.asList(testUser);
 
-        // Mock userService's getUsers method
         given(userService.getUsers()).willReturn(allUsers);
 
         mockMvc.perform(get("/users"))
@@ -119,10 +113,8 @@ public class UserControllerTest {
 
     @Test
     public void getUser_validId_userFound() throws Exception {
-        // given
         given(userService.getUserById(testUser.getId())).willReturn(testUser);
 
-        // when/then
         MockHttpServletRequestBuilder getRequest = get("/users/" + testUser.getId())
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -135,11 +127,9 @@ public class UserControllerTest {
 
     @Test
     public void getUser_invalidId_notFound() throws Exception {
-        // given
         String nonExistentId = "999";
         given(userService.getUserById(nonExistentId)).willReturn(null);
 
-        // when/then
         MockHttpServletRequestBuilder getRequest = get("/users/" + nonExistentId)
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -149,7 +139,6 @@ public class UserControllerTest {
 
     @Test
     public void updateUser_validRequest_success() throws Exception {
-        // given
         User updatedUser = new User();
         updatedUser.setId(testUser.getId());
         updatedUser.setName(testUserUpdate.getName());
@@ -158,12 +147,10 @@ public class UserControllerTest {
         updatedUser.setStatus(testUser.getStatus());
         updatedUser.setProjectIds(testUser.getProjectIds());
 
-        // Mock authentication and update
         doNothing().when(userService).authenticateUser(anyString(), anyString());
         given(userService.updateUser(eq(testUser.getId()), any(UserUpdate.class)))
             .willReturn(updatedUser);
 
-        // when/then
         MockHttpServletRequestBuilder putRequest = put("/users/" + testUser.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER)
@@ -178,11 +165,9 @@ public class UserControllerTest {
 
     @Test
     public void updateUser_authenticationFailed_forbidden() throws Exception {
-        // given - authentication fails
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
                 .when(userService).authenticateUser(anyString(), anyString());
 
-        // when/then
         MockHttpServletRequestBuilder putRequest = put("/users/" + testUser.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer invalidToken")
@@ -191,13 +176,11 @@ public class UserControllerTest {
         mockMvc.perform(putRequest)
                 .andExpect(status().isForbidden());
 
-        // Verify updateUser was never called
         verify(userService, never()).updateUser(anyString(), any(UserUpdate.class));
     }
 
     @Test
     public void getUserProjects_validId_projectsFound() throws Exception {
-        // given
         Project project = new Project();
         project.setProjectId("project-1");
         project.setProjectName("Test Project");
@@ -206,7 +189,6 @@ public class UserControllerTest {
         List<Project> projects = Collections.singletonList(project);
         given(userService.getUserProjects(testUser.getId())).willReturn(projects);
 
-        // when/then
         mockMvc.perform(get("/users/" + testUser.getId() + "/projects")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -217,11 +199,9 @@ public class UserControllerTest {
 
     @Test
     public void getUserProjects_invalidId_notFound() throws Exception {
-        // given
         String nonExistentId = "999";
         given(userService.getUserProjects(nonExistentId)).willReturn(null);
 
-        // when/then
         mockMvc.perform(get("/users/" + nonExistentId + "/projects")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -229,7 +209,6 @@ public class UserControllerTest {
 
     @Test
     public void getUserFriends_validRequest_success() throws Exception {
-        // given
         User friend = new User();
         friend.setId("2");
         friend.setName("Friend User");
@@ -238,7 +217,6 @@ public class UserControllerTest {
         List<User> friends = Collections.singletonList(friend);
         given(userService.getUserFriends(testUser.getId())).willReturn(friends);
 
-        // when/then
         mockMvc.perform(get("/users/" + testUser.getId() + "/friends")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
@@ -250,10 +228,8 @@ public class UserControllerTest {
 
     @Test
     public void inviteFriend_validRequest_success() throws Exception {
-        // given
         doNothing().when(userService).inviteFriend(testUser.getId(), "2", VALID_AUTH_HEADER);
 
-        // when/then
         mockMvc.perform(post("/users/" + testUser.getId() + "/friends/invite/2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
@@ -264,10 +240,8 @@ public class UserControllerTest {
 
     @Test
     public void acceptFriend_validRequest_success() throws Exception {
-        // given
         doNothing().when(userService).acceptFriend(testUser.getId(), "2", VALID_AUTH_HEADER);
 
-        // when/then
         mockMvc.perform(post("/users/" + testUser.getId() + "/friends/accept/2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
@@ -278,10 +252,8 @@ public class UserControllerTest {
 
     @Test
     public void rejectFriend_validRequest_success() throws Exception {
-        // given
         doNothing().when(userService).rejectFriend(testUser.getId(), "2", VALID_AUTH_HEADER);
 
-        // when/then
         mockMvc.perform(post("/users/" + testUser.getId() + "/friends/reject/2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
@@ -292,10 +264,8 @@ public class UserControllerTest {
 
     @Test
     public void removeFriend_validRequest_success() throws Exception {
-        // given
         doNothing().when(userService).removeFriend(testUser.getId(), "2", VALID_AUTH_HEADER);
 
-        // when/then
         mockMvc.perform(post("/users/" + testUser.getId() + "/friends/remove/2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
@@ -306,10 +276,8 @@ public class UserControllerTest {
 
     @Test
     public void cancelFriendRequest_validRequest_success() throws Exception {
-        // given
         doNothing().when(userService).cancelFriendRequest(testUser.getId(), "2");
 
-        // when/then
         mockMvc.perform(post("/users/" + testUser.getId() + "/friends/cancel/2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
@@ -320,12 +288,10 @@ public class UserControllerTest {
 
     @Test
     public void getUserReports_validRequest_success() throws Exception {
-        // given
         List<Report> reports = Collections.singletonList(testReport);
         doNothing().when(userService).authenticateUser(testUser.getId(), VALID_AUTH_HEADER);
         given(reportService.getReportsByUserId(testUser.getId())).willReturn(reports);
 
-        // when/then
         mockMvc.perform(get("/users/" + testUser.getId() + "/reports")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
@@ -338,11 +304,9 @@ public class UserControllerTest {
 
     @Test
     public void getUserReports_notFound() throws Exception {
-        // given
         doNothing().when(userService).authenticateUser(testUser.getId(), VALID_AUTH_HEADER);
         given(reportService.getReportsByUserId(testUser.getId())).willReturn(null);
 
-        // when/then
         mockMvc.perform(get("/users/" + testUser.getId() + "/reports")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
@@ -352,11 +316,9 @@ public class UserControllerTest {
 
     @Test
     public void updateReport_validRequest_success() throws Exception {
-        // given
         doNothing().when(userService).authenticateUser(testUser.getId(), VALID_AUTH_HEADER);
         doNothing().when(reportService).updateReport(any(ReportRegister.class), eq(testReport.getReportId()));
 
-        // when/then
         mockMvc.perform(put("/users/" + testUser.getId() + "/reports/" + testReport.getReportId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER)
@@ -369,11 +331,9 @@ public class UserControllerTest {
 
     @Test
     public void getReport_validRequest_success() throws Exception {
-        // given
         doNothing().when(userService).authenticateUser(testUser.getId(), VALID_AUTH_HEADER);
         given(reportService.getReportById(testReport.getReportId())).willReturn(testReport);
 
-        // when/then
         mockMvc.perform(get("/users/" + testUser.getId() + "/reports/" + testReport.getReportId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
@@ -385,11 +345,9 @@ public class UserControllerTest {
 
     @Test
     public void getReport_notFound() throws Exception {
-        // given
         doNothing().when(userService).authenticateUser(testUser.getId(), VALID_AUTH_HEADER);
         given(reportService.getReportById(testReport.getReportId())).willReturn(null);
 
-        // when/then
         mockMvc.perform(get("/users/" + testUser.getId() + "/reports/" + testReport.getReportId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", VALID_AUTH_HEADER))
