@@ -72,7 +72,6 @@ public class AnthropicServiceTest {
 
     @Test
     public void generateContent_success() {
-        // given
         AnthropicResponseDTO mockResponse = new AnthropicResponseDTO();
         ContentDTO contentDTO = new ContentDTO();
         contentDTO.setType("text");
@@ -82,14 +81,11 @@ public class AnthropicServiceTest {
         when(restTemplate.postForObject(eq(API_URL), any(HttpEntity.class), eq(AnthropicResponseDTO.class)))
                 .thenReturn(mockResponse);
 
-        // when
         AnthropicResponseDTO result = anthropicService.generateContent(TEST_PROMPT);
 
-        // then
         assertNotNull(result);
         assertEquals("AI generated response", result.getContent().get(0).getText());
         
-        // Verify request parameters
         ArgumentCaptor<HttpEntity<AnthropicRequestDTO>> requestCaptor = ArgumentCaptor.forClass(HttpEntity.class);
         verify(restTemplate).postForObject(eq(API_URL), requestCaptor.capture(), eq(AnthropicResponseDTO.class));
         
@@ -103,10 +99,8 @@ public class AnthropicServiceTest {
 
     @Test
     public void generateContent_rateLimitExceeded() {
-        // given
         when(rateLimiterService.acquirePermit()).thenReturn(false);
 
-        // when & then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             anthropicService.generateContent(TEST_PROMPT);
         });
@@ -116,19 +110,17 @@ public class AnthropicServiceTest {
 
     @Test
     public void generateContent_apiRateLimited() {
-        // given
         HttpClientErrorException exception = HttpClientErrorException.create(
-                HttpStatus.TOO_MANY_REQUESTS,   // HTTP 429 status
-                "Too Many Requests",            // status text
-                null,                          // headers
-                null,                          // body as bytes
-                null                           // charset
+                HttpStatus.TOO_MANY_REQUESTS, 
+                "Too Many Requests",           
+                null,                          
+                null,                          
+                null                           
         );
         
         when(restTemplate.postForObject(eq(API_URL), any(HttpEntity.class), eq(AnthropicResponseDTO.class)))
                 .thenThrow(exception);
 
-        // when & then
         assertThrows(AnthropicRateLimitException.class, () -> {
             anthropicService.generateContent(TEST_PROMPT);
         });
@@ -136,13 +128,11 @@ public class AnthropicServiceTest {
 
     @Test
     public void generateContent_timeout() {
-        // given
         ResourceAccessException exception = new ResourceAccessException("Connection timed out");
         
         when(restTemplate.postForObject(eq(API_URL), any(HttpEntity.class), eq(AnthropicResponseDTO.class)))
                 .thenThrow(exception);
 
-        // when & then
         assertThrows(AnthropicTimeoutException.class, () -> {
             anthropicService.generateContent(TEST_PROMPT);
         });
@@ -150,19 +140,17 @@ public class AnthropicServiceTest {
 
     @Test
     public void generateContent_authError() {
-        // given
         HttpClientErrorException exception = HttpClientErrorException.create(
-                HttpStatus.UNAUTHORIZED,        // HTTP 401 status
-                "Unauthorized",                 // status text
-                null,                          // headers
-                null,                          // body as bytes
-                null                           // charset
+                HttpStatus.UNAUTHORIZED,       
+                "Unauthorized",                 
+                null,                          
+                null,                          
+                null                           
         );
         
         when(restTemplate.postForObject(eq(API_URL), any(HttpEntity.class), eq(AnthropicResponseDTO.class)))
                 .thenThrow(exception);
     
-        // when & then
         assertThrows(AnthropicApiException.class, () -> {
             anthropicService.generateContent(TEST_PROMPT);
         });
@@ -170,7 +158,6 @@ public class AnthropicServiceTest {
 
     @Test
     public void refineIdea_success() {
-        // given
         AnthropicResponseDTO mockResponse = new AnthropicResponseDTO();
         ContentDTO contentDTO = new ContentDTO();
         contentDTO.setType("text");
@@ -180,17 +167,14 @@ public class AnthropicServiceTest {
         when(restTemplate.postForObject(eq(API_URL), any(HttpEntity.class), eq(AnthropicResponseDTO.class)))
                 .thenReturn(mockResponse);
 
-        // when
         AnthropicResponseDTO result = anthropicService.refineIdea("Raw idea");
 
-        // then
         assertNotNull(result);
         assertEquals("Refined idea", result.getContent().get(0).getText());
         
         ArgumentCaptor<HttpEntity<AnthropicRequestDTO>> requestCaptor = ArgumentCaptor.forClass(HttpEntity.class);
         verify(restTemplate).postForObject(eq(API_URL), requestCaptor.capture(), eq(AnthropicResponseDTO.class));
         
-        // Verify the prompt includes our instructions
         String capturedPrompt = requestCaptor.getValue().getBody().getMessages().get(0).getContent().get(0).getText();
         assertTrue(capturedPrompt.startsWith("Refine this idea into a more innovative and detailed concept:"));
         assertTrue(capturedPrompt.contains("Raw idea"));
@@ -198,7 +182,6 @@ public class AnthropicServiceTest {
 
     @Test
     public void combineIdeas_success() {
-        // given
         AnthropicResponseDTO mockResponse = new AnthropicResponseDTO();
         ContentDTO contentDTO = new ContentDTO();
         contentDTO.setType("text");
@@ -208,23 +191,19 @@ public class AnthropicServiceTest {
         when(restTemplate.postForObject(eq(API_URL), any(HttpEntity.class), eq(AnthropicResponseDTO.class)))
                 .thenReturn(mockResponse);
 
-        // when
         AnthropicResponseDTO result = anthropicService.combineIdeas("Idea 1", "Idea 2");
 
-        // then
         assertNotNull(result);
         assertEquals("Combined idea", result.getContent().get(0).getText());
         
         ArgumentCaptor<HttpEntity<AnthropicRequestDTO>> requestCaptor = ArgumentCaptor.forClass(HttpEntity.class);
         verify(restTemplate).postForObject(eq(API_URL), requestCaptor.capture(), eq(AnthropicResponseDTO.class));
         
-        // Verify the prompt includes both ideas
         String capturedPrompt = requestCaptor.getValue().getBody().getMessages().get(0).getContent().get(0).getText();
         assertTrue(capturedPrompt.contains("Idea 1"));
         assertTrue(capturedPrompt.contains("Idea 2"));
     }
 
-    // Helper method for test assertions
     private static boolean assertTrue(boolean condition) {
         org.junit.jupiter.api.Assertions.assertTrue(condition);
         return condition;

@@ -22,18 +22,14 @@ public class UserRepositoryIntegrationTest {
 
   @Test
   public void findByUsername_success() {
-    // given
     User user = new User();
     user.setUsername("Firstname Lastname");
     user.setStatus(UserStatus.OFFLINE);
-    // user.setToken("1");
 
     userRepository.save(user);
 
-    // when
     User found = userRepository.findByUsername(user.getUsername());
 
-    // then
     assertNotNull(found.getId());
     assertEquals(found.getUsername(), user.getUsername());
     assertEquals(found.getStatus(), user.getStatus());

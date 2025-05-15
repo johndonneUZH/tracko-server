@@ -60,7 +60,6 @@ public class IdeaControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void createIdea_success() throws Exception {
-        // given
         IdeaRegister ideaRegister = new IdeaRegister();
         ideaRegister.setIdeaName("Test Idea");
         ideaRegister.setIdeaDescription("Test Description");
@@ -76,7 +75,6 @@ public class IdeaControllerTest {
 
         when(ideaService.createIdea(eq(PROJECT_ID), any(IdeaRegister.class), eq(AUTH_HEADER), any())).thenReturn(createdIdea);
 
-        // when/then
         mockMvc.perform(post("/projects/{projectId}/ideas", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +91,6 @@ public class IdeaControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getIdeasByProject_success() throws Exception {
-        // given
         Idea idea1 = new Idea();
         idea1.setIdeaId("idea-1");
         idea1.setIdeaName("Idea 1");
@@ -108,7 +105,6 @@ public class IdeaControllerTest {
         
         when(ideaService.getIdeasByProject(PROJECT_ID, AUTH_HEADER)).thenReturn(ideas);
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/ideas", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
@@ -121,7 +117,6 @@ public class IdeaControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getIdeaById_success() throws Exception {
-        // given
         Idea idea = new Idea();
         idea.setIdeaId(IDEA_ID);
         idea.setIdeaName("Test Idea");
@@ -131,7 +126,6 @@ public class IdeaControllerTest {
         
         when(ideaService.getIdeaById(PROJECT_ID, IDEA_ID, AUTH_HEADER)).thenReturn(idea);
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/ideas/{ideaId}", PROJECT_ID, IDEA_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
@@ -144,11 +138,9 @@ public class IdeaControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getIdeaById_notFound() throws Exception {
-        // given
         when(ideaService.getIdeaById(PROJECT_ID, IDEA_ID, AUTH_HEADER))
             .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/ideas/{ideaId}", PROJECT_ID, IDEA_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isNotFound());
@@ -157,7 +149,6 @@ public class IdeaControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void updateIdea_success() throws Exception {
-        // given
         IdeaUpdate ideaUpdate = new IdeaUpdate();
         ideaUpdate.setIdeaName("Updated Name");
         ideaUpdate.setIdeaDescription("Updated Description");
@@ -173,7 +164,6 @@ public class IdeaControllerTest {
         when(ideaService.updateIdea(eq(PROJECT_ID), eq(IDEA_ID), any(IdeaUpdate.class), eq(AUTH_HEADER)))
             .thenReturn(updatedIdea);
 
-        // when/then
         mockMvc.perform(put("/projects/{projectId}/ideas/{ideaId}", PROJECT_ID, IDEA_ID)
                 .header("Authorization", AUTH_HEADER)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -188,14 +178,12 @@ public class IdeaControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void updateIdea_forbidden() throws Exception {
-        // given
         IdeaUpdate ideaUpdate = new IdeaUpdate();
         ideaUpdate.setIdeaName("Updated Name");
         
         when(ideaService.updateIdea(eq(PROJECT_ID), eq(IDEA_ID), any(IdeaUpdate.class), eq(AUTH_HEADER)))
             .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this idea"));
 
-        // when/then
         mockMvc.perform(put("/projects/{projectId}/ideas/{ideaId}", PROJECT_ID, IDEA_ID)
                 .header("Authorization", AUTH_HEADER)
                 .contentType(MediaType.APPLICATION_JSON)

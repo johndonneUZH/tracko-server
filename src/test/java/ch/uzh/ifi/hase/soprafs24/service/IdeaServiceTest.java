@@ -92,24 +92,20 @@ public class IdeaServiceTest {
 
     @Test
     public void createIdea_success() {
-        // given
         IdeaRegister ideaRegister = new IdeaRegister();
         ideaRegister.setIdeaName("Test Idea");
         ideaRegister.setIdeaDescription("Test Description");
         ideaRegister.setx(100.0f);
         ideaRegister.sety(200.0f);
         
-        // Mock repository save
         when(ideaRepository.save(any(Idea.class))).thenAnswer(invocation -> {
             Idea savedIdea = invocation.getArgument(0);
             savedIdea.setIdeaId(IDEA_ID);
             return savedIdea;
         });
 
-        // when
         Idea createdIdea = ideaService.createIdea(PROJECT_ID, ideaRegister, VALID_AUTH_HEADER, new ArrayList<>());
 
-        // then
         assertNotNull(createdIdea);
         assertEquals(IDEA_ID, createdIdea.getIdeaId());
         assertEquals("Test Idea", createdIdea.getIdeaName());
@@ -138,7 +134,6 @@ public class IdeaServiceTest {
 
     @Test
     public void getIdeasByProject_success() {
-        // given
         Idea idea1 = new Idea();
         idea1.setIdeaId("idea-1");
         idea1.setIdeaName("Idea 1");
@@ -153,10 +148,8 @@ public class IdeaServiceTest {
         
         when(ideaRepository.findByProjectId(PROJECT_ID)).thenReturn(ideas);
 
-        // when
         List<Idea> foundIdeas = ideaService.getIdeasByProject(PROJECT_ID, VALID_AUTH_HEADER);
 
-        // then
         assertEquals(2, foundIdeas.size());
         assertEquals("Idea 1", foundIdeas.get(0).getIdeaName());
         assertEquals("Idea 2", foundIdeas.get(1).getIdeaName());
@@ -165,7 +158,6 @@ public class IdeaServiceTest {
 
     @Test
     public void getIdeaById_success() {
-        // given
         Idea idea = new Idea();
         idea.setIdeaId(IDEA_ID);
         idea.setIdeaName("Test Idea");
@@ -173,10 +165,8 @@ public class IdeaServiceTest {
         
         when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.of(idea));
 
-        // whena
         Idea foundIdea = ideaService.getIdeaById(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER);
 
-        // then
         assertNotNull(foundIdea);
         assertEquals(IDEA_ID, foundIdea.getIdeaId());
         assertEquals("Test Idea", foundIdea.getIdeaName());
@@ -185,10 +175,8 @@ public class IdeaServiceTest {
 
     @Test
     public void getIdeaById_notFound() {
-        // given
         when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.empty());
 
-        // when / then
         ResponseStatusException exception = assertThrows(
             ResponseStatusException.class,
             () -> ideaService.getIdeaById(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER)
@@ -200,7 +188,6 @@ public class IdeaServiceTest {
 
     @Test
     public void updateIdea_nameAndDescription_success() {
-        // given
         Idea existingIdea = new Idea();
         existingIdea.setIdeaId(IDEA_ID);
         existingIdea.setIdeaName("Original Name");
@@ -218,10 +205,8 @@ public class IdeaServiceTest {
         when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.of(existingIdea));
         when(ideaRepository.save(any(Idea.class))).thenAnswer(i -> i.getArgument(0));
 
-        // when
         Idea updatedIdea = ideaService.updateIdea(PROJECT_ID, IDEA_ID, ideaUpdate, VALID_AUTH_HEADER);
 
-        // then
         assertNotNull(updatedIdea);
         assertEquals("Updated Name", updatedIdea.getIdeaName());
         assertEquals("Updated Description", updatedIdea.getIdeaDescription());
@@ -242,7 +227,6 @@ public class IdeaServiceTest {
     
     @Test
     public void updateIdea_position_success() {
-        // given
         Idea existingIdea = new Idea();
         existingIdea.setIdeaId(IDEA_ID);
         existingIdea.setIdeaName("Original Name");
@@ -262,10 +246,8 @@ public class IdeaServiceTest {
         when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.of(existingIdea));
         when(ideaRepository.save(any(Idea.class))).thenAnswer(i -> i.getArgument(0));
 
-        // when
         Idea updatedIdea = ideaService.updateIdea(PROJECT_ID, IDEA_ID, ideaUpdate, VALID_AUTH_HEADER);
 
-        // then
         assertNotNull(updatedIdea);
         assertEquals(200.0f, updatedIdea.getX());
         assertEquals(300.0f, updatedIdea.gety());
@@ -275,7 +257,7 @@ public class IdeaServiceTest {
             eq("/topic/projects/" + PROJECT_ID + "/ideas"),
             any(Idea.class)
         );
-        // No change type should be marked for just position updates
+        
         verify(changeService, never()).markChange(
             eq(PROJECT_ID),
             eq(ChangeType.MODIFIED_IDEA),
@@ -287,7 +269,6 @@ public class IdeaServiceTest {
     
     @Test
     public void updateIdea_upvote_success() {
-        // given
         Idea existingIdea = new Idea();
         existingIdea.setIdeaId(IDEA_ID);
         existingIdea.setIdeaName("Original Name");
@@ -306,10 +287,8 @@ public class IdeaServiceTest {
         when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.of(existingIdea));
         when(ideaRepository.save(any(Idea.class))).thenAnswer(i -> i.getArgument(0));
 
-        // when
         Idea updatedIdea = ideaService.updateIdea(PROJECT_ID, IDEA_ID, ideaUpdate, VALID_AUTH_HEADER);
 
-        // then
         assertNotNull(updatedIdea);
         assertEquals(1, updatedIdea.getUpVotes().size());
         assertEquals(USER_ID, updatedIdea.getUpVotes().get(0));
@@ -330,7 +309,6 @@ public class IdeaServiceTest {
     
     @Test
     public void updateIdea_downvote_success() {
-        // given
         Idea existingIdea = new Idea();
         existingIdea.setIdeaId(IDEA_ID);
         existingIdea.setIdeaName("Original Name");
@@ -349,10 +327,8 @@ public class IdeaServiceTest {
         when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.of(existingIdea));
         when(ideaRepository.save(any(Idea.class))).thenAnswer(i -> i.getArgument(0));
 
-        // when
         Idea updatedIdea = ideaService.updateIdea(PROJECT_ID, IDEA_ID, ideaUpdate, VALID_AUTH_HEADER);
 
-        // then
         assertNotNull(updatedIdea);
         assertEquals(1, updatedIdea.getDownVotes().size());
         assertEquals(USER_ID, updatedIdea.getDownVotes().get(0));
@@ -373,7 +349,6 @@ public class IdeaServiceTest {
 
     @Test
     public void deleteIdea_success() {
-        // given
         Idea existingIdea = new Idea();
         existingIdea.setIdeaId(IDEA_ID);
         existingIdea.setIdeaName("Idea to Delete");
@@ -384,10 +359,8 @@ public class IdeaServiceTest {
         doNothing().when(ideaRepository).deleteById(IDEA_ID);
         doNothing().when(commentRepository).deleteByIdeaId(IDEA_ID);
 
-        // when
         ideaService.deleteIdea(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER);
         
-        // then
         verify(ideaRepository, times(1)).deleteById(IDEA_ID);
         verify(commentRepository, times(1)).deleteByIdeaId(IDEA_ID);
         
@@ -411,10 +384,8 @@ public class IdeaServiceTest {
     
     @Test
     public void deleteIdea_notFound() {
-        // given
         when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.empty());
 
-        // when/then
         ResponseStatusException exception = assertThrows(
             ResponseStatusException.class,
             () -> ideaService.deleteIdea(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER)
@@ -426,7 +397,6 @@ public class IdeaServiceTest {
     
     @Test
     public void deleteIdea_notOwner_forbidden() {
-        // given
         Idea existingIdea = new Idea();
         existingIdea.setIdeaId(IDEA_ID);
         existingIdea.setIdeaName("Idea to Delete");
@@ -441,7 +411,6 @@ public class IdeaServiceTest {
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER)).thenReturn(project);
         when(projectService.getOwnerIdByProjectId(PROJECT_ID)).thenReturn("another-user-id");
 
-        // when/then
         ResponseStatusException exception = assertThrows(
             ResponseStatusException.class,
             () -> ideaService.deleteIdea(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER)
@@ -453,14 +422,12 @@ public class IdeaServiceTest {
     
     @Test
     public void deleteIdea_asProjectOwner_success() {
-        // given
         Idea existingIdea = new Idea();
         existingIdea.setIdeaId(IDEA_ID);
         existingIdea.setIdeaName("Idea to Delete");
         existingIdea.setOwnerId("different-user-id");
         existingIdea.setProjectId(PROJECT_ID);
         
-        // User is project owner
         Project project = new Project();
         project.setProjectId(PROJECT_ID);
         project.setOwnerId(USER_ID);
@@ -471,10 +438,8 @@ public class IdeaServiceTest {
         doNothing().when(ideaRepository).deleteById(IDEA_ID);
         doNothing().when(commentRepository).deleteByIdeaId(IDEA_ID);
 
-        // when
         ideaService.deleteIdea(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER);
         
-        // then
         verify(ideaRepository, times(1)).deleteById(IDEA_ID);
         verify(commentRepository, times(1)).deleteByIdeaId(IDEA_ID);
     }

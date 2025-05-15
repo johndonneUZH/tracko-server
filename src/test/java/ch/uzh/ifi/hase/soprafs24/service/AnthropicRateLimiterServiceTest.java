@@ -48,13 +48,10 @@ public class AnthropicRateLimiterServiceTest {
 
     @Test
     public void init_schedulesRateLimitReplenishment() {
-        // Reset the mock to clear previous invocations
         reset(scheduler);
         
-        // when
         rateLimiterService.init();
 
-        // then
         verify(scheduler).scheduleAtFixedRate(
             any(),
             eq(1L),
@@ -65,58 +62,45 @@ public class AnthropicRateLimiterServiceTest {
 
     @Test
     public void acquirePermit_success() throws InterruptedException {
-        // given
         when(semaphore.tryAcquire(10, TimeUnit.SECONDS)).thenReturn(true);
 
-        // when
         boolean result = rateLimiterService.acquirePermit();
 
-        // then
         assertTrue(result);
         verify(semaphore).tryAcquire(10, TimeUnit.SECONDS);
     }
 
     @Test
     public void acquirePermit_failure() throws InterruptedException {
-        // given
         when(semaphore.tryAcquire(10, TimeUnit.SECONDS)).thenReturn(false);
 
-        // when
         boolean result = rateLimiterService.acquirePermit();
 
-        // then
         assertFalse(result);
         verify(semaphore).tryAcquire(10, TimeUnit.SECONDS);
     }
 
     @Test
     public void acquirePermit_interrupted() throws InterruptedException {
-        // given
         when(semaphore.tryAcquire(10, TimeUnit.SECONDS)).thenThrow(new InterruptedException());
 
-        // when
         boolean result = rateLimiterService.acquirePermit();
 
-        // then
         assertFalse(result);
         verify(semaphore).tryAcquire(10, TimeUnit.SECONDS);
     }
 
     @Test
     public void cleanup_shutsDownScheduler() {
-        // when
         rateLimiterService.cleanup();
 
-        // then
         verify(scheduler).shutdown();
     }
 
-    // Help Mockito recognize 'any' matcher
     private static <T> T any() {
         return org.mockito.ArgumentMatchers.any();
     }
     
-    // Help Mockito recognize 'eq' matcher
     private static <T> T eq(T value) {
         return org.mockito.ArgumentMatchers.eq(value);
     }

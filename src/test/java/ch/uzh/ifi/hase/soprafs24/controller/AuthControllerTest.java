@@ -55,7 +55,6 @@ public class AuthControllerTest {
 
     @BeforeEach
     public void setup() {
-        // Create test user
         testUser = new User();
         testUser.setId("1");
         testUser.setName("Test User");
@@ -65,14 +64,12 @@ public class AuthControllerTest {
         testUser.setStatus(UserStatus.ONLINE);
         testUser.setProjectIds(new ArrayList<>());
 
-        // Create test user registration
         testUserRegister = new UserRegister();
         testUserRegister.setName("Test User");
         testUserRegister.setUsername("testuser");
         testUserRegister.setEmail("test@example.com");
         testUserRegister.setPassword("password");
 
-        // Create test user login
         testUserLogin = new UserLogin();
         testUserLogin.setUsername("testuser");
         testUserLogin.setPassword("password");
@@ -80,11 +77,9 @@ public class AuthControllerTest {
 
     @Test
     public void registerUser_validInput_userCreated() throws Exception {
-        // given
         given(userService.checkIfUserExists(Mockito.any(UserRegister.class))).willReturn(false);
         given(userService.createUser(Mockito.any(UserRegister.class))).willReturn(testUser);
 
-        // when/then
         MockHttpServletRequestBuilder postRequest = post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(testUserRegister));
@@ -99,10 +94,8 @@ public class AuthControllerTest {
 
     @Test
     public void registerUser_duplicateUser_conflict() throws Exception {
-        // given
         given(userService.checkIfUserExists(Mockito.any(UserRegister.class))).willReturn(true);
 
-        // when/then
         MockHttpServletRequestBuilder postRequest = post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(testUserRegister));
@@ -113,7 +106,6 @@ public class AuthControllerTest {
 
     @Test
     public void loginUser_validCredentials_success() throws Exception {
-        // given
         given(userService.checkLoginRequest(Mockito.any(UserLogin.class))).willReturn(LoginStatus.SUCCESS);
 
         HashMap<String, String> userDetails = new HashMap<>();
@@ -123,7 +115,6 @@ public class AuthControllerTest {
         
         doNothing().when(userService).setStatus(anyString(), any(UserStatus.class));
 
-        // when/then
         MockHttpServletRequestBuilder postRequest = post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(testUserLogin));
@@ -137,10 +128,8 @@ public class AuthControllerTest {
 
     @Test
     public void loginUser_invalidCredentials_unauthorized() throws Exception {
-        // given
         given(userService.checkLoginRequest(Mockito.any(UserLogin.class))).willReturn(LoginStatus.INVALID_PASSWORD);
 
-        // when/then
         MockHttpServletRequestBuilder postRequest = post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(testUserLogin));
@@ -152,10 +141,8 @@ public class AuthControllerTest {
 
     @Test
     public void loginUser_userNotFound_notFound() throws Exception {
-        // given
         given(userService.checkLoginRequest(Mockito.any(UserLogin.class))).willReturn(LoginStatus.USER_NOT_FOUND);
 
-        // when/then
         MockHttpServletRequestBuilder postRequest = post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(testUserLogin));
@@ -167,12 +154,10 @@ public class AuthControllerTest {
 
     @Test
     public void logoutUser_validToken_success() throws Exception {
-        // given
         String userId = "1";
         given(userService.getUserIdByToken(anyString())).willReturn(userId);
         doNothing().when(userService).setStatus(userId, UserStatus.OFFLINE);
 
-        // when/then
         MockHttpServletRequestBuilder postRequest = post("/auth/logout")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer jwt-token");

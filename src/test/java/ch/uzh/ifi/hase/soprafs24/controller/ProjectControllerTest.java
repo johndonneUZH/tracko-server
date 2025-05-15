@@ -78,7 +78,6 @@ public class ProjectControllerTest {
 
     @BeforeEach
     public void setup() {
-        // Create test project
         testProject = new Project();
         testProject.setProjectId(PROJECT_ID);
         testProject.setProjectName("Test Project");
@@ -88,19 +87,16 @@ public class ProjectControllerTest {
         testProject.setCreatedAt(LocalDateTime.now());
         testProject.setUpdatedAt(LocalDateTime.now());
 
-        // Create test project registration
         testProjectRegister = new ProjectRegister();
         testProjectRegister.setProjectName("Test Project");
         testProjectRegister.setProjectDescription("Test Description");
 
-        // Create test project update
         testProjectUpdate = new ProjectUpdate();
         testProjectUpdate.setProjectName("Updated Project");
         testProjectUpdate.setProjectDescription("Updated Description");
         testProjectUpdate.setMembersToAdd(Arrays.asList("user-456"));
         testProjectUpdate.setMembersToRemove(new ArrayList<>());
         
-        // Create test members
         testMembers = new ArrayList<>();
         User member1 = new User();
         member1.setId(USER_ID);
@@ -115,11 +111,8 @@ public class ProjectControllerTest {
         testMembers.add(member1);
         testMembers.add(member2);
         
-        // Create test message register
         testMessageRegister = new MessageRegister();
-        // testMessageRegister.setContent("Test message content");
         
-        // Create test messages
         testMessages = new ArrayList<>();
         Message message1 = new Message();
         message1.setId("message-123");
@@ -136,18 +129,14 @@ public class ProjectControllerTest {
         testMessages.add(message1);
         testMessages.add(message2);
         
-        // Create test report
         testReport = new ContentDTO();
-        // testReport.setContent("Test project report content");
     }
 
     @Test
     @WithMockUser(authorities = "USER")
     public void createProject_success() throws Exception {
-        // given
         when(projectService.createProject(any(ProjectRegister.class), eq(AUTH_HEADER))).thenReturn(testProject);
 
-        // when/then
         mockMvc.perform(post("/projects")
                 .header("Authorization", AUTH_HEADER)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -162,10 +151,8 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getProject_success() throws Exception {
-        // given
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, AUTH_HEADER)).thenReturn(testProject);
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isAccepted())
@@ -178,11 +165,9 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getProject_notFound() throws Exception {
-        // given
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, AUTH_HEADER))
                 .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isNotFound());
@@ -191,11 +176,9 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getProject_forbidden() throws Exception {
-        // given
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, AUTH_HEADER))
                 .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a member of this project"));
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isForbidden());
@@ -204,7 +187,6 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void updateProject_success() throws Exception {
-        // given
         Project updatedProject = new Project();
         updatedProject.setProjectId(PROJECT_ID);
         updatedProject.setProjectName("Updated Project");
@@ -216,7 +198,6 @@ public class ProjectControllerTest {
 
         when(projectService.updateProject(eq(PROJECT_ID), any(ProjectUpdate.class), eq(AUTH_HEADER))).thenReturn(updatedProject);
 
-        // when/then
         mockMvc.perform(put("/projects/{projectId}", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -232,11 +213,9 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void updateProject_forbidden() throws Exception {
-        // given
         when(projectService.updateProject(eq(PROJECT_ID), any(ProjectUpdate.class), eq(AUTH_HEADER)))
                 .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this project"));
 
-        // when/then
         mockMvc.perform(put("/projects/{projectId}", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -247,10 +226,8 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getProjectMembers_success() throws Exception {
-        // given
         when(projectService.getProjectMembers(PROJECT_ID, AUTH_HEADER)).thenReturn(testMembers);
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/members", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isAccepted())
@@ -265,10 +242,8 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void makeUserLeaveFromProject_success() throws Exception {
-        // given
         doNothing().when(projectService).makeUserLeaveFromProject(PROJECT_ID, AUTH_HEADER);
 
-        // when/then
         mockMvc.perform(put("/projects/{projectId}/members", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isAccepted());
@@ -279,10 +254,8 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void deleteProject_success() throws Exception {
-        // given
         doNothing().when(projectService).deleteProject(PROJECT_ID, AUTH_HEADER);
 
-        // when/then
         mockMvc.perform(delete("/projects/{projectId}", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isNoContent());
@@ -293,10 +266,8 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void deleteProjectChanges_success() throws Exception {
-        // given
         doNothing().when(projectService).deleteProjectChanges(PROJECT_ID, AUTH_HEADER);
 
-        // when/then
         mockMvc.perform(delete("/projects/{projectId}/changes", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isNoContent());
@@ -304,28 +275,13 @@ public class ProjectControllerTest {
         verify(projectService, times(1)).deleteProjectChanges(PROJECT_ID, AUTH_HEADER);
     }
     
-    // @Test
-    // @WithMockUser(authorities = "USER")
-    // public void generateReport_success() throws Exception {
-    //     // given
-    //     when(projectService.generateReport(PROJECT_ID, AUTH_HEADER)).thenReturn(testReport);
-
-    //     // when/then
-    //     mockMvc.perform(get("/projects/{projectId}/report", PROJECT_ID)
-    //             .header("Authorization", AUTH_HEADER))
-    //             .andExpect(status().isAccepted())
-    //             .andExpect(jsonPath("$.text").value("Test project report content"));
-    // }
-    
     @Test
     @WithMockUser(authorities = "USER")
     public void createMessage_success() throws Exception {
-        // given
         Message savedMessage = testMessages.get(0);
         when(projectService.sendChatMessage(eq(PROJECT_ID), eq(AUTH_HEADER), any(MessageRegister.class)))
             .thenReturn(savedMessage);
 
-        // when/then
         mockMvc.perform(post("/projects/{projectId}/messages", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -339,10 +295,8 @@ public class ProjectControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getMessages_success() throws Exception {
-        // given
         when(projectService.getMessages(PROJECT_ID, AUTH_HEADER)).thenReturn(testMessages);
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/messages", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isAccepted())

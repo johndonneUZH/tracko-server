@@ -60,14 +60,12 @@ public class ChangeControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getChangesByProject_success() throws Exception {
-        // given
         Change change1 = createTestChange("change-1", ChangeType.ADDED_IDEA);
         Change change2 = createTestChange("change-2", ChangeType.CHANGED_PROJECT_SETTINGS);
         List<Change> changes = Arrays.asList(change1, change2);
     
         when(changeService.getChangesByProject(PROJECT_ID, AUTH_HEADER)).thenReturn(changes);
     
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/changes", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
@@ -81,7 +79,6 @@ public class ChangeControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void createChange_success() throws Exception {
-        // given
         ChangeRegister changeRegister = new ChangeRegister();
         changeRegister.setChangeType(ChangeType.ADDED_IDEA);
     
@@ -90,7 +87,6 @@ public class ChangeControllerTest {
         when(changeService.createChange(eq(PROJECT_ID), any(ChangeRegister.class), eq(AUTH_HEADER)))
                 .thenReturn(createdChange);
     
-        // when/then
         mockMvc.perform(post("/projects/{projectId}/changes", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -106,14 +102,12 @@ public class ChangeControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getDailyContributions_success() throws Exception {
-        // given
         DailyContribution contribution1 = new DailyContribution(LocalDate.now().minusDays(1), 3L);
         DailyContribution contribution2 = new DailyContribution(LocalDate.now(), 5L);
         List<DailyContribution> contributions = Arrays.asList(contribution1, contribution2);
         
         when(changeService.getDailyContributions(eq(PROJECT_ID), eq(AUTH_HEADER), any())).thenReturn(contributions);
         
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/changes/daily-contributions", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
@@ -126,14 +120,12 @@ public class ChangeControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getDailyContributions_withDaysParameter_success() throws Exception {
-        // given
         DailyContribution contribution1 = new DailyContribution(LocalDate.now().minusDays(1), 3L);
         DailyContribution contribution2 = new DailyContribution(LocalDate.now(), 5L);
         List<DailyContribution> contributions = Arrays.asList(contribution1, contribution2);
         
         when(changeService.getDailyContributions(eq(PROJECT_ID), eq(AUTH_HEADER), eq(7))).thenReturn(contributions);
         
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/changes/daily-contributions", PROJECT_ID)
                 .param("days", "7")
                 .header("Authorization", AUTH_HEADER))
@@ -147,7 +139,6 @@ public class ChangeControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getAnalytics_success() throws Exception {
-        // given
         LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         Contributions contrib1 = new Contributions(today, 3L, 2L, 1L, 5L, 0L, 7L, 1L, 2L);
         Contributions contrib2 = new Contributions(today.minusDays(1), 1L, 0L, 0L, 3L, 1L, 2L, 0L, 0L);
@@ -155,7 +146,6 @@ public class ChangeControllerTest {
         
         when(changeService.getAnalytics(eq(PROJECT_ID), eq(AUTH_HEADER), eq(90))).thenReturn(contributions);
         
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/changes/analytics", PROJECT_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
@@ -175,14 +165,12 @@ public class ChangeControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getAnalytics_withCustomDays_success() throws Exception {
-        // given
         LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         Contributions contrib1 = new Contributions(today, 5L, 3L, 0L, 2L, 1L, 4L, 2L, 1L);
         List<Contributions> contributions = Arrays.asList(contrib1);
         
         when(changeService.getAnalytics(eq(PROJECT_ID), eq(AUTH_HEADER), eq(30))).thenReturn(contributions);
         
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/changes/analytics", PROJECT_ID)
                 .param("days", "30")
                 .header("Authorization", AUTH_HEADER))
@@ -201,7 +189,6 @@ public class ChangeControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getAnalyticsByUserId_success() throws Exception {
-        // given
         LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         Contributions contrib = new Contributions(today, 4L, 2L, 1L, 3L, 0L, 5L, 1L, 2L);
         List<Contributions> contributions = Arrays.asList(contrib);
@@ -209,7 +196,6 @@ public class ChangeControllerTest {
         when(changeService.getAnalyticsByUserId(eq(PROJECT_ID), eq(USER_ID), eq(AUTH_HEADER), eq(180)))
                 .thenReturn(contributions);
         
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/changes/analytics/{userId}", PROJECT_ID, USER_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
@@ -227,7 +213,6 @@ public class ChangeControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getAnalyticsByUserId_withCustomDays_success() throws Exception {
-        // given
         LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         Contributions contrib = new Contributions(today, 3L, 1L, 0L, 4L, 1L, 2L, 0L, 1L);
         List<Contributions> contributions = Arrays.asList(contrib);
@@ -235,7 +220,6 @@ public class ChangeControllerTest {
         when(changeService.getAnalyticsByUserId(eq(PROJECT_ID), eq(USER_ID), eq(AUTH_HEADER), eq(30)))
                 .thenReturn(contributions);
         
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/changes/analytics/{userId}", PROJECT_ID, USER_ID)
                 .param("days", "30")
                 .header("Authorization", AUTH_HEADER))

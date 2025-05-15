@@ -43,14 +43,11 @@ class ReportServiceTest {
 
     @Test
     void createReport_success() {
-        // Arrange
         ReportRegister reportRegister = new ReportRegister();
         reportRegister.setReportContent("Test report content");
 
-        // Act
         reportService.createReport(reportRegister, USER_ID, PROJECT_ID);
 
-        // Assert
         verify(reportRepository, times(1)).save(reportCaptor.capture());
         
         Report savedReport = reportCaptor.getValue();
@@ -58,7 +55,6 @@ class ReportServiceTest {
         assertEquals(USER_ID, savedReport.getUserId());
         assertNotNull(savedReport.getCreatedAt());
         
-        // Verify report name format
         String reportName = savedReport.getReportName();
         assertTrue(reportName.startsWith("Project_" + PROJECT_ID + "_Report_"));
         assertTrue(reportName.contains("_"));
@@ -67,7 +63,6 @@ class ReportServiceTest {
 
     @Test
     void getReportById_success() {
-        // Arrange
         Report expectedReport = new Report();
         expectedReport.setReportContent("Test report content");
         expectedReport.setUserId(USER_ID);
@@ -76,10 +71,8 @@ class ReportServiceTest {
         
         when(reportRepository.findById(REPORT_ID)).thenReturn(Optional.of(expectedReport));
 
-        // Act
         Report result = reportService.getReportById(REPORT_ID);
 
-        // Assert
         assertNotNull(result);
         assertEquals(expectedReport.getReportContent(), result.getReportContent());
         assertEquals(expectedReport.getUserId(), result.getUserId());
@@ -91,20 +84,16 @@ class ReportServiceTest {
 
     @Test
     void getReportById_notFound() {
-        // Arrange
         when(reportRepository.findById(REPORT_ID)).thenReturn(Optional.empty());
 
-        // Act
         Report result = reportService.getReportById(REPORT_ID);
 
-        // Assert
         assertNull(result);
         verify(reportRepository, times(1)).findById(REPORT_ID);
     }
 
     @Test
     void getReportsByUserId_success() {
-        // Arrange
         Report report1 = new Report();
         report1.setReportContent("Test report 1");
         report1.setUserId(USER_ID);
@@ -121,10 +110,8 @@ class ReportServiceTest {
         
         when(reportRepository.findByUserId(USER_ID)).thenReturn(expectedReports);
 
-        // Act
         List<Report> results = reportService.getReportsByUserId(USER_ID);
 
-        // Assert
         assertNotNull(results);
         assertEquals(2, results.size());
         assertEquals(report1.getReportContent(), results.get(0).getReportContent());
@@ -135,13 +122,10 @@ class ReportServiceTest {
 
     @Test
     void getReportsByUserId_empty() {
-        // Arrange
         when(reportRepository.findByUserId(USER_ID)).thenReturn(Arrays.asList());
 
-        // Act
         List<Report> results = reportService.getReportsByUserId(USER_ID);
 
-        // Assert
         assertNotNull(results);
         assertTrue(results.isEmpty());
         
@@ -150,7 +134,6 @@ class ReportServiceTest {
 
     @Test
     void updateReport_success() {
-        // Arrange
         Report existingReport = new Report();
         existingReport.setReportContent("Original content");
         existingReport.setUserId(USER_ID);
@@ -162,31 +145,24 @@ class ReportServiceTest {
         
         when(reportRepository.findById(REPORT_ID)).thenReturn(Optional.of(existingReport));
 
-        // Act
         reportService.updateReport(updatedReportRegister, REPORT_ID);
 
-        // Assert
         verify(reportRepository, times(1)).findById(REPORT_ID);
         verify(reportRepository, times(1)).save(reportCaptor.capture());
         
         Report savedReport = reportCaptor.getValue();
-        // Note: The implementation has a bug - it sets reportName to reportContent
-        // This test verifies current behavior, which is likely a bug
         assertEquals("Updated content", savedReport.getReportName());
     }
 
     @Test
     void updateReport_reportNotFound() {
-        // Arrange
         ReportRegister updatedReportRegister = new ReportRegister();
         updatedReportRegister.setReportContent("Updated content");
         
         when(reportRepository.findById(REPORT_ID)).thenReturn(Optional.empty());
 
-        // Act
         reportService.updateReport(updatedReportRegister, REPORT_ID);
 
-        // Assert
         verify(reportRepository, times(1)).findById(REPORT_ID);
         verify(reportRepository, never()).save(any(Report.class));
     }

@@ -3,11 +3,15 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.models.user.UserLogin;
 import ch.uzh.ifi.hase.soprafs24.models.user.UserRegister;
+import ch.uzh.ifi.hase.soprafs24.models.user.UserUpdate;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.constant.LoginStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 
+import java.util.Map;
 import java.util.HashMap;
+
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +69,49 @@ public class AuthController {
         String userId = userService.getUserIdByToken(authHeader);
         userService.setStatus(userId, UserStatus.OFFLINE);
         return ResponseEntity.status(HttpStatus.OK).body("Logout successful");
+    }
+    @PostMapping("/check-email")
+    public ResponseEntity<Object> checkEmailExists(@RequestBody HashMap<String, String> request) {
+    String email = request.get("email");
+
+    if (email == null || email.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is required");
+    }
+
+    User user = userService.getUserByEmail(email);
+
+    if (user != null) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("exists", true);
+        response.put("username", user.getUsername());
+        return ResponseEntity.ok(response);
+    } else {
+        Map<String, Object> response = new HashMap<>();
+        response.put("exists", false);
+        return ResponseEntity.ok(response);
+    }
+}
+
+@PutMapping("/reset-password-with-otp")
+    public ResponseEntity<String> resetPasswordWithOtp(@RequestBody HashMap<String, String> request) {
+        String email = request.get("email");
+        String otp = request.get("otp");
+    
+        if (email == null || email.isEmpty() || otp == null || otp.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email and OTP are required");
+        }
+    
+        User existingUser = userService.getUserByEmail(email);
+        if (existingUser == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No account found with that email address.");
+        }
+    
+        UserUpdate userUpdate = new UserUpdate();
+        userUpdate.setPassword(otp); 
+    
+        userService.updateUser(existingUser.getId(), userUpdate);
+    
+        return ResponseEntity.status(HttpStatus.OK).body("Password reset successfully. Use your OTP as the new password to log in.");
     }
     
 }

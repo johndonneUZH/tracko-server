@@ -43,10 +43,8 @@ public class UserTest {
 
     @Test
     public void testProjectIdsManipulation() {
-        // Add some project IDs
         testUser.setProjectIds(Arrays.asList("project1", "project2"));
         
-        // Verify
         assertEquals(2, testUser.getProjectIds().size());
         assertEquals("project1", testUser.getProjectIds().get(0));
         assertEquals("project2", testUser.getProjectIds().get(1));

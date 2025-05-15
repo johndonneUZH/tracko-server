@@ -56,14 +56,12 @@ public class CommentControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getCommentsByIdeaId_success() throws Exception {
-        // given
         Comment comment1 = createTestComment("comment-1", "Comment 1", USER_ID);
         Comment comment2 = createTestComment("comment-2", "Comment 2", USER_ID);
         List<Comment> comments = Arrays.asList(comment1, comment2);
 
         when(commentService.getCommentsByIdea(PROJECT_ID, IDEA_ID, AUTH_HEADER)).thenReturn(comments);
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/ideas/{ideaId}/comments", PROJECT_ID, IDEA_ID)
                 .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
@@ -76,7 +74,6 @@ public class CommentControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void createRootComment_success() throws Exception {
-        // given
         CommentRegister commentRegister = new CommentRegister();
         commentRegister.setCommentText("New comment");
 
@@ -85,7 +82,6 @@ public class CommentControllerTest {
         when(commentService.createComment(eq(PROJECT_ID), eq(IDEA_ID), eq(null), eq(AUTH_HEADER), any(CommentRegister.class)))
                 .thenReturn(createdComment);
 
-        // when/then
         mockMvc.perform(post("/projects/{projectId}/ideas/{ideaId}/comments", PROJECT_ID, IDEA_ID)
             .header("Authorization", AUTH_HEADER)
             .contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +97,6 @@ public class CommentControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void createNestedComment_success() throws Exception {
-        // given
         CommentRegister commentRegister = new CommentRegister();
         commentRegister.setCommentText("Reply comment");
 
@@ -121,14 +116,11 @@ public class CommentControllerTest {
     @Test
     @WithMockUser(authorities = "USER")
     public void getCommentById_success() throws Exception {
-        // given
         Comment comment = createTestComment(COMMENT_ID, "Test comment content", USER_ID);
         
-        // Mock the service method that's actually called by the controller
         when(commentService.getCommentById(eq(PROJECT_ID), eq(IDEA_ID), eq(COMMENT_ID), eq(AUTH_HEADER)))
             .thenReturn(comment);
 
-        // when/then
         mockMvc.perform(get("/projects/{projectId}/ideas/{ideaId}/comments/{commentId}", 
                     PROJECT_ID, IDEA_ID, COMMENT_ID)
                 .header("Authorization", AUTH_HEADER))

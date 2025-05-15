@@ -62,10 +62,8 @@ public class ChangeServiceTest {
     public void setup() {
         changeService = new ChangeService(changeRepository, projectService, userService, projectAuthorizationService, messagingTemplate);
 
-        // Mock authentication
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
         
-        // Mock project authentication
         Project project = new Project();
         project.setProjectId(PROJECT_ID);
         project.setOwnerId(USER_ID);
@@ -74,17 +72,14 @@ public class ChangeServiceTest {
 
     @Test
     public void getChangesByProject_success() {
-        // given
         Change change1 = createTestChange("change-1", ChangeType.ADDED_IDEA);
         Change change2 = createTestChange("change-2", ChangeType.CHANGED_PROJECT_SETTINGS);
         List<Change> changes = Arrays.asList(change1, change2);
         
         when(changeRepository.findByProjectId(PROJECT_ID)).thenReturn(changes);
 
-        // when
         List<Change> result = changeService.getChangesByProject(PROJECT_ID, VALID_AUTH_HEADER);
 
-        // then
         assertEquals(2, result.size());
         assertEquals("change-1", result.get(0).getChangeId());
         assertEquals("change-2", result.get(1).getChangeId());
@@ -93,20 +88,17 @@ public class ChangeServiceTest {
 
     @Test
     public void createChange_success() {
-        // given
         ChangeRegister changeRegister = new ChangeRegister();
         changeRegister.setChangeType(ChangeType.ADDED_IDEA);
     
         when(changeRepository.save(any(Change.class))).thenAnswer(invocation -> {
             Change input = invocation.getArgument(0);
-            input.setChangeId("generated-change-id");  // mimic what DB might do
+            input.setChangeId("generated-change-id");
             return input;
         });
     
-        // when
         Change result = changeService.createChange(PROJECT_ID, changeRegister, VALID_AUTH_HEADER);
     
-        // then
         assertNotNull(result);
         assertEquals("generated-change-id", result.getChangeId());
         assertEquals(ChangeType.ADDED_IDEA, result.getChangeType());
@@ -125,7 +117,6 @@ public class ChangeServiceTest {
     
     @Test
     public void createChangeUser_success() {
-        // given
         ChangeRegister changeRegister = new ChangeRegister();
         changeRegister.setChangeType(ChangeType.SENT_FRIEND_REQUEST);
         
@@ -135,10 +126,8 @@ public class ChangeServiceTest {
             return input;
         });
         
-        // when
         Change result = changeService.createChangeUser(USER_ID, changeRegister, VALID_AUTH_HEADER, FRIEND_ID);
         
-        // then
         assertNotNull(result);
         assertEquals("generated-change-id", result.getChangeId());
         assertEquals(ChangeType.SENT_FRIEND_REQUEST, result.getChangeType());
@@ -154,7 +143,6 @@ public class ChangeServiceTest {
     
     @Test
     public void markChange_project() {
-        // given
         ChangeType changeType = ChangeType.ADDED_IDEA;
         
         when(changeRepository.save(any(Change.class))).thenAnswer(invocation -> {
@@ -163,10 +151,8 @@ public class ChangeServiceTest {
             return input;
         });
         
-        // when
         changeService.markChange(PROJECT_ID, changeType, VALID_AUTH_HEADER, false, null);
         
-        // then
         verify(projectAuthorizationService, times(1)).authenticateProject(PROJECT_ID, VALID_AUTH_HEADER);
         verify(changeRepository, times(1)).save(any(Change.class));
         verify(messagingTemplate, times(1)).convertAndSend(
@@ -177,7 +163,6 @@ public class ChangeServiceTest {
     
     @Test
     public void markChange_Comment() {
-        // given
         ChangeType changeType = ChangeType.SENT_FRIEND_REQUEST;
         
         when(changeRepository.save(any(Change.class))).thenAnswer(invocation -> {
@@ -186,10 +171,8 @@ public class ChangeServiceTest {
             return input;
         });
         
-        // when
         changeService.markChange(USER_ID, changeType, VALID_AUTH_HEADER, true, FRIEND_ID);
         
-        // then
         verify(changeRepository, times(1)).save(any(Change.class));
         verify(messagingTemplate, times(1)).convertAndSend(
             eq("/queue/user-" + FRIEND_ID + "-notifications"),
@@ -199,16 +182,13 @@ public class ChangeServiceTest {
     
     @Test
     public void deleteChangesByProjectId() {
-        // when
         changeService.deleteChangesByProjectId(PROJECT_ID);
         
-        // then
         verify(changeRepository, times(1)).deleteByProjectId(PROJECT_ID);
     }
     
     @Test
     public void getContributionsByDate_success() {
-        // given
         LocalDateTime today = LocalDateTime.now();
         LocalDateTime yesterday = today.minusDays(1);
         
@@ -225,10 +205,8 @@ public class ChangeServiceTest {
         
         when(changeRepository.findByProjectId(PROJECT_ID)).thenReturn(changes);
         
-        // when
         Map<LocalDate, Long> result = changeService.getContributionsByDate(PROJECT_ID, VALID_AUTH_HEADER);
         
-        // then
         assertEquals(2, result.size());
         assertEquals(2L, result.get(today.toLocalDate()));
         assertEquals(1L, result.get(yesterday.toLocalDate()));
@@ -236,7 +214,6 @@ public class ChangeServiceTest {
     
     @Test
     public void getDailyContributions_success() {
-        // given
         LocalDateTime today = LocalDateTime.now();
         LocalDateTime yesterday = today.minusDays(1);
         LocalDateTime twoDaysAgo = today.minusDays(2);
@@ -257,10 +234,8 @@ public class ChangeServiceTest {
         
         when(changeRepository.findByProjectId(PROJECT_ID)).thenReturn(changes);
         
-        // when
         List<DailyContribution> result = changeService.getDailyContributions(PROJECT_ID, VALID_AUTH_HEADER, 2);
         
-        // then
         assertEquals(2, result.size());
         assertEquals(today.toLocalDate(), result.get(1).date());
         assertEquals(2L, result.get(1).count());
@@ -270,7 +245,6 @@ public class ChangeServiceTest {
     
     @Test
     public void getAnalytics_success() {
-        // given
         LocalDateTime today = LocalDateTime.now();
         LocalDateTime yesterday = today.minusDays(1);
         
@@ -287,13 +261,10 @@ public class ChangeServiceTest {
         
         when(changeRepository.findByProjectId(PROJECT_ID, USER_ID)).thenReturn(changes);
         
-        // when
         List<Contributions> result = changeService.getAnalytics(PROJECT_ID, VALID_AUTH_HEADER, 7);
         
-        // then
         assertEquals(2, result.size());
         
-        // Check today's contributions
         Contributions todayContrib = result.stream()
             .filter(c -> c.date().toLocalDate().equals(today.toLocalDate()))
             .findFirst().orElse(null);
@@ -302,7 +273,6 @@ public class ChangeServiceTest {
         assertEquals(1L, todayContrib.upvote());
         assertEquals(0L, todayContrib.addComment());
         
-        // Check yesterday's contributions
         Contributions yesterdayContrib = result.stream()
             .filter(c -> c.date().toLocalDate().equals(yesterday.toLocalDate()))
             .findFirst().orElse(null);
@@ -314,7 +284,6 @@ public class ChangeServiceTest {
     
     @Test
     public void getAnalyticsByUserId_success() {
-        // given
         LocalDateTime today = LocalDateTime.now();
         
         Change change1 = createTestChange("change-1", ChangeType.MODIFIED_IDEA);
@@ -327,10 +296,8 @@ public class ChangeServiceTest {
         
         when(changeRepository.findByOwnerIdAndProjectId(USER_ID, PROJECT_ID)).thenReturn(changes);
         
-        // when
         List<Contributions> result = changeService.getAnalyticsByUserId(PROJECT_ID, USER_ID, VALID_AUTH_HEADER, 7);
         
-        // then
         assertEquals(1, result.size());
         
         Contributions todayContrib = result.get(0);
@@ -343,7 +310,6 @@ public class ChangeServiceTest {
     
     @Test
     public void buildAnalytics_success() {
-        // given
         LocalDateTime today = LocalDateTime.now();
         
         Change change1 = createTestChange("change-1", ChangeType.ADDED_IDEA);
@@ -354,10 +320,8 @@ public class ChangeServiceTest {
         
         List<Change> changes = Arrays.asList(change1, change2);
         
-        // when
         List<Contributions> result = changeService.buildAnalytics(changes);
         
-        // then
         assertEquals(1, result.size());
         
         Contributions contribution = result.get(0);

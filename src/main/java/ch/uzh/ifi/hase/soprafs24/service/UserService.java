@@ -127,6 +127,9 @@ public class UserService {
     public User getUserById(String userId) {
         return userRepository.findById(userId).orElse(null);
     }
+    public User getUserByEmail(String email) {
+    return userRepository.findByEmail(email); 
+    }
 
     public User getUserByToken(String authHeader) {
         String token = authHeader.replace("Bearer ", "");

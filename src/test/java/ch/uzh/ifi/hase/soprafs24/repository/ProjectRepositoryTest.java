@@ -29,13 +29,11 @@ public class ProjectRepositoryTest {
     
     @BeforeEach
     public void setup() {
-        // Clear the test database before each test
         projectRepository.deleteAll();
     }
     
     @Test
     public void testMongoConnection() {
-        // Create a test project
         Project testProject = new Project();
         testProject.setProjectName("Test Project");
         testProject.setProjectDescription("This is a test project");
@@ -44,13 +42,10 @@ public class ProjectRepositoryTest {
         testProject.setCreatedAt(LocalDateTime.now());
         testProject.setUpdatedAt(LocalDateTime.now());
         
-        // Save to repository
         Project savedProject = projectRepository.save(testProject);
         
-        // Verify the project was saved
         assertNotNull(savedProject.getProjectId());
         
-        // Retrieve and verify
         Optional<Project> retrievedProject = projectRepository.findById(savedProject.getProjectId());
         assertTrue(retrievedProject.isPresent());
         assertEquals("Test Project", retrievedProject.get().getProjectName());
@@ -58,7 +53,6 @@ public class ProjectRepositoryTest {
 
     @Test
     public void findByProjectName_success() {
-        // given
         String uniqueProjectName = "TestProject-" + System.currentTimeMillis();
         
         Project project = new Project();
@@ -71,17 +65,14 @@ public class ProjectRepositoryTest {
         
         projectRepository.save(project);
 
-        // when
         Project found = projectRepository.findByProjectName(uniqueProjectName);
 
-        // then
         assertNotNull(found);
         assertEquals(uniqueProjectName, found.getProjectName());
     }
     
     @Test
     public void findByOwnerId_success() {
-        // given
         String ownerId = "owner-" + System.currentTimeMillis();
         
         Project project1 = new Project();
@@ -103,10 +94,8 @@ public class ProjectRepositoryTest {
         projectRepository.save(project1);
         projectRepository.save(project2);
 
-        // when
         List<Project> foundProjects = projectRepository.findByOwnerId(ownerId);
 
-        // then
         assertEquals(2, foundProjects.size());
         assertTrue(foundProjects.stream().anyMatch(project -> project.getProjectName().equals("Project 1")));
         assertTrue(foundProjects.stream().anyMatch(project -> project.getProjectName().equals("Project 2")));
@@ -114,7 +103,6 @@ public class ProjectRepositoryTest {
     
     @Test
     public void existsByProjectName_success() {
-        // given
         String uniqueProjectName = "TestProject-" + System.currentTimeMillis();
         
         Project project = new Project();
@@ -127,10 +115,8 @@ public class ProjectRepositoryTest {
         
         projectRepository.save(project);
 
-        // when
         boolean exists = projectRepository.existsByProjectName(uniqueProjectName);
 
-        // then
         assertTrue(exists);
     }
 }

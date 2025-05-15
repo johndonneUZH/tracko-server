@@ -42,7 +42,6 @@ public class UserIntegrationTest {
 
     @Test
     public void testUserRegistrationLoginLogout() {
-        // Register user
         UserRegister newUser = new UserRegister();
         newUser.setName("Integration Test");
         newUser.setUsername("integrationtest");
@@ -56,7 +55,6 @@ public class UserIntegrationTest {
     
         assertEquals(HttpStatus.CREATED, registrationResponse.getStatusCode());
     
-        // Login
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String loginBody = String.format("{\"username\":\"%s\",\"password\":\"%s\"}",
@@ -71,7 +69,6 @@ public class UserIntegrationTest {
         assertEquals(HttpStatus.OK, loginResponse.getStatusCode());
         assertEquals("Login successful", loginResponse.getBody());
     
-        // ✅ Extract JWT and userId from headers
         String token = loginResponse.getHeaders().getFirst("Authorization");
         String userId = loginResponse.getHeaders().getFirst("userId");
     
@@ -79,7 +76,6 @@ public class UserIntegrationTest {
         assertTrue(token.startsWith("Bearer "));
         assertNotNull(userId);
     
-        // ✅ Use JWT in Authorization header for user profile request
         HttpHeaders authHeaders = new HttpHeaders();
         authHeaders.setBearerAuth(token.substring(7)); // Strip "Bearer "
         HttpEntity<Void> getRequest = new HttpEntity<>(authHeaders);
@@ -92,13 +88,11 @@ public class UserIntegrationTest {
     
         assertEquals(HttpStatus.OK, userResponse.getStatusCode());
     
-        // Check values manually
         String body = userResponse.getBody();
         assertNotNull(body);
         assertTrue(body.contains("\"username\":\"integrationtest\""));
         assertTrue(body.contains("\"status\":\"ONLINE\""));
     
-        // Logout
         ResponseEntity<String> logoutResponse = restTemplate.exchange(
                 baseUrl + "/auth/logout",
                 HttpMethod.POST,
@@ -108,7 +102,6 @@ public class UserIntegrationTest {
         assertEquals(HttpStatus.OK, logoutResponse.getStatusCode());
         assertEquals("Logout successful", logoutResponse.getBody());
     
-        // Confirm user is offline in DB
         User userInDb = userRepository.findByUsername(newUser.getUsername());
         assertEquals(UserStatus.OFFLINE, userInDb.getStatus());
     }    

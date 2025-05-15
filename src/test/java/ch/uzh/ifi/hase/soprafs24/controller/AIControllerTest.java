@@ -49,7 +49,6 @@ public class AIControllerTest {
 
     @BeforeEach
     public void setup() {
-        // Create a mock response that will be used across tests
         mockResponse = new AnthropicResponseDTO();
         ContentDTO content = new ContentDTO();
         content.setType("text");
@@ -61,13 +60,11 @@ public class AIControllerTest {
 
     @Test
     public void refineIdea_success() throws Exception {
-        // given
         IdeaRefinementRequestDTO request = new IdeaRefinementRequestDTO();
         request.setIdeaContent("My raw idea to refine");
 
         when(anthropicService.refineIdea(anyString())).thenReturn(mockResponse);
 
-        // when/then
         mockMvc.perform(post("/api/ai/refine")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request)))
@@ -78,14 +75,12 @@ public class AIControllerTest {
 
     @Test
     public void combineIdeas_success() throws Exception {
-        // given
         IdeaCombinationRequestDTO request = new IdeaCombinationRequestDTO();
         request.setIdeaOne("First idea");
         request.setIdeaTwo("Second idea");
 
         when(anthropicService.combineIdeas(eq("First idea"), eq("Second idea"))).thenReturn(mockResponse);
 
-        // when/then
         mockMvc.perform(post("/api/ai/combine")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request)))
@@ -96,12 +91,10 @@ public class AIControllerTest {
 
     @Test
     public void generateFromTemplate_success() throws Exception {
-        // given
         String template = "Create an idea about renewable energy";
 
         when(anthropicService.generateFromTemplate(eq(template))).thenReturn(mockResponse);
 
-        // when/then
         mockMvc.perform(post("/api/ai/template")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(template))
@@ -112,14 +105,12 @@ public class AIControllerTest {
 
     @Test
     public void suggestWithTwist_success() throws Exception {
-        // given
         IdeaTwistRequestDTO request = new IdeaTwistRequestDTO();
         request.setOriginalIdea("Original idea");
         request.setTwist("Make it eco-friendly");
 
         when(anthropicService.suggestRelatedIdea(eq("Original idea"), eq("Make it eco-friendly"))).thenReturn(mockResponse);
 
-        // when/then
         mockMvc.perform(post("/api/ai/twist")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request)))
@@ -130,12 +121,10 @@ public class AIControllerTest {
 
     @Test
     public void generateContent_success() throws Exception {
-        // given
         String prompt = "Generate creative content about space travel";
 
         when(anthropicService.generateContent(eq(prompt))).thenReturn(mockResponse);
 
-        // when/then
         mockMvc.perform(post("/api/ai/generate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(prompt))
