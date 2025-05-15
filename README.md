@@ -121,6 +121,56 @@ Ensure that [Docker](https://www.docker.com/) is installed on your machine.
 
 ```docker run -p 3000:3000 johndonneuzh/sopra-group-46-server```
 
+---
+## High-level Components
+
+1. **Authentication & Authorization System**
+   - Handles user authentication and JWT token management
+   - Key files: 
+     - [`auth/JwtUtil.java`](link-to-file) (Token generation/validation)
+     - [`auth/SecurityConfig.java`](link-to-file) (Security configuration)
+     - [`config/WebSocketAuthInterceptor.java`](link-to-file) (WebSocket auth)
+
+2. **AI Integration Layer**
+   - Manages communication with Claude AI and idea processing
+   - Key files:
+     - [`service/AnthropicService.java`](link-to-file) (AI service implementation)
+     - [`controller/AIController.java`](link-to-file) (API endpoints)
+     - [`models/ai/*DTO.java`](link-to-file) (Data transfer objects)
+
+3. **Real-Time Collaboration Engine**
+   - Handles WebSocket connections and real-time updates
+   - Key files:
+     - [`config/WebSocketConfig.java`](link-to-file) (WebSocket configuration)
+     - [`models/websocket/IdeaUpdateMessage.java`](link-to-file) (Message format)
+     - [`service/ProjectService.java`](link-to-file) (Real-time updates)
+
+4. **Data Access Layer**
+   - Manages all database operations and data persistence
+   - Key files:
+     - [`repository/*Repository.java`](link-to-file) (MongoDB repositories)
+     - [`service/*Service.java`](link-to-file) (Business logic)
+    
+---
+## Roadmap
+
+### 1. Enhanced AI Capabilities
+- **Multi-model support** (Claude + GPT + local LLMs)  
+- **Automated idea synthesis** - combine similar concepts  
+- **Predictive analytics** - forecast project bottlenecks  
+
+### 2. Professional Collaboration Tools  
+- **Live document co-editing** (Markdown/Code support)  
+- **Advanced presence system** (active typing indicators, focus tracking)  
+- **Integrated whiteboarding** with AI-assisted diagramming  
+
+### 3. Cross-Platform Expansion  
+- **PWA with offline mode** (service worker caching)  
+- **React Native mobile app** (iOS/Android)  
+- **VS Code extension** for technical teams  
+
+---
+
 ## API Documentation
 
 All API endpoints require an `Authorization` header with a valid JWT token. The server implements Spring Security for authentication and authorization.
