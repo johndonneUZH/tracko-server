@@ -131,47 +131,14 @@ public class IdeaIntegrationTest {
         IdeaUpdate ideaUpdate = new IdeaUpdate();
         ideaUpdate.setIdeaName("Updated Idea");
         ideaUpdate.setIdeaDescription("Updated Description");
-        // ideaUpdate.setIdeaStatus(IdeaStatus.CLOSED);
-        // ideaUpdate.setUpVotes(5L);
-        // ideaUpdate.setDownVotes(2L);
-        // ideaUpdate.setSubIdeas(new ArrayList<>());
 
         Idea updatedIdea = ideaService.updateIdea(projectId, createdIdea.getIdeaId(), ideaUpdate, authHeader);
         
         // Verify updates
         assertEquals("Updated Idea", updatedIdea.getIdeaName());
         assertEquals("Updated Description", updatedIdea.getIdeaDescription());
-        // assertEquals(IdeaStatus.CLOSED, updatedIdea.getIdeaStatus());
-        // assertEquals(5L, updatedIdea.getUpVotes());
-        // assertEquals(2L, updatedIdea.getDownVotes());
     }
 
-    // @Test
-    // public void testCreateSubIdea() {
-    //     // Create a parent idea
-    //     IdeaRegister parentIdeaRegister = new IdeaRegister();
-    //     parentIdeaRegister.setIdeaName("Parent Idea");
-    //     parentIdeaRegister.setIdeaDescription("Parent Description");
-
-    //     Idea parentIdea = ideaService.createIdea(projectId, parentIdeaRegister, authHeader, new ArrayList<>());
-        
-    //     // Create a sub-idea
-    //     IdeaRegister subIdeaRegister = new IdeaRegister();
-    //     subIdeaRegister.setIdeaName("Sub Idea");
-    //     subIdeaRegister.setIdeaDescription("Sub Description");
-
-    //     Idea subIdea = ideaService.createSubIdea(projectId, parentIdea.getIdeaId(), subIdeaRegister, authHeader);
-        
-    //     // Verify sub-idea creation
-    //     assertNotNull(subIdea);
-    //     assertEquals("Sub Idea", subIdea.getIdeaName());
-        
-    //     // Verify parent idea has the sub-idea
-    //     Idea updatedParentIdea = ideaService.getIdeaById(projectId, parentIdea.getIdeaId(), authHeader);
-    //     assertEquals(1, updatedParentIdea.getSubIdeas().size());
-    //     assertEquals(subIdea.getIdeaId(), updatedParentIdea.getSubIdeas().get(0));
-    // }
-    
     @Test
     public void testUnauthorizedAccess() {
         // Create a second user and project

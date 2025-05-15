@@ -18,6 +18,7 @@ import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaUpdate;
 import ch.uzh.ifi.hase.soprafs24.service.ProjectService;
 
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
 
@@ -112,7 +113,9 @@ public class IdeaService {
         Idea idea = ideaRepository.findById(ideaId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, IDEA_NOT_FOUND));
     
-        projectAuthorizationService.authenticateProject(projectId, authHeader);
+        Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
+
+        User user = userService.getUserByToken(authHeader);
     
         boolean actualChange = false;
 
@@ -124,6 +127,10 @@ public class IdeaService {
         if (inputIdea.getIdeaDescription() != null) {
             idea.setIdeaDescription(inputIdea.getIdeaDescription());
             actualChange = true;
+        }
+
+        if (actualChange && !idea.getOwnerId().equals(user.getId()) && !project.getOwnerId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this idea");
         }
     
         // These are floats, always update (even if 0)

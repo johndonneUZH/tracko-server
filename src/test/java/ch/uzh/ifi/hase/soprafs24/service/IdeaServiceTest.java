@@ -23,6 +23,7 @@ import ch.uzh.ifi.hase.soprafs24.models.idea.Idea;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaRegister;
 import ch.uzh.ifi.hase.soprafs24.models.idea.IdeaUpdate;
 import ch.uzh.ifi.hase.soprafs24.models.project.Project;
+import ch.uzh.ifi.hase.soprafs24.models.user.User;
 import ch.uzh.ifi.hase.soprafs24.repository.CommentRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.IdeaRepository;
 
@@ -70,14 +71,22 @@ public class IdeaServiceTest {
             projectService,
             changeService
         );
+    
+        // Create a mock user
+        User mockUser = new User();
+        mockUser.setId(USER_ID);
+        mockUser.setUsername("testuser");
 
-        // Mock the user authentication
+        // Mock user service calls
         when(userService.getUserIdByToken(VALID_AUTH_HEADER)).thenReturn(USER_ID);
-        
+        when(userService.getUserById(USER_ID)).thenReturn(mockUser);
+        when(userService.getUserByToken(VALID_AUTH_HEADER)).thenReturn(mockUser); 
+            
         // Mock project authentication
         Project project = new Project();
         project.setProjectId(PROJECT_ID);
         project.setOwnerId(USER_ID);
+        
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER)).thenReturn(project);
     }
 
@@ -164,7 +173,7 @@ public class IdeaServiceTest {
         
         when(ideaRepository.findById(IDEA_ID)).thenReturn(Optional.of(idea));
 
-        // when
+        // whena
         Idea foundIdea = ideaService.getIdeaById(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER);
 
         // then

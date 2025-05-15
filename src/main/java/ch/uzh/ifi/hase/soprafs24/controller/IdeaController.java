@@ -72,17 +72,5 @@ public class IdeaController {
         ideaService.deleteIdea(projectId, ideaId, authHeader);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
-
-    // // Create sub-idea
-    // @PostMapping("/{ideaId}")
-    // public ResponseEntity<Idea> createSubIdea(
-    //         @PathVariable String projectId,
-    //         @PathVariable String ideaId,
-    //         @RequestBody IdeaRegister newIdea,
-    //         @RequestHeader("Authorization") String authHeader) {
-
-    //     Idea savedIdea = ideaService.createSubIdea(projectId, ideaId, newIdea, authHeader);
-    //     return ResponseEntity.status(HttpStatus.CREATED).body(savedIdea);
-    // }
     
 }
