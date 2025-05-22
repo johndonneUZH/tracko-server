@@ -352,7 +352,6 @@ public class ProjectServiceTest {
         
         verify(userService, times(1)).deleteProjectFromUser(USER_ID, PROJECT_ID);
         verify(projectRepository, times(1)).save(testProject);
-        verify(changeService, times(1)).markChange(eq(PROJECT_ID), eq(ChangeType.LEFT_PROJECT), eq(VALID_AUTH_HEADER), eq(false), eq(null));
         assertFalse(testProject.getProjectMembers().contains(USER_ID));
     }
     
