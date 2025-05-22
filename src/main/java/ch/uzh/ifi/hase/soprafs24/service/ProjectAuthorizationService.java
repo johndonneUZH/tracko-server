@@ -33,7 +33,7 @@ public class ProjectAuthorizationService {
         }
 
         if (!project.get().getOwnerId().equals(userId) && !project.get().getProjectMembers().contains(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a project member");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a project member: " + userId);
         }
 
         return project.get();

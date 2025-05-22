@@ -29,14 +29,16 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@RequestBody UserRegister newUser) {
-
         if (userService.checkIfUserExists(newUser)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "User already exists");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
 
         User savedUser = userService.createUser(newUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<String> loginUser(@RequestBody UserLogin loginRequest) {

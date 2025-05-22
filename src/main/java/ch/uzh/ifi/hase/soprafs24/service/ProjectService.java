@@ -225,8 +225,6 @@ public class ProjectService {
         project.getProjectMembers().remove(userId);
         userService.deleteProjectFromUser(userId, projectId);
         projectRepository.save(project);
-
-        changeService.markChange(projectId, ChangeType.LEFT_PROJECT, authHeader, false, null);
     }
 
     public Message sendChatMessage(String projectId, String authHeader, MessageRegister message) {
