@@ -17,9 +17,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import config.MongoTestConfig;
-import models.project.Project;
+import tracko.models.project.Project;
+import tracko.repository.ProjectRepository;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class ProjectRepositoryTest {

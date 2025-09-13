@@ -2,8 +2,8 @@ package config;
 
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
@@ -12,7 +12,7 @@ import com.mongodb.client.MongoClients;
 
 import java.net.InetSocketAddress;
 
-@TestConfiguration
+@Configuration
 @EnableMongoRepositories(basePackages = "repository")
 public class MongoTestConfig {
 

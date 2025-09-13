@@ -7,9 +7,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import models.project.Project;
-import models.project.ProjectRegister;
-import models.project.ProjectUpdate;
+import tracko.models.project.Project;
+import tracko.models.project.ProjectRegister;
+import tracko.models.project.ProjectUpdate;
 
 public class ProjectModelTest {
 

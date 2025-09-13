@@ -7,11 +7,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import config.AnthropicConfig;
-
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
+import tracko.config.AnthropicConfig;
 
 import static org.junit.jupiter.api.Assertions.*;
 

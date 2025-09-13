@@ -12,15 +12,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import config.MongoTestConfig;
-import constant.ChangeType;
-import models.change.Change;
+import tracko.constant.ChangeType;
+import tracko.models.change.Change;
+import tracko.repository.ChangeRepository;
 
-@SpringBootTest
-@Import(MongoTestConfig.class)
+@SpringBootTest(classes = {MongoTestConfig.class})
 @ActiveProfiles("test")
 public class ChangeRepositoryTest {
 

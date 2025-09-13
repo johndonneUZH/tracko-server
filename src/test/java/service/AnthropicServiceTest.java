@@ -23,13 +23,15 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import config.AnthropicConfig;
-import exceptions.AnthropicApiException;
-import exceptions.AnthropicRateLimitException;
-import exceptions.AnthropicTimeoutException;
-import models.ai.AnthropicRequestDTO;
-import models.ai.AnthropicResponseDTO;
-import models.ai.ContentDTO;
+import tracko.config.AnthropicConfig;
+import tracko.exceptions.AnthropicApiException;
+import tracko.exceptions.AnthropicRateLimitException;
+import tracko.exceptions.AnthropicTimeoutException;
+import tracko.models.ai.AnthropicRequestDTO;
+import tracko.models.ai.AnthropicResponseDTO;
+import tracko.models.ai.ContentDTO;
+import tracko.service.AnthropicRateLimiterService;
+import tracko.service.AnthropicService;
 
 @SpringBootTest(classes = {AnthropicConfig.class, AnthropicRateLimiterService.class})
 @ActiveProfiles("test")

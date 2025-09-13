@@ -30,19 +30,19 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
-import auth.JwtUtil;
+import tracko.auth.JwtUtil;
 import config.MongoTestConfig;
-import repository.CommentRepository;
-import constant.ChangeType;
-import models.comment.Comment;
-import models.comment.CommentRegister;
-import models.idea.Idea;
-import models.project.Project;
-import service.ChangeService;
-import service.CommentService;
-import service.IdeaService;
-import service.ProjectAuthorizationService;
-import service.UserService;
+import tracko.repository.CommentRepository;
+import tracko.constant.ChangeType;
+import tracko.models.comment.Comment;
+import tracko.models.comment.CommentRegister;
+import tracko.models.idea.Idea;
+import tracko.models.project.Project;
+import tracko.service.ChangeService;
+import tracko.service.CommentService;
+import tracko.service.IdeaService;
+import tracko.service.ProjectAuthorizationService;
+import tracko.service.UserService;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
@@ -218,7 +218,7 @@ public class CommentServiceTest {
             commentService.createComment(PROJECT_ID, IDEA_ID, nonExistentParentId, VALID_AUTH_HEADER, commentRegister);
         });
         
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("Parent comment not found", exception.getReason());
     }
 
@@ -248,7 +248,7 @@ public class CommentServiceTest {
             commentService.getCommentById(PROJECT_ID, IDEA_ID, nonExistentCommentId, VALID_AUTH_HEADER);
         });
         
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("Comment not found", exception.getReason());
     }
     
@@ -308,7 +308,7 @@ public class CommentServiceTest {
             commentService.deleteComment(COMMENT_ID, VALID_AUTH_HEADER);
         });
         
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
         assertEquals("You are not the owner of this comment", exception.getReason());
     }
 

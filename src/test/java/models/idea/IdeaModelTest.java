@@ -1,17 +1,13 @@
 package models.idea;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
-
-import constant.IdeaStatus;
-import models.idea.Idea;
-import models.idea.IdeaRegister;
-import models.idea.IdeaUpdate;
+import tracko.models.idea.Idea;
+import tracko.models.idea.IdeaRegister;
+import tracko.models.idea.IdeaUpdate;
 
 public class IdeaModelTest {
 

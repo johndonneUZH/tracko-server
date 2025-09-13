@@ -1,9 +1,9 @@
 
 
-import repository.UserRepository;
-import constant.UserStatus;
-import models.user.User;
-import models.user.UserRegister;
+import tracko.repository.UserRepository;
+import tracko.constant.UserStatus;
+import tracko.models.user.User;
+import tracko.models.user.UserRegister;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

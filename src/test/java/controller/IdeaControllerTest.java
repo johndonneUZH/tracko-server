@@ -26,12 +26,12 @@ import org.springframework.web.server.ResponseStatusException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import models.idea.Idea;
-import models.idea.IdeaRegister;
-import models.idea.IdeaUpdate;
-import service.IdeaService;
-import auth.JwtUtil;
-import controller.IdeaController;
+import tracko.models.idea.Idea;
+import tracko.models.idea.IdeaRegister;
+import tracko.models.idea.IdeaUpdate;
+import tracko.service.IdeaService;
+import tracko.auth.JwtUtil;
+import tracko.controller.IdeaController;
 
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;

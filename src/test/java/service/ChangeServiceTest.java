@@ -23,17 +23,17 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import config.MongoTestConfig;
-import repository.ChangeRepository;
-import constant.ChangeType;
-import models.change.Change;
-import models.change.ChangeRegister;
-import models.project.Project;
-import service.ChangeService;
-import service.ProjectAuthorizationService;
-import service.ProjectService;
-import service.UserService;
-import service.ChangeService.Contributions;
-import service.ChangeService.DailyContribution;
+import tracko.repository.ChangeRepository;
+import tracko.constant.ChangeType;
+import tracko.models.change.Change;
+import tracko.models.change.ChangeRegister;
+import tracko.models.project.Project;
+import tracko.service.ChangeService;
+import tracko.service.ProjectAuthorizationService;
+import tracko.service.ProjectService;
+import tracko.service.UserService;
+import tracko.service.ChangeService.Contributions;
+import tracko.service.ChangeService.DailyContribution;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)

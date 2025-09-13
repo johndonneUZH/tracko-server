@@ -7,8 +7,8 @@ import org.springframework.web.socket.config.annotation.SockJsServiceRegistratio
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.StompWebSocketEndpointRegistration;
 
-import config.WebSocketAuthInterceptor;
-import config.WebSocketConfig;
+import tracko.config.WebSocketAuthInterceptor;
+import tracko.config.WebSocketConfig;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -38,7 +38,7 @@ public class WebSocketConfigTest {
         when(mockRegistration.setAllowedOriginPatterns(any(String.class))).thenReturn(mockRegistration);
         
         when(mockRegistration.withSockJS()).thenReturn(mockSockJsRegistration);
-        when(mockSockJsRegistration.setSupressCors(anyBoolean())).thenReturn(mockSockJsRegistration);
+        when(mockSockJsRegistration.setSuppressCors(anyBoolean())).thenReturn(mockSockJsRegistration);
 
         webSocketConfig.registerStompEndpoints(mockEndpointRegistry);
 
@@ -52,6 +52,6 @@ public class WebSocketConfigTest {
         }
         
         verify(mockRegistration).withSockJS();
-        verify(mockSockJsRegistration).setSupressCors(anyBoolean());
+        verify(mockSockJsRegistration).setSuppressCors(anyBoolean());
     }
 }

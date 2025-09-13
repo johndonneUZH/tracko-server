@@ -18,14 +18,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
 import config.MongoTestConfig;
-import repository.CommentRepository;
-import repository.IdeaRepository;
-import constant.ChangeType;
-import models.idea.Idea;
-import models.idea.IdeaRegister;
-import models.idea.IdeaUpdate;
-import models.project.Project;
-import models.user.User;
+import tracko.repository.CommentRepository;
+import tracko.repository.IdeaRepository;
+import tracko.constant.ChangeType;
+import tracko.models.idea.Idea;
+import tracko.models.idea.IdeaRegister;
+import tracko.models.idea.IdeaUpdate;
+import tracko.models.project.Project;
+import tracko.models.user.User;
+import tracko.service.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
@@ -182,7 +183,7 @@ public class IdeaServiceTest {
             () -> ideaService.getIdeaById(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER)
         );
         
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("Idea not found", exception.getReason());
     }
 
@@ -391,7 +392,7 @@ public class IdeaServiceTest {
             () -> ideaService.deleteIdea(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER)
         );
         
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("Idea not found", exception.getReason());
     }
     
@@ -416,7 +417,7 @@ public class IdeaServiceTest {
             () -> ideaService.deleteIdea(PROJECT_ID, IDEA_ID, VALID_AUTH_HEADER)
         );
         
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
         assertEquals("You are not the owner of this idea", exception.getReason());
     }
     

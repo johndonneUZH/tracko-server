@@ -1,13 +1,13 @@
 package controller;
 
-import constant.LoginStatus;
-import constant.UserStatus;
-import controller.AuthController;
-import models.user.User;
-import models.user.UserLogin;
-import models.user.UserRegister;
-import service.UserService;
-import auth.JwtUtil;
+import tracko.constant.LoginStatus;
+import tracko.constant.UserStatus;
+import tracko.controller.AuthController;
+import tracko.models.user.User;
+import tracko.models.user.UserLogin;
+import tracko.models.user.UserRegister;
+import tracko.service.UserService;
+import tracko.auth.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,11 +25,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import auth.JwtUtil;
-import controller.CommentController;
-import models.comment.Comment;
-import models.comment.CommentRegister;
-import service.CommentService;
+import tracko.auth.JwtUtil;
+import tracko.controller.CommentController;
+import tracko.models.comment.Comment;
+import tracko.models.comment.CommentRegister;
+import tracko.service.CommentService;
 
 @WebMvcTest(CommentController.class)
 @AutoConfigureMockMvc(addFilters = false) // Disable Spring Security filters

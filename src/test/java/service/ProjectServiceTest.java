@@ -17,36 +17,35 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import auth.JwtUtil;
+import tracko.auth.JwtUtil;
 import config.MongoTestConfig;
-import repository.IdeaRepository;
-import repository.MessageRepository;
-import repository.ProjectRepository;
-import repository.UserRepository;
-import constant.ChangeType;
-import models.ai.AnthropicResponseDTO;
-import models.ai.ContentDTO;
-import models.comment.Comment;
-import models.idea.Idea;
-import models.messages.Message;
-import models.messages.MessageRegister;
-import models.project.Project;
-import models.project.ProjectRegister;
-import models.project.ProjectUpdate;
-import models.report.ReportRegister;
-import models.user.User;
-import service.AnthropicService;
-import service.ChangeService;
-import service.CommentService;
-import service.ProjectAuthorizationService;
-import service.ProjectService;
-import service.ReportService;
-import service.UserService;
+import tracko.repository.IdeaRepository;
+import tracko.repository.MessageRepository;
+import tracko.repository.ProjectRepository;
+import tracko.repository.UserRepository;
+import tracko.constant.ChangeType;
+import tracko.models.ai.AnthropicResponseDTO;
+import tracko.models.ai.ContentDTO;
+import tracko.models.comment.Comment;
+import tracko.models.idea.Idea;
+import tracko.models.messages.Message;
+import tracko.models.messages.MessageRegister;
+import tracko.models.project.Project;
+import tracko.models.project.ProjectRegister;
+import tracko.models.project.ProjectUpdate;
+import tracko.models.report.ReportRegister;
+import tracko.models.user.User;
+import tracko.service.AnthropicService;
+import tracko.service.ChangeService;
+import tracko.service.CommentService;
+import tracko.service.ProjectAuthorizationService;
+import tracko.service.ProjectService;
+import tracko.service.ReportService;
+import tracko.service.UserService;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
@@ -170,7 +169,7 @@ public class ProjectServiceTest {
             () -> projectService.createProject(testProjectRegister, VALID_AUTH_HEADER)
         );
 
-        assertEquals(HttpStatus.CONFLICT, exception.getStatus());
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
         assertEquals("Project with this name already exists", exception.getReason());
     }
 
@@ -237,7 +236,7 @@ public class ProjectServiceTest {
             () -> projectService.updateProject(PROJECT_ID, testProjectUpdate, VALID_AUTH_HEADER)
         );
 
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
         assertEquals("You are not the owner of this project", exception.getReason());
         
         verify(projectRepository, never()).save(any(Project.class));
@@ -303,7 +302,7 @@ public class ProjectServiceTest {
             () -> projectService.deleteProject(PROJECT_ID, VALID_AUTH_HEADER)
         );
         
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
         assertEquals("You are not the owner of this project", exception.getReason());
         
         verify(projectRepository, never()).deleteById(any());
@@ -343,7 +342,7 @@ public class ProjectServiceTest {
             () -> projectService.getOwnerIdByProjectId(PROJECT_ID)
         );
         
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("Project not found", exception.getReason());
     }
     

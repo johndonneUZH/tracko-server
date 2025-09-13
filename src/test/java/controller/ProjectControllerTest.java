@@ -34,17 +34,17 @@ import org.springframework.web.server.ResponseStatusException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import auth.JwtUtil;
-import controller.ProjectController;
-import models.ai.ContentDTO;
-import models.messages.Message;
-import models.messages.MessageRegister;
-import models.project.Project;
-import models.project.ProjectRegister;
-import models.project.ProjectUpdate;
-import models.user.User;
-import service.ProjectAuthorizationService;
-import service.ProjectService;
+import tracko.auth.JwtUtil;
+import tracko.controller.ProjectController;
+import tracko.models.ai.ContentDTO;
+import tracko.models.messages.Message;
+import tracko.models.messages.MessageRegister;
+import tracko.models.project.Project;
+import tracko.models.project.ProjectRegister;
+import tracko.models.project.ProjectUpdate;
+import tracko.models.user.User;
+import tracko.service.ProjectAuthorizationService;
+import tracko.service.ProjectService;
 
 @WebMvcTest(ProjectController.class)
 @AutoConfigureMockMvc(addFilters = false)  // Disable Spring Security filters

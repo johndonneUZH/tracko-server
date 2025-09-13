@@ -1,11 +1,11 @@
 package service;
 
 import config.MongoTestConfig;
-import repository.UserRepository;
-import constant.UserStatus;
-import models.user.User;
-import models.user.UserRegister;
-import service.UserService;
+import tracko.repository.UserRepository;
+import tracko.constant.UserStatus;
+import tracko.models.user.User;
+import tracko.models.user.UserRegister;
+import tracko.service.UserService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,8 +14,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -65,7 +63,7 @@ public class UserServiceIntegrationTest {
     testUser.setName("testName");
     testUser.setUsername("testUsername");
     testUser.setPassword("testPassword");
-    User createdUser = userService.createUser(testUser);
+    userService.createUser(testUser);
 
     UserRegister testUser2 = new UserRegister();
 

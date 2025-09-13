@@ -1,17 +1,17 @@
 package service;
 
-import auth.JwtUtil;
-import repository.UserRepository;
-import constant.LoginStatus;
-import constant.UserStatus;
-import models.project.Project;
-import models.user.User;
-import models.user.UserLogin;
-import models.user.UserRegister;
-import models.user.UserUpdate;
-import service.ChangeService;
-import service.ProjectService;
-import service.UserService;
+import tracko.auth.JwtUtil;
+import tracko.repository.UserRepository;
+import tracko.constant.LoginStatus;
+import tracko.constant.UserStatus;
+import tracko.models.project.Project;
+import tracko.models.user.User;
+import tracko.models.user.UserLogin;
+import tracko.models.user.UserRegister;
+import tracko.models.user.UserUpdate;
+import tracko.service.ChangeService;
+import tracko.service.ProjectService;
+import tracko.service.UserService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.context.annotation.Import;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,8 +40,7 @@ import org.springframework.test.context.ActiveProfiles;
 import config.MongoTestConfig;
 import org.springframework.boot.test.context.SpringBootTest;
 
-
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class UserServiceTest {
@@ -181,7 +179,7 @@ public class UserServiceTest {
     public void checkLoginRequest_validCredentials_updatesLastLoginAndReturnsSuccess() {
         when(userRepository.findByUsername(anyString())).thenReturn(testUser);
         
-        LoginStatus status = userService.checkLoginRequest(testUserLogin);
+        userService.checkLoginRequest(testUserLogin);
         
         verify(userRepository).findByUsername(eq(testUserLogin.getUsername()));
     }

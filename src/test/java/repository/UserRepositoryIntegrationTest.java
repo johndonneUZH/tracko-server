@@ -1,7 +1,7 @@
 package repository;
 
-import constant.UserStatus;
-import models.user.User;
+import tracko.constant.UserStatus;
+import tracko.models.user.User;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import config.MongoTestConfig;
+import tracko.repository.UserRepository;
 
 @DataMongoTest
 @Import(MongoTestConfig.class)

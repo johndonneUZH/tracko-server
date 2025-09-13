@@ -3,8 +3,8 @@ package models.user;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import constant.UserStatus;
-import models.user.User;
+import tracko.constant.UserStatus;
+import tracko.models.user.User;
 
 import java.util.ArrayList;
 import java.util.Arrays;

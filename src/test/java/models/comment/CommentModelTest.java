@@ -1,12 +1,9 @@
 package models.comment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.Test;
-
-import models.comment.Comment;
-import models.comment.CommentRegister;
+import tracko.models.comment.Comment;
+import tracko.models.comment.CommentRegister;
 
 public class CommentModelTest {
 

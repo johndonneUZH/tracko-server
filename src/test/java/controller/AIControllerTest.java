@@ -22,14 +22,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import auth.JwtUtil;
-import controller.AIController;
-import models.ai.AnthropicResponseDTO;
-import models.ai.ContentDTO;
-import models.ai.IdeaCombinationRequestDTO;
-import models.ai.IdeaRefinementRequestDTO;
-import models.ai.IdeaTwistRequestDTO;
-import service.AnthropicService;
+import tracko.auth.JwtUtil;
+import tracko.controller.AIController;
+import tracko.models.ai.AnthropicResponseDTO;
+import tracko.models.ai.ContentDTO;
+import tracko.models.ai.IdeaCombinationRequestDTO;
+import tracko.models.ai.IdeaRefinementRequestDTO;
+import tracko.models.ai.IdeaTwistRequestDTO;
+import tracko.service.AnthropicService;
 
 @WebMvcTest(AIController.class)
 @AutoConfigureMockMvc(addFilters = false) // Disable Spring Security filters

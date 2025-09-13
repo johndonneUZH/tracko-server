@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
-import models.idea.Idea;
-import models.websocket.IdeaUpdateMessage;
+import tracko.models.idea.Idea;
+import tracko.models.websocket.IdeaUpdateMessage;
 
 public class IdeaUpdateMessageTest {
 

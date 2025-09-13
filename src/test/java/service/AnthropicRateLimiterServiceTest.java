@@ -17,7 +17,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import config.AnthropicConfig;
+import tracko.config.AnthropicConfig;
+import tracko.service.AnthropicRateLimiterService;
 
 @SpringBootTest(classes = {AnthropicConfig.class, AnthropicRateLimiterService.class})
 @ActiveProfiles("test")

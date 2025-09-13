@@ -13,10 +13,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import config.MongoTestConfig;
-import constant.UserStatus;
-import models.user.User;
+import tracko.constant.UserStatus;
+import tracko.models.user.User;
+import tracko.repository.UserRepository;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class UserRepositoryTest {

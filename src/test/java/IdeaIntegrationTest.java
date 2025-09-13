@@ -9,30 +9,27 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
-import auth.JwtUtil;
-import config.MongoTestConfig;
-import repository.IdeaRepository;
-import repository.ProjectRepository;
-import repository.UserRepository;
-import models.idea.Idea;
-import models.idea.IdeaRegister;
-import models.idea.IdeaUpdate;
-import models.project.Project;
-import models.project.ProjectRegister;
-import models.user.User;
-import models.user.UserRegister;
-import service.IdeaService;
-import service.ProjectService;
-import service.UserService;
+import tracko.auth.JwtUtil;
+import tracko.repository.IdeaRepository;
+import tracko.repository.ProjectRepository;
+import tracko.repository.UserRepository;
+import tracko.models.idea.Idea;
+import tracko.models.idea.IdeaRegister;
+import tracko.models.idea.IdeaUpdate;
+import tracko.models.project.Project;
+import tracko.models.project.ProjectRegister;
+import tracko.models.user.User;
+import tracko.models.user.UserRegister;
+import tracko.service.IdeaService;
+import tracko.service.ProjectService;
+import tracko.service.UserService;
+import tracko.Application;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@Import(MongoTestConfig.class)
+@SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
 public class IdeaIntegrationTest {
 
@@ -151,7 +148,7 @@ public class IdeaIntegrationTest {
             assertTrue(false, "Second user should not be able to update first user's idea");
         } 
         catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.FORBIDDEN, e.getStatus());
+            assertEquals(HttpStatus.FORBIDDEN, e.getStatusCode());
         }
     }
 }

@@ -38,7 +38,6 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-secretmanager:2.30.0'
     
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'org.springframework.data:spring-data-mongodb:3.4.1'
     implementation 'org.mongodb:mongodb-driver-sync:4.6.0'
     implementation 'org.mongodb:mongodb-driver-core:4.6.0'
 
@@ -56,16 +55,12 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     
     implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0'
-    implementation 'org.slf4j:slf4j-api:1.7.36'
 
-    // implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework:spring-web:6.1.14'
     implementation 'org.springframework:spring-webmvc:6.1.14'
     implementation 'org.springframework:spring-context:6.1.14'
     implementation 'org.springframework:spring-expression:6.1.14'
-    implementation 'ch.qos.logback:logback-classic:1.4.12'
-    implementation 'ch.qos.logback:logback-core:1.4.12'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
     implementation 'com.google.protobuf:protobuf-java:4.28.2'
@@ -73,23 +68,17 @@ dependencies {
     implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:11.0.10'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    // runtimeOnly 'com.h2database:h2'
 
-    // Test dependencies
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    testImplementation 'org.springframework:spring-test:5.3.34'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
-    testImplementation 'de.bwaldvogel:mongo-java-server:1.39.0'
+    // --- Test dependencies ---
+    testImplementation 'org.springframework.boot:spring-boot-starter-test' // includes test-autoconfigure
+    testImplementation 'de.bwaldvogel:mongo-java-server:1.39.0'            // embedded Mongo for tests
     testImplementation 'org.springframework.security:spring-security-test'
-
-    // For mocking in tests
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    // -------------------------
 
-    // Websockets
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.webjars:stomp-websocket:2.3.4'
     implementation 'org.webjars:sockjs-client:1.5.1'
@@ -109,7 +98,7 @@ sonar {
 
 jacocoTestReport {
     reports {
-        xml.enabled true
+        xml.required.set(true)
     }
 }
 

@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
-import constant.ChangeType;
-import models.change.Change;
-import models.change.ChangeRegister;
+import tracko.constant.ChangeType;
+import tracko.models.change.Change;
+import tracko.models.change.ChangeRegister;
 
 public class ChangeModelTest {
 

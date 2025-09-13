@@ -17,10 +17,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import repository.ReportRepository;
-import models.report.Report;
-import models.report.ReportRegister;
-import service.ReportService;
+import tracko.repository.ReportRepository;
+import tracko.models.report.Report;
+import tracko.models.report.ReportRegister;
+import tracko.service.ReportService;
 
 class ReportServiceTest {
 

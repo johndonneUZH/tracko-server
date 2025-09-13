@@ -1,7 +1,6 @@
 package controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -12,9 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +26,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import auth.JwtUtil;
-import constant.ChangeType;
-import controller.ChangeController;
-import models.change.Change;
-import models.change.ChangeRegister;
-import service.ChangeService;
-import service.ChangeService.Contributions;
-import service.ChangeService.DailyContribution;
+import tracko.auth.JwtUtil;
+import tracko.constant.ChangeType;
+import tracko.controller.ChangeController;
+import tracko.models.change.Change;
+import tracko.models.change.ChangeRegister;
+import tracko.service.ChangeService;
+import tracko.service.ChangeService.Contributions;
+import tracko.service.ChangeService.DailyContribution;
 
 @WebMvcTest(ChangeController.class)
 @AutoConfigureMockMvc(addFilters = false) // Disable Spring Security filters
