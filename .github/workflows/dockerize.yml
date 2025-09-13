@@ -13,19 +13,19 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Checkout repository code
+      - name: (GITHUB) Checkout repository code
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
+      - name: (DOCKER) Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx
+      - name: (DOCKER) Set up Buildx
         uses: docker/setup-buildx-action@v2
         with:
           install: true
           driver-opts: network=host
 
-      - name: Cache Docker layers
+      - name: (DOCKER) Cache layers
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
@@ -33,30 +33,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Login to Docker Hub
+      - name: (DOCKER) Login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.dockerhub_username }}
           password: ${{ secrets.dockerhub_password }}
 
-      - name: Build and push for x64_86 processor architecture
+      - name: (DOCKER) Build and push image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:amd64
-          platforms: linux/amd64
+          tags: |
+            ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest
+            ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:${{ github.sha }}
+            ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:${{ github.ref_name }}
+          platforms: linux/amd64,linux/arm64/v8
           cache-from: "type=local,src=/tmp/.buildx-cache"
           cache-to: "type=local,dest=/tmp/.buildx-cache,mode=max"
 
-      - name: Build and push for arm64 (Apple M-series) processor architecture
-        uses: docker/build-push-action@v5
+      - name: (TRIVY) Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@master
         with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:arm64
-          platforms: linux/arm64/v8
-          cache-from: "type=local,src=/tmp/.buildx-cache"
-          cache-to: "type=local,dest=/tmp/.buildx-cache,mode=max"
+          image-ref: ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
