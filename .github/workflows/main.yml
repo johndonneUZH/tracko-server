@@ -1,16 +1,16 @@
-name: Deploy Project to App Engine
+name: Deploy to Server
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Dockerize"]
+    types:
+      - completed
     branches:
       - main
 
-  # run the workflow manually from the Actions tab
-  workflow_dispatch:
-
 jobs:
   test:
-    name: Test and Sonarqube
+    name: Test and Sonarqube 
     runs-on: ubuntu-latest
 
     steps:
@@ -30,22 +30,44 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   deploy:
-    name: Deploying to Google Cloud
     runs-on: ubuntu-latest
-    # needs: test
-
+    # Only run if the dockerize workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+             
+      - name: Install WireGuard and sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wireguard sshpass
+             
+      - name: Setup WireGuard connection
+        run: |
+          echo "${{ secrets.WG_CONFIG }}" | sudo tee /etc/wireguard/wg0.conf > /dev/null
+          sudo chmod 600 /etc/wireguard/wg0.conf
+          sudo wg-quick up wg0
+          
+      - name: Wait for WireGuard connection
+        run: |
+          for i in {1..30}; do
+            if ping -c 1 10.0.0.1 >/dev/null 2>&1; then
+              echo "WireGuard connection established"
+              break
+            fi
+            echo "Waiting for WireGuard connection... ($i/30)"
+            sleep 2
+          done
 
-      - name: Deploy to App Engine
-        id: deploy
-        uses: google-github-actions/deploy-appengine@v0.2.0
-        with:
-          deliverables: app.yaml
-          version: v2
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          credentials: ${{ secrets.GCP_SERVICE_CREDENTIALS }}
-
-      - name: Test
-        run: curl "${{ steps.deploy.outputs.url }}"
+      - name: Deploy to server
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
+            docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:${{ github.event.workflow_run.head_sha }} &&
+            docker-compose up -d --force-recreate &&
+            docker image prune -f
+          "
+             
+      - name: Cleanup WireGuard
+        if: always()
+        run: sudo wg-quick down wg0
