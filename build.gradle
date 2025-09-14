@@ -27,7 +27,7 @@ repositories {
 }
 
 springBoot {
-    mainClass.set('Application')
+    mainClass.set('tracko.Application')
 }
 
 dependencies {
