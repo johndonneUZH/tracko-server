@@ -45,11 +45,11 @@ jobs:
           sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
             docker stop springboot_container tracko-server 2>/dev/null || true &&
             docker rm springboot_container tracko-server 2>/dev/null || true &&
-            docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:${{ github.event.workflow_run.head_sha }} &&
+            docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
             docker run -d --name tracko-server -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=production \
               --restart unless-stopped \
-              ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:${{ github.event.workflow_run.head_sha }} &&
+              ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
             docker image prune -f
           "
              
