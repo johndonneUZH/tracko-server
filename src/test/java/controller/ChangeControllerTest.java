@@ -20,7 +20,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,16 +27,16 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import tracko.auth.JwtUtil;
 import tracko.constant.ChangeType;
-import tracko.controller.ChangeController;
 import tracko.models.change.Change;
 import tracko.models.change.ChangeRegister;
 import tracko.service.ChangeService;
 import tracko.service.ChangeService.Contributions;
 import tracko.service.ChangeService.DailyContribution;
+import org.springframework.test.context.ContextConfiguration;
 
-@WebMvcTest(ChangeController.class)
-@AutoConfigureMockMvc(addFilters = false) // Disable Spring Security filters
-@ActiveProfiles("test")
+@WebMvcTest(controllers = tracko.controller.ChangeController.class)
+@ContextConfiguration(classes = tracko.Application.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class ChangeControllerTest {
 
     @Autowired

@@ -35,7 +35,7 @@ import tracko.service.UserService;
 import tracko.service.ChangeService.Contributions;
 import tracko.service.ChangeService.DailyContribution;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = tracko.Application.class)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class ChangeServiceTest {

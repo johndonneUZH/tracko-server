@@ -1,7 +1,6 @@
 package controller;
 
 import tracko.constant.UserStatus;
-import tracko.controller.UserController;
 import tracko.models.project.Project;
 import tracko.models.report.Report;
 import tracko.models.report.ReportRegister;
@@ -42,12 +41,11 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.context.ContextConfiguration;
 
-import org.springframework.test.context.ActiveProfiles;
-
-@WebMvcTest(UserController.class)
-@AutoConfigureMockMvc(addFilters = false)  // Disable Spring Security filters
-@ActiveProfiles("test")
+@WebMvcTest(controllers = tracko.controller.UserController.class)
+@ContextConfiguration(classes = tracko.Application.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class UserControllerTest {
 
     @Autowired

@@ -18,7 +18,7 @@ import config.MongoTestConfig;
 import tracko.models.comment.Comment;
 import tracko.repository.CommentRepository;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {MongoTestConfig.class})
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class CommentRepositoryTest {

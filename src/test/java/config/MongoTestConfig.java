@@ -13,7 +13,7 @@ import com.mongodb.client.MongoClients;
 import java.net.InetSocketAddress;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "repository")
+@EnableMongoRepositories(basePackages = "tracko.repository")
 public class MongoTestConfig {
 
     private static final String DATABASE_NAME = "test-db";

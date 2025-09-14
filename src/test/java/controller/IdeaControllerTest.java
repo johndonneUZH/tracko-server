@@ -31,15 +31,14 @@ import tracko.models.idea.IdeaRegister;
 import tracko.models.idea.IdeaUpdate;
 import tracko.service.IdeaService;
 import tracko.auth.JwtUtil;
-import tracko.controller.IdeaController;
 
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 
-@WebMvcTest(IdeaController.class)
-@AutoConfigureMockMvc(addFilters = false)  // Disable Spring Security filters
-@ActiveProfiles("test")
+@WebMvcTest(controllers = tracko.controller.IdeaController.class)
+@ContextConfiguration(classes = tracko.Application.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class IdeaControllerTest {
 
     @Autowired

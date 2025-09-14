@@ -17,23 +17,22 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tracko.auth.JwtUtil;
-import tracko.controller.AIController;
 import tracko.models.ai.AnthropicResponseDTO;
 import tracko.models.ai.ContentDTO;
 import tracko.models.ai.IdeaCombinationRequestDTO;
 import tracko.models.ai.IdeaRefinementRequestDTO;
 import tracko.models.ai.IdeaTwistRequestDTO;
 import tracko.service.AnthropicService;
+import org.springframework.test.context.ContextConfiguration;
 
-@WebMvcTest(AIController.class)
-@AutoConfigureMockMvc(addFilters = false) // Disable Spring Security filters
-@ActiveProfiles("test")
+@WebMvcTest(controllers = tracko.controller.AIController.class)
+@ContextConfiguration(classes = tracko.Application.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class AIControllerTest {
 
     @Autowired

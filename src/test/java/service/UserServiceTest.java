@@ -40,7 +40,7 @@ import org.springframework.test.context.ActiveProfiles;
 import config.MongoTestConfig;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = tracko.Application.class)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class UserServiceTest {

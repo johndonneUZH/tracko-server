@@ -17,7 +17,7 @@ import tracko.constant.UserStatus;
 import tracko.models.user.User;
 import tracko.repository.UserRepository;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {MongoTestConfig.class})
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class UserRepositoryTest {

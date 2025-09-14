@@ -23,7 +23,7 @@ public class AnthropicConfig {
     private static final String SECRET_NAME_PREFIX = "projects/sopra-fs25-group-46-server/secrets/";
     private static final String SECRET_VERSION_SUFFIX = "/versions/latest";
 
-    @Value("${ANTHROPIC_API_KEY:}")
+    @Value("${anthropic.api-key:}")
     private String apiKey;
 
     @PostConstruct

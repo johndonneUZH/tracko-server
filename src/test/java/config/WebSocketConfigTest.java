@@ -11,7 +11,7 @@ import tracko.config.WebSocketAuthInterceptor;
 import tracko.config.WebSocketConfig;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 public class WebSocketConfigTest {
@@ -33,25 +33,21 @@ public class WebSocketConfigTest {
         SockJsServiceRegistration mockSockJsRegistration = mock(SockJsServiceRegistration.class);
 
         when(mockEndpointRegistry.addEndpoint("/ws")).thenReturn(mockRegistration);
-        
-        when(mockRegistration.setAllowedOrigins(any(String.class))).thenReturn(mockRegistration);
-        when(mockRegistration.setAllowedOriginPatterns(any(String.class))).thenReturn(mockRegistration);
-        
+        when(mockRegistration.setAllowedOrigins(any(String[].class))).thenReturn(mockRegistration);
+        when(mockRegistration.setAllowedOriginPatterns(any(String[].class))).thenReturn(mockRegistration);
         when(mockRegistration.withSockJS()).thenReturn(mockSockJsRegistration);
-        when(mockSockJsRegistration.setSuppressCors(anyBoolean())).thenReturn(mockSockJsRegistration);
+        when(mockSockJsRegistration.setHeartbeatTime(anyLong())).thenReturn(mockSockJsRegistration);
 
         webSocketConfig.registerStompEndpoints(mockEndpointRegistry);
 
         verify(mockEndpointRegistry).addEndpoint("/ws");
-        
         // Verify either setAllowedOrigins OR setAllowedOriginPatterns was called
         try {
-            verify(mockRegistration).setAllowedOrigins(any(String.class));
+            verify(mockRegistration).setAllowedOrigins(any(String[].class));
         } catch (Error e) {
-            verify(mockRegistration).setAllowedOriginPatterns(any(String.class));
+            verify(mockRegistration).setAllowedOriginPatterns(any(String[].class));
         }
-        
         verify(mockRegistration).withSockJS();
-        verify(mockSockJsRegistration).setSuppressCors(anyBoolean());
+        verify(mockSockJsRegistration).setHeartbeatTime(4000L);
     }
 }

@@ -44,7 +44,7 @@ import tracko.service.IdeaService;
 import tracko.service.ProjectAuthorizationService;
 import tracko.service.UserService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = tracko.Application.class)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class CommentServiceTest {

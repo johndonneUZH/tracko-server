@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @see UserService
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = tracko.Application.class)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class UserServiceIntegrationTest {

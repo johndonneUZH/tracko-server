@@ -18,8 +18,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.context.annotation.Import;
 import config.MongoTestConfig;
+import tracko.Application;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class UserIntegrationTest {

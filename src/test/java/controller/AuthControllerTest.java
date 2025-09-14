@@ -2,7 +2,6 @@ package controller;
 
 import tracko.constant.LoginStatus;
 import tracko.constant.UserStatus;
-import tracko.controller.AuthController;
 import tracko.models.user.User;
 import tracko.models.user.UserLogin;
 import tracko.models.user.UserRegister;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
@@ -33,13 +33,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.test.context.ContextConfiguration;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
-
-@WebMvcTest(AuthController.class)
-@AutoConfigureMockMvc(addFilters = false)  // Disable Spring Security filters
-@ActiveProfiles("test")
+@WebMvcTest(controllers = tracko.controller.AuthController.class)
+@ContextConfiguration(classes = tracko.Application.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class AuthControllerTest {
 
     @Autowired

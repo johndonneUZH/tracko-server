@@ -5,7 +5,7 @@ import tracko.models.user.User;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import config.MongoTestConfig;
 import tracko.repository.UserRepository;
 
-@DataMongoTest
+@SpringBootTest(classes = {MongoTestConfig.class})
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class UserRepositoryIntegrationTest {

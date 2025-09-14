@@ -20,7 +20,7 @@ import config.MongoTestConfig;
 import tracko.models.project.Project;
 import tracko.repository.ProjectRepository;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {MongoTestConfig.class})
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class ProjectRepositoryTest {

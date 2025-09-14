@@ -28,7 +28,7 @@ import tracko.models.project.Project;
 import tracko.models.user.User;
 import tracko.service.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = tracko.Application.class)
 @Import(MongoTestConfig.class)
 @ActiveProfiles("test")
 public class IdeaServiceTest {

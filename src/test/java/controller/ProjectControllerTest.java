@@ -27,7 +27,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,7 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import tracko.auth.JwtUtil;
-import tracko.controller.ProjectController;
 import tracko.models.ai.ContentDTO;
 import tracko.models.messages.Message;
 import tracko.models.messages.MessageRegister;
@@ -45,10 +43,11 @@ import tracko.models.project.ProjectUpdate;
 import tracko.models.user.User;
 import tracko.service.ProjectAuthorizationService;
 import tracko.service.ProjectService;
+import org.springframework.test.context.ContextConfiguration;
 
-@WebMvcTest(ProjectController.class)
-@AutoConfigureMockMvc(addFilters = false)  // Disable Spring Security filters
-@ActiveProfiles("test")
+@WebMvcTest(controllers = tracko.controller.ProjectController.class)
+@ContextConfiguration(classes = tracko.Application.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class ProjectControllerTest {
 
     @Autowired
