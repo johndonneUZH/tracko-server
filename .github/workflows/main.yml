@@ -51,6 +51,7 @@ jobs:
               -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
               --restart unless-stopped \
               ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
+            docker network connect reverse-proxy_default tracko-server
             docker image prune -f
           "
              
