@@ -55,7 +55,9 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
             "http://127.0.0.1:5500",
-            "https://sopra-fs25-group-46-client.vercel.app"
+            "https://sopra-fs25-group-46-client.vercel.app",
+            "https://www.tracko.ch",
+            "https://tracko.ch"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
