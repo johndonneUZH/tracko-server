@@ -48,6 +48,7 @@ jobs:
             docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
             docker run -d --name tracko-server -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=production \
+              -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
               --restart unless-stopped \
               ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
             docker image prune -f
