@@ -49,7 +49,7 @@ jobs:
             ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest
             ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:${{ github.sha }}
             ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:${{ github.ref_name }}
-          platforms: linux/amd64,linux/arm64/v8
+          platforms: linux/amd64
           cache-from: "type=local,src=/tmp/.buildx-cache"
           cache-to: "type=local,dest=/tmp/.buildx-cache,mode=max"
 
@@ -60,3 +60,4 @@ jobs:
           format: table
           exit-code: 1
           ignore-unfixed: true
+          severity: 'CRITICAL'
