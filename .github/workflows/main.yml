@@ -63,8 +63,12 @@ jobs:
       - name: Deploy to server
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
+            cd ~/backends/tracko &&
+            docker stop springboot_container 2>/dev/null || true &&
+            docker rm springboot_container 2>/dev/null || true &&
             docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:${{ github.event.workflow_run.head_sha }} &&
-            docker-compose up -d --force-recreate &&
+            docker-compose down &&
+            docker-compose up -d &&
             docker image prune -f
           "
              
