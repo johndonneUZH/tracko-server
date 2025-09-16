@@ -34,7 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import tracko.auth.JwtUtil;
-import tracko.models.ai.ContentDTO;
 import tracko.models.messages.Message;
 import tracko.models.messages.MessageRegister;
 import tracko.models.project.Project;
@@ -74,7 +73,6 @@ public class ProjectControllerTest {
     private List<User> testMembers;
     private MessageRegister testMessageRegister;
     private List<Message> testMessages;
-    private ContentDTO testReport;
 
     @BeforeEach
     public void setup() {
@@ -128,8 +126,6 @@ public class ProjectControllerTest {
         
         testMessages.add(message1);
         testMessages.add(message2);
-        
-        testReport = new ContentDTO();
     }
 
     @Test

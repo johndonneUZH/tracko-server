@@ -28,8 +28,6 @@ import tracko.repository.MessageRepository;
 import tracko.repository.ProjectRepository;
 import tracko.repository.UserRepository;
 import tracko.constant.ChangeType;
-import tracko.models.ai.AnthropicResponseDTO;
-import tracko.models.ai.ContentDTO;
 import tracko.models.comment.Comment;
 import tracko.models.idea.Idea;
 import tracko.models.messages.Message;
@@ -39,7 +37,7 @@ import tracko.models.project.ProjectRegister;
 import tracko.models.project.ProjectUpdate;
 import tracko.models.report.ReportRegister;
 import tracko.models.user.User;
-import tracko.service.AnthropicService;
+import tracko.service.AIService;
 import tracko.service.ChangeService;
 import tracko.service.CommentService;
 import tracko.service.ProjectAuthorizationService;
@@ -73,7 +71,7 @@ public class ProjectServiceTest {
     private IdeaRepository ideaRepository;
 
     @MockBean
-    private AnthropicService anthropicService;
+    private AIService aiService;
 
     @MockBean
     private CommentService commentService;
@@ -107,7 +105,7 @@ public class ProjectServiceTest {
             projectAuthorizationService, 
             ideaRepository,
             messageRepository,
-            anthropicService,
+            aiService,
             commentService,
             reportService);
 
@@ -428,26 +426,19 @@ public class ProjectServiceTest {
         comment.setIdeaId("idea-123");
         comments.add(comment);
         
-        AnthropicResponseDTO anthropicResponse = new AnthropicResponseDTO();
-        List<ContentDTO> contentList = new ArrayList<>();
-        ContentDTO contentDTO = new ContentDTO();
-        contentDTO.setType("text");
-        contentDTO.setText("<h2>Project Report</h2><p>This is a test report</p>");
-        contentList.add(contentDTO);
-        anthropicResponse.setContent(contentList);
+        String geminiResponse = "<h2>Project Report</h2><p>This is a test report</p>";
         
         when(projectAuthorizationService.authenticateProject(PROJECT_ID, VALID_AUTH_HEADER))
             .thenReturn(testProject);
         when(messageRepository.findByProjectIdOrderByCreatedAtAsc(PROJECT_ID)).thenReturn(messages);
         when(ideaRepository.findByProjectId(PROJECT_ID)).thenReturn(ideas);
         when(commentService.getCommentsByIdeaId("idea-123")).thenReturn(comments);
-        when(anthropicService.generateContent(any())).thenReturn(anthropicResponse);
+        when(aiService.generateContent(any())).thenReturn(geminiResponse);
         
-        ContentDTO result = projectService.generateReport(PROJECT_ID, VALID_AUTH_HEADER);
+        String result = projectService.generateReport(PROJECT_ID, VALID_AUTH_HEADER);
         
         assertNotNull(result);
-        assertEquals("text", result.getType());
-        assertEquals("<h2>Project Report</h2><p>This is a test report</p>", result.getText());
+        assertEquals("<h2>Project Report</h2><p>This is a test report</p>", result);
         
         verify(reportService, times(1)).createReport(any(ReportRegister.class), eq(USER_ID), eq(PROJECT_ID));
     }    

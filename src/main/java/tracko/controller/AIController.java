@@ -1,7 +1,6 @@
 package tracko.controller;
 
-import tracko.models.ai.*;
-import tracko.service.AnthropicService;
+import tracko.service.AIService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,57 +9,62 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/ai")
-@ConditionalOnProperty(name = "anthropic.enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = "ai.enabled", havingValue = "true", matchIfMissing = false)
 public class AIController {
     
     private final Logger log = LoggerFactory.getLogger(AIController.class);
-    private final AnthropicService anthropicService;
+    private final AIService aiService;
     
-    public AIController(AnthropicService anthropicService) {
-        this.anthropicService = anthropicService;
+    public AIController(AIService aiService) {
+        this.aiService = aiService;
     }
     
     @PostMapping("/refine")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<AnthropicResponseDTO> refineIdea(@RequestBody IdeaRefinementRequestDTO request) {
+    public ResponseEntity<String> refineIdea(@RequestBody Map<String, String> request) {
         log.info("POST /api/ai/refine - refining idea");
-        AnthropicResponseDTO response = anthropicService.refineIdea(request.getIdeaContent());
+        String ideaContent = request.get("ideaContent");
+        String response = aiService.refineIdea(ideaContent);
         return ResponseEntity.ok(response);
     }
     
     @PostMapping("/combine")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<AnthropicResponseDTO> combineIdeas(@RequestBody IdeaCombinationRequestDTO request) {
+    public ResponseEntity<String> combineIdeas(@RequestBody Map<String, String> request) {
         log.info("POST /api/ai/combine - combining ideas");
-        AnthropicResponseDTO response = anthropicService.combineIdeas(request.getIdeaOne(), request.getIdeaTwo());
+        String ideaOne = request.get("ideaOne");
+        String ideaTwo = request.get("ideaTwo");
+        String response = aiService.combineIdeas(ideaOne, ideaTwo);
         return ResponseEntity.ok(response);
     }
     
     @PostMapping("/template")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<AnthropicResponseDTO> generateFromTemplate(@RequestBody String template) {
+    public ResponseEntity<String> generateFromTemplate(@RequestBody String template) {
         log.info("POST /api/ai/template - generating from template");
-        AnthropicResponseDTO response = anthropicService.generateFromTemplate(template);
+        String response = aiService.generateFromTemplate(template);
         return ResponseEntity.ok(response);
     }
     
     @PostMapping("/twist")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<AnthropicResponseDTO> suggestWithTwist(@RequestBody IdeaTwistRequestDTO request) {
+    public ResponseEntity<String> suggestWithTwist(@RequestBody Map<String, String> request) {
         log.info("POST /api/ai/twist - suggesting idea with twist");
-        AnthropicResponseDTO response = anthropicService.suggestRelatedIdea(
-                request.getOriginalIdea(), 
-                request.getTwist());
+        String originalIdea = request.get("originalIdea");
+        String twist = request.get("twist");
+        String response = aiService.suggestRelatedIdea(originalIdea, twist);
         return ResponseEntity.ok(response);
     }
     
     @PostMapping("/generate")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<AnthropicResponseDTO> generateContent(@RequestBody String prompt) {
+    public ResponseEntity<String> generateContent(@RequestBody String prompt) {
         log.info("POST /api/ai/generate - generating custom content");
-        AnthropicResponseDTO response = anthropicService.generateContent(prompt);
+        String response = aiService.generateContent(prompt);
         return ResponseEntity.ok(response);
     }
 }

@@ -11,17 +11,17 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@ConditionalOnProperty(name = "anthropic.enabled", havingValue = "true", matchIfMissing = false)
-public class AnthropicRateLimiterService {
+@ConditionalOnProperty(name = "ai.enabled", havingValue = "true", matchIfMissing = false)
+public class AIRateLimiterService {
     
     private final Semaphore rateLimiter;
     private final ScheduledExecutorService scheduler;
     private final int rateLimit;
 
-    public AnthropicRateLimiterService(Semaphore anthropicRateLimiter, 
+    public AIRateLimiterService(Semaphore aiRateLimiter, 
                                        ScheduledExecutorService scheduledExecutorService,
-                                        @Value("${anthropic.rate-limit:5}") int rateLimit) {
-        this.rateLimiter = anthropicRateLimiter;
+                                        @Value("${ai.rate-limit:5}") int rateLimit) {
+        this.rateLimiter = aiRateLimiter;
         this.scheduler = scheduledExecutorService;
         this.rateLimit = rateLimit;
     }

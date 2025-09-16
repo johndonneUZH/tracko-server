@@ -19,8 +19,6 @@ import tracko.repository.MessageRepository;
 import tracko.repository.ProjectRepository;
 import tracko.repository.UserRepository;
 import tracko.constant.ChangeType;
-import tracko.models.ai.AnthropicResponseDTO;
-import tracko.models.ai.ContentDTO;
 import tracko.models.comment.Comment;
 import tracko.models.idea.Idea;
 import tracko.models.messages.Message;
@@ -45,7 +43,7 @@ public class ProjectService {
     private final ChangeService changeService;
     private final ProjectAuthorizationService projectAuthorizationService;
     private final MessageRepository messageRepository;
-    private final AnthropicService anthropicService;
+    private final AIService aiService;
     private final CommentService commentService;
     private final ReportService reportService;
 
@@ -53,10 +51,10 @@ public class ProjectService {
                           UserService userService, ChangeService changeService, 
                           ProjectAuthorizationService projectAuthorizationService, IdeaRepository ideaRepository,
                           MessageRepository messageRepository,
-                          AnthropicService anthropicService, @Lazy CommentService commentService,
+                          AIService aiService, @Lazy CommentService commentService,
                           ReportService reportService) {
         this.reportService = reportService;
-        this.anthropicService = anthropicService;
+        this.aiService = aiService;
         this.commentService = commentService;
         this.messageRepository = messageRepository;
         this.projectAuthorizationService = projectAuthorizationService;
@@ -248,7 +246,7 @@ public class ProjectService {
     }
         
 
-    public ContentDTO generateReport(String projectId, String authHeader) {
+    public String generateReport(String projectId, String authHeader) {
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
         if (project == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
@@ -331,19 +329,14 @@ public class ProjectService {
         );
     
         // Here you would typically send the template to an AI model for processing.
-        AnthropicResponseDTO response = anthropicService.generateContent(template);
-        ContentDTO aiGeneratedSummary = response.getContent().get(0); 
-        String cleanHtml = aiGeneratedSummary.getText().replaceAll("\\n+", "");  // removes all \n
-    
-        ContentDTO dto = new ContentDTO();
-        dto.setType("text");
-        dto.setText(cleanHtml);
+        String aiGeneratedText = aiService.generateContent(template);
+        String cleanHtml = aiGeneratedText.replaceAll("\\n+", "");  // removes all \n
 
         ReportRegister reportRegister = new ReportRegister();
         reportRegister.setReportContent(cleanHtml);
         String userId = userService.getUserIdByToken(authHeader);
         reportService.createReport(reportRegister, userId, projectId);
 
-        return dto; 
+        return cleanHtml; 
     }
 }

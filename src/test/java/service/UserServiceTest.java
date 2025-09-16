@@ -20,7 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.context.annotation.Import;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,17 +34,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import config.MongoTestConfig;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest(classes = tracko.Application.class)
-@Import(MongoTestConfig.class)
-@ActiveProfiles("test")
 public class UserServiceTest {
 
-    @MockBean
+    @Mock
     private UserRepository userRepository;
 
     @Mock

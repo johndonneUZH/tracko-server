@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import tracko.models.ai.ContentDTO;
 import tracko.models.messages.Message;
 import tracko.models.messages.MessageRegister;
 import tracko.models.project.Project;
@@ -83,10 +82,10 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}/report")
-    public ResponseEntity<ContentDTO> generateReport(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
-        ContentDTO project = projectService.generateReport(projectId, authHeader);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(project);
-    }   
+    public ResponseEntity<String> generateReport(@PathVariable String projectId, @RequestHeader("Authorization") String authHeader) {
+        String report = projectService.generateReport(projectId, authHeader);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(report);
+    }
     
 
     @PostMapping("/{projectId}/messages")    

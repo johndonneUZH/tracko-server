@@ -45,16 +45,6 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
   }
 
   // AI API specific exceptions
-  @ExceptionHandler(AnthropicApiException.class)
-  public ResponseEntity<Object> handleAnthropicApiException(AnthropicApiException ex, WebRequest request) {
-    log.error("Anthropic API Exception: {}", ex.getMessage());
-    
-    Map<String, Object> body = new HashMap<>();
-    body.put("error", ex.getErrorCode());
-    body.put("message", ex.getMessage());
-    
-    return new ResponseEntity<>(body, ex.getStatus());
-  }
   
   @ExceptionHandler(ResourceAccessException.class)
   public ResponseEntity<Object> handleResourceAccessException(ResourceAccessException ex, WebRequest request) {

@@ -40,17 +40,36 @@ jobs:
             sleep 2
           done
 
-      - name: Deploy to server
+      - name: Stop existing containers
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
-            docker stop springboot_container tracko-server 2>/dev/null || true &&
-            docker rm springboot_container tracko-server 2>/dev/null || true &&
-            docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
+            docker stop springboot_container tracko-server 2>/dev/null || true
+            docker rm springboot_container tracko-server 2>/dev/null || true
+          "
+
+      - name: Pull latest image
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
+            docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest
+          "
+
+      - name: Start new container
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
             docker run -d --name tracko-server -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=production \
-              -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
+              -e MONGO_DB_URI='${{ secrets.MONGO_DB_URI }}' \
+              -e MONGO_DB_NAME='${{ secrets.MONGO_DB_NAME }}' \
+              -e JWT_SECRET='${{ secrets.JWT_SECRET }}' \
+              -e GEMINI_API_KEY='${{ secrets.GEMINI_API_KEY }}' \
+              -e GEMINI_API_URL='${{ secrets.GEMINI_API_URL }}' \
               --restart unless-stopped \
-              ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
+              ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest
+          "
+
+      - name: Connect to network and cleanup
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
             docker network connect reverse-proxy_default tracko-server
             docker image prune -f
           "

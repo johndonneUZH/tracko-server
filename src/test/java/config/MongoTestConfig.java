@@ -2,6 +2,7 @@ package config;
 
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,7 +17,8 @@ import java.net.InetSocketAddress;
 @EnableMongoRepositories(basePackages = "tracko.repository")
 public class MongoTestConfig {
 
-    private static final String DATABASE_NAME = "test-db";
+    @Value("${spring.data.mongodb.database}")
+    private String databaseName;
 
     @Bean(destroyMethod = "shutdown")
     public MongoServer mongoServer() {
@@ -28,15 +30,14 @@ public class MongoTestConfig {
     @Bean(destroyMethod = "close")
     public MongoClient mongoClient(MongoServer mongoServer) {
         InetSocketAddress serverAddress = mongoServer.getLocalAddress();
-        String connectionString = String.format("mongodb://%s:%d/%s", 
+        String connectionString = String.format("mongodb://%s:%d", 
                                                serverAddress.getHostName(), 
-                                               serverAddress.getPort(), 
-                                               DATABASE_NAME);
+                                               serverAddress.getPort());
         return MongoClients.create(connectionString);
     }
 
     @Bean
     public MongoTemplate mongoTemplate(MongoClient mongoClient) {
-        return new MongoTemplate(mongoClient, DATABASE_NAME);
+        return new MongoTemplate(mongoClient, databaseName);
     }
 }
