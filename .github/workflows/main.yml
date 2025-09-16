@@ -40,22 +40,19 @@ jobs:
             sleep 2
           done
 
-      - name: Stop existing containers
+      - name: Deploy application (Single SSH Connection)
         run: |
-          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
-            docker stop springboot_container tracko-server 2>/dev/null || true
-            docker rm springboot_container tracko-server 2>/dev/null || true
-          "
-
-      - name: Pull latest image
-        run: |
-          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
-            docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest
-          "
-
-      - name: Start new container
-        run: |
-          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_PROFILE }}@10.0.0.1 "
+            echo '=== Starting deployment ===' &&
+            
+            echo '=== Stopping existing containers ===' &&
+            docker stop springboot_container tracko-server 2>/dev/null || true &&
+            docker rm springboot_container tracko-server 2>/dev/null || true &&
+            
+            echo '=== Pulling latest image ===' &&
+            docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
+            
+            echo '=== Starting new container ===' &&
             docker run -d --name tracko-server -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=production \
               -e MONGO_DB_URI='${{ secrets.MONGO_DB_URI }}' \
@@ -64,14 +61,15 @@ jobs:
               -e GEMINI_API_KEY='${{ secrets.GEMINI_API_KEY }}' \
               -e GEMINI_API_URL='${{ secrets.GEMINI_API_URL }}' \
               --restart unless-stopped \
-              ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest
-          "
-
-      - name: Connect to network and cleanup
-        run: |
-          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no test@10.0.0.1 "
-            docker network connect reverse-proxy_default tracko-server
-            docker image prune -f
+              ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
+            
+            echo '=== Connecting to network ===' &&
+            docker network connect reverse-proxy_default tracko-server &&
+            
+            echo '=== Cleaning up old images ===' &&
+            docker image prune -f &&
+            
+            echo '=== Deployment completed successfully ==='
           "
              
       - name: Cleanup WireGuard
