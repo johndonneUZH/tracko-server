@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate; // ⬅️ NUEVO
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -47,12 +48,16 @@ public class ProjectService {
     private final CommentService commentService;
     private final ReportService reportService;
 
-    public ProjectService(ProjectRepository projectRepository, JwtUtil jwtUtil, 
-                          UserService userService, ChangeService changeService, 
+    private final SimpMessagingTemplate messagingTemplate; // ⬅️ NUEVO
+
+    public ProjectService(ProjectRepository projectRepository, JwtUtil jwtUtil,
+                          UserService userService, ChangeService changeService,
                           ProjectAuthorizationService projectAuthorizationService, IdeaRepository ideaRepository,
                           MessageRepository messageRepository,
                           AIService aiService, @Lazy CommentService commentService,
-                          ReportService reportService) {
+                          ReportService reportService,
+                          SimpMessagingTemplate messagingTemplate // ⬅️ NUEVO
+    ) {
         this.reportService = reportService;
         this.aiService = aiService;
         this.commentService = commentService;
@@ -62,6 +67,7 @@ public class ProjectService {
         this.projectRepository = projectRepository;
         this.userService = userService;
         this.ideaRepository = ideaRepository;
+        this.messagingTemplate = messagingTemplate; // ⬅️ NUEVO
     }
 
     public Project createProject(ProjectRegister inputProject, String authHeader) {
@@ -69,10 +75,9 @@ public class ProjectService {
         Project existingProject = projectRepository.findByOwnerIdAndProjectName(userId, inputProject.getProjectName());
         if (existingProject != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Project with this name already exists");
-        }        
+        }
 
         Project newProject = new Project();
-
         newProject.setOwnerId(userId);
         newProject.setProjectName(inputProject.getProjectName());
         newProject.setProjectDescription(inputProject.getProjectDescription());
@@ -80,7 +85,7 @@ public class ProjectService {
         newProject.setCreatedAt(java.time.LocalDateTime.now());
         newProject.setUpdatedAt(java.time.LocalDateTime.now());
         newProject.setProjectLogoUrl(inputProject.getProjectLogoUrl() != null ? inputProject.getProjectLogoUrl() : null);
-        
+
         Project savedProject = projectRepository.save(newProject);
         userService.addProjectIdToUser(userId, savedProject.getProjectId());
         if (inputProject.getProjectMembers() != null) {
@@ -88,7 +93,6 @@ public class ProjectService {
                 userService.addProjectIdToUser(memberId, savedProject.getProjectId());
             }
         }
-
         return savedProject;
     }
 
@@ -98,32 +102,21 @@ public class ProjectService {
         Set<Project> allProjects = new HashSet<>(projectOwned);
         allProjects.addAll(projectMember);
         return new ArrayList<>(allProjects);
-
     }
 
     public Project updateProject(String projectId, ProjectUpdate updatedProject, String authHeader) {
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
-
         String userId = userService.getUserIdByToken(authHeader);
         if (!project.getOwnerId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this project");
         }
 
-        if (updatedProject.getProjectName() != null) {
-            project.setProjectName(updatedProject.getProjectName());
-        }
-        if (updatedProject.getProjectDescription() != null) {
-            project.setProjectDescription(updatedProject.getProjectDescription());
-        }
-        if (updatedProject.getProjectLogoUrl() != null) {
-            project.setProjectLogoUrl(updatedProject.getProjectLogoUrl());
-        }
-    
+        if (updatedProject.getProjectName() != null) project.setProjectName(updatedProject.getProjectName());
+        if (updatedProject.getProjectDescription() != null) project.setProjectDescription(updatedProject.getProjectDescription());
+        if (updatedProject.getProjectLogoUrl() != null) project.setProjectLogoUrl(updatedProject.getProjectLogoUrl());
         project.setUpdatedAt(java.time.LocalDateTime.now());
 
-        // Members logic
         HashSet<String> members = new HashSet<>(project.getProjectMembers());
-
         boolean isMemberAdded = false;
         boolean isMemberRemoved = false;
 
@@ -131,20 +124,16 @@ public class ProjectService {
             members.addAll(updatedProject.getMembersToAdd());
             for (String memberId : updatedProject.getMembersToAdd()) {
                 userService.addProjectIdToUser(memberId, project.getProjectId());
-
             }
             isMemberAdded = true;
         }
-        
         if (updatedProject.getMembersToRemove() != null) {
             members.removeAll(updatedProject.getMembersToRemove());
             for (String memberId : updatedProject.getMembersToRemove()) {
                 userService.deleteProjectFromUser(memberId, project.getProjectId());
             }
             isMemberRemoved = true;
-
         }
-        
         project.setProjectMembers(new ArrayList<>(members));
 
         if (isMemberAdded) {
@@ -156,18 +145,14 @@ public class ProjectService {
         }
         projectRepository.save(project);
         return project;
-
     }
 
     public void deleteProject(String projectId, String authHeader) {
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
-
         String userId = userService.getUserIdByToken(authHeader);
         if (!project.getOwnerId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this project");
         }
-
-        // Remove the project from all members
         for (String memberId : project.getProjectMembers()) {
             User projectmember = userService.getUserById(memberId);
             userService.deleteProjectFromUser(projectmember.getId(), projectId);
@@ -175,7 +160,7 @@ public class ProjectService {
         deleteProjectChanges(projectId, authHeader);
         deleteProjectIdeas(projectId, authHeader);
         userService.deleteProjectFromUser(userId, projectId);
-        projectRepository.deleteById(project.getProjectId());       
+        projectRepository.deleteById(project.getProjectId());
     }
 
     public List<User> getProjectMembers(String projectId, String authHeader) {
@@ -188,18 +173,16 @@ public class ProjectService {
         members.add(owner);
         for (String memberId : project.getProjectMembers()) {
             User member = userRepository.findById(memberId).orElse(null);
-            if (member != null) {
-                members.add(member);
-            }
+            if (member != null) members.add(member);
         }
         return members;
     }
 
     public String getOwnerIdByProjectId(String projectId) {
-            Project project = projectRepository.findById(projectId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
-            return project.getOwnerId();
-        }
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
+        return project.getOwnerId();
+    }
 
     public void deleteProjectChanges(String projectId, String authHeader) {
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
@@ -235,31 +218,32 @@ public class ProjectService {
         newMessage.setUsername(user.getUsername());
         newMessage.setContent(message.getContent());
         newMessage.setCreatedAt(java.time.LocalDateTime.now());
+
         Message savedMessage = messageRepository.save(newMessage);
+
+        // ⬇️ BROADCAST por el MISMO /ws a la sala del proyecto
+        messagingTemplate.convertAndSend("/topic/chat." + projectId, savedMessage);
+
         return savedMessage;
     }
 
     public List<Message> getMessages(String projectId, String authHeader) {
         projectAuthorizationService.authenticateProject(projectId, authHeader);
-        List<Message> messages = messageRepository.findByProjectIdOrderByCreatedAtAsc(projectId);
-        return messages;
+        return messageRepository.findByProjectIdOrderByCreatedAtAsc(projectId);
     }
-        
 
     public String generateReport(String projectId, String authHeader) {
         Project project = projectAuthorizationService.authenticateProject(projectId, authHeader);
-        if (project == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
-        }
-    
+        if (project == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
+
         List<Message> messages = messageRepository.findByProjectIdOrderByCreatedAtAsc(projectId);
         List<Idea> ideas = ideaRepository.findByProjectId(projectId);
-    
+
         List<Comment> comments = new ArrayList<>();
         for (Idea idea : ideas) {
             commentService.getCommentsByIdeaId(idea.getIdeaId()).forEach(comments::add);
         }
-    
+
         String ideaSummary = ideas.stream()
             .map(idea -> String.format(
                 "Idea: %s\nDescription: %s\nUpvotes: %d, Downvotes: %d, Comments: %d\n",
@@ -269,16 +253,16 @@ public class ProjectService {
                 idea.getDownVotes().size(),
                 idea.getComments().size()
             ))
-            .collect(Collectors.joining("\n\n"));  // Added empty line between ideas
-    
+            .collect(Collectors.joining("\n\n"));
+
         String commentSummary = comments.stream()
             .map(comment -> String.format(
                 "Comment: %s\nOn Idea ID: %s\n",
                 comment.getCommentText(),
                 comment.getIdeaId()
             ))
-            .collect(Collectors.joining("\n\n"));  // Also space between comments
-    
+            .collect(Collectors.joining("\n\n"));
+
         String messageSummary = messages.stream()
             .map(message -> String.format(
                 "Message: %s\nSent At: %s\n",
@@ -286,29 +270,29 @@ public class ProjectService {
                 message.getCreatedAt()
             ))
             .collect(Collectors.joining("\n\n"));
-    
+
         String template = String.format(
             """
             You are an assistant tasked with generating a summary report for a brainstorming session.
-    
+
             Project Name: %s
-    
+
             Ideas Summary:
             %s
-    
+
             Comments Summary:
             %s
-    
+
             Messages Summary:
             %s
-    
+
             Instructions:
             1. Provide a brief, coherent overview of the brainstorming session.
             2. Identify the top 3 ideas based on upvotes and engagement (comments).
             3. For each top idea, mention the Pros and Cons.
             4. Based on comments and discussions, give any useful recommendations for the project.
-    
-            Important: 
+
+            Important:
             Format your response as **clean HTML** with:
             - Title as <h2>
             - Subsections as <h3>
@@ -316,10 +300,10 @@ public class ProjectService {
             - Separate paragraphs (<p>) for recommendations
             - Keep it neat, readable and professional.
             - Use <strong> for important points.
-            - Avoid using double \n, use single \n for line breaks.
+            - Avoid using double \\n, use single \\n for line breaks.
             - Use <br> for line breaks in HTML.
             - Use <ul> and <li> for lists.
-    
+
             Be concise, professional, and insightful.
             """,
             project.getProjectName(),
@@ -327,16 +311,15 @@ public class ProjectService {
             commentSummary,
             messageSummary
         );
-    
-        // Here you would typically send the template to an AI model for processing.
+
         String aiGeneratedText = aiService.generateContent(template);
-        String cleanHtml = aiGeneratedText.replaceAll("\\n+", "");  // removes all \n
+        String cleanHtml = aiGeneratedText.replaceAll("\\n+", "");
 
         ReportRegister reportRegister = new ReportRegister();
         reportRegister.setReportContent(cleanHtml);
         String userId = userService.getUserIdByToken(authHeader);
         reportService.createReport(reportRegister, userId, projectId);
 
-        return cleanHtml; 
+        return cleanHtml;
     }
 }
