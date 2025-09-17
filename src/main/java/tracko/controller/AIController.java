@@ -44,8 +44,9 @@ public class AIController {
     
     @PostMapping("/template")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> generateFromTemplate(@RequestBody String template) {
+    public ResponseEntity<String> generateFromTemplate(@RequestBody Map<String, String> request) {
         log.info("POST /api/ai/template - generating from template");
+        String template = request.get("ideaContent");
         String response = aiService.generateFromTemplate(template);
         return ResponseEntity.ok(response);
     }
@@ -54,17 +55,9 @@ public class AIController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> suggestWithTwist(@RequestBody Map<String, String> request) {
         log.info("POST /api/ai/twist - suggesting idea with twist");
-        String originalIdea = request.get("originalIdea");
-        String twist = request.get("twist");
+        String originalIdea = request.get("ideaContent");
+        String twist = request.get("ideaTwist");
         String response = aiService.suggestRelatedIdea(originalIdea, twist);
-        return ResponseEntity.ok(response);
-    }
-    
-    @PostMapping("/generate")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> generateContent(@RequestBody String prompt) {
-        log.info("POST /api/ai/generate - generating custom content");
-        String response = aiService.generateContent(prompt);
         return ResponseEntity.ok(response);
     }
 }

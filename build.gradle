@@ -123,4 +123,22 @@ if (secretPropsFile.exists()) {
     }
 }
 
+bootRun {
+	// Load .env.local file if it exists
+	doFirst {
+		def envFile = file('.env.local')
+		if (envFile.exists()) {
+			println "Loading environment variables from .env.local"
+			envFile.readLines().each { line ->
+				if (line && !line.startsWith('#') && line.contains('=')) {
+					def (key, value) = line.split('=', 2)
+					environment key.trim(), value.trim()
+				}
+			}
+		} else {
+			println "No .env.local file found"
+		}
+	}
+}
+
 defaultTasks 'bootJar', 'build'
