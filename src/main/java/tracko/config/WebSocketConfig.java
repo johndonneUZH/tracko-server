@@ -1,5 +1,7 @@
 package tracko.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -29,7 +31,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins(
                     "http://localhost:3000",
-                    "https://tracko.ch"
+                    "https://tracko.ch",
+                    "http://127.0.0.1:5500",
+                    "https://sopra-fs25-group-46-client.vercel.app",
+                    "https://www.tracko.ch"
+
+
                 )
                 .withSockJS()
                 .setHeartbeatTime(4000); // Match client heartbeat
