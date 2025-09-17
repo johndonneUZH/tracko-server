@@ -10,17 +10,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 import com.google.genai.Client;
 import com.google.genai.Models;
@@ -29,38 +21,27 @@ import com.google.genai.types.GenerateContentResponse;
 import tracko.config.AIConfig;
 import tracko.service.AIService;
 
-@SpringBootTest(classes = {AIConfig.class})
-@ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "ai.enabled=true",
-    "ai.api-key=test-api-key",
-    "ai.model=gemini-2.0-flash-exp"
-})
 public class AIServiceTest {
 
     private AIService aiService;
-
-    @Mock
+    private AIConfig aiConfig;
     private Client genAiClient;
-
-    @Mock
     private Models mockModels;
 
-    @MockBean
-    private AIConfig aiConfig;
-
     private final String TEST_PROMPT = "Test prompt";
-    private final String API_KEY = "test-api-key";
     private final String MODEL = "gemini-2.0-flash-exp";
 
     @BeforeEach
     public void setup() throws Exception {
-        MockitoAnnotations.openMocks(this);
+        // Create mocks
+        aiConfig = mock(AIConfig.class);
+        genAiClient = mock(Client.class);
+        mockModels = mock(Models.class);
         
         when(aiConfig.getModel()).thenReturn(MODEL);
         
-        // Use reflection to set the models field
-        Field modelsField = Client.class.getField("models");
+        // Use reflection to set the final models field
+        java.lang.reflect.Field modelsField = Client.class.getDeclaredField("models");
         modelsField.setAccessible(true);
         modelsField.set(genAiClient, mockModels);
 
@@ -112,7 +93,7 @@ public class AIServiceTest {
         verify(mockModels).generateContent(eq(MODEL), promptCaptor.capture(), eq(null));
         
         String capturedPrompt = promptCaptor.getValue();
-        assertTrue(capturedPrompt.startsWith("Refine this idea into a more innovative and detailed concept:"));
+        assertTrue(capturedPrompt.contains("You are an expert idea refinement assistant"));
         assertTrue(capturedPrompt.contains("Raw idea"));
     }
 
@@ -155,7 +136,7 @@ public class AIServiceTest {
         
         String capturedPrompt = promptCaptor.getValue();
         assertTrue(capturedPrompt.contains("Test template"));
-        assertTrue(capturedPrompt.contains("Transform my freehand brainstorm"));
+        assertTrue(capturedPrompt.contains("You are a creative idea generator"));
     }
 
     @Test

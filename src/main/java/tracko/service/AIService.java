@@ -95,7 +95,7 @@ public class AIService {
     }
     
     public String suggestRelatedIdea(String originalIdea, String twist) {
-        String prompt = "Take the original idea and transform it by applying the specified twist to create something new and innovative.\n\n" +
+        String prompt = "ATake the original idea and transform it by applying the specified twist to create something new and innovative.\n\n" +
                        "Original idea: " + originalIdea + "\n\n" +
                        "Twist to apply: " + twist + "\n\n" +
                        "Instructions:\n" +

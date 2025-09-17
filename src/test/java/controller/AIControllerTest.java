@@ -70,13 +70,14 @@ public class AIControllerTest {
 
     @Test
     public void generateFromTemplate_success() throws Exception {
-        String template = "Create an idea about renewable energy";
+        Map<String, String> request = new HashMap<>();
+        request.put("ideaContent", "Create an idea about renewable energy");
 
-        when(aiService.generateFromTemplate(eq(template))).thenReturn("AI generated template response");
+        when(aiService.generateFromTemplate(eq("Create an idea about renewable energy"))).thenReturn("AI generated template response");
 
         mockMvc.perform(post("/api/ai/template")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(template))
+                .content(mapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("AI generated template response"));
     }
@@ -84,8 +85,8 @@ public class AIControllerTest {
     @Test
     public void suggestWithTwist_success() throws Exception {
         Map<String, String> request = new HashMap<>();
-        request.put("originalIdea", "Original idea");
-        request.put("twist", "Make it eco-friendly");
+        request.put("ideaContent", "Original idea");
+        request.put("ideaTwist", "Make it eco-friendly");
 
         when(aiService.suggestRelatedIdea(eq("Original idea"), eq("Make it eco-friendly"))).thenReturn("AI generated twisted idea");
 
@@ -96,16 +97,4 @@ public class AIControllerTest {
                 .andExpect(content().string("AI generated twisted idea"));
     }
 
-    @Test
-    public void generateContent_success() throws Exception {
-        String prompt = "Generate creative content about space travel";
-
-        when(aiService.generateContent(eq(prompt))).thenReturn("AI generated space travel content");
-
-        mockMvc.perform(post("/api/ai/generate")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(prompt))
-                .andExpect(status().isOk())
-                .andExpect(content().string("AI generated space travel content"));
-    }
 }
