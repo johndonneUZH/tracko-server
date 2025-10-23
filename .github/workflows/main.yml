@@ -49,16 +49,11 @@ jobs:
             docker stop springboot_container tracko-server 2>/dev/null || true &&
             docker rm springboot_container tracko-server 2>/dev/null || true &&
             
-            echo '=== Pulling latest Tracko image ===' &&
+            echo '=== Pulling latest image ===' &&
             docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
             
-            echo '=== Stopping and removing any existing tracko-server container ===' &&
-            docker stop tracko-server 2>/dev/null || true &&
-            docker rm tracko-server 2>/dev/null || true &&
-            
-            echo '=== Starting new tracko-server container ===' &&
-            docker run -d --name tracko-server \
-              --network reverse-proxy_default \
+            echo '=== Starting new container ===' &&
+            docker run -d --name tracko-server -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=production \
               -e MONGO_DB_URI='${{ secrets.MONGO_DB_URI }}' \
               -e MONGO_DB_NAME='${{ secrets.MONGO_DB_NAME }}' \
@@ -68,8 +63,11 @@ jobs:
               --restart unless-stopped \
               ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
             
+            echo '=== Connecting to network ===' &&
+            docker network connect reverse-proxy_default tracko-server &&
+            
             echo '=== Cleaning up old images ===' &&
-            docker image prune -f
+            docker image prune -f &&
             
             echo '=== Deployment completed successfully ==='
           "
