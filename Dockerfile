@@ -15,7 +15,7 @@ COPY build.gradle settings.gradle /app/
 COPY src /app/src
 
 # Build with dependency caching
-RUN ./gradlew clean build --no-daemon --stacktrace
+RUN ./gradlew bootJar --no-daemon --stacktrace
 
 # Runtime stage
 FROM eclipse-temurin:17-jre-jammy
