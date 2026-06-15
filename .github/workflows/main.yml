@@ -1,77 +1,40 @@
-name: Deploy to Server
+name: Deploy to Render
 
 on:
-  workflow_run:
-    workflows: ["Dockerize"]
-    types:
-      - completed
-    branches:
-      - main
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Only run if the dockerize workflow succeeded
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    
     steps:
-      - name: Checkout repository code
-        uses: actions/checkout@v4
-             
-      - name: Install WireGuard and sshpass
+      - name: Sync env vars and trigger deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
+          MONGO_DB_NAME: ${{ secrets.MONGO_DB_NAME }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_URL: ${{ secrets.GEMINI_API_URL }}
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wireguard sshpass
-             
-      - name: Setup WireGuard connection
-        run: |
-          echo "${{ secrets.WG_CONFIG }}" | sudo tee /etc/wireguard/wg0.conf > /dev/null
-          sudo chmod 600 /etc/wireguard/wg0.conf
-          sudo wg-quick up wg0
-          
-      - name: Wait for WireGuard connection
-        run: |
-          for i in {1..30}; do
-            if ping -c 1 10.0.0.1 >/dev/null 2>&1; then
-              echo "WireGuard connection established"
-              break
-            fi
-            echo "Waiting for WireGuard connection... ($i/30)"
-            sleep 2
+          set -euo pipefail
+
+          for key in MONGO_DB_URI MONGO_DB_NAME JWT_SECRET GEMINI_API_KEY GEMINI_API_URL; do
+            echo "Updating $key..."
+            curl -fsS -X PUT \
+              "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/env-vars/${key}" \
+              -H "Authorization: Bearer ${RENDER_API_KEY}" \
+              -H "Content-Type: application/json" \
+              --data "$(jq -n --arg v "${!key}" '{value: $v}')" >/dev/null
           done
 
-      - name: Deploy application (Single SSH Connection)
-        run: |
-          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_PROFILE }}@10.0.0.1 "
-            echo '=== Starting deployment ===' &&
-            
-            echo '=== Stopping existing containers ===' &&
-            docker stop springboot_container tracko-server 2>/dev/null || true &&
-            docker rm springboot_container tracko-server 2>/dev/null || true &&
-            
-            echo '=== Pulling latest image ===' &&
-            docker pull ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
-            
-            echo '=== Starting new container ===' &&
-            docker run -d --name tracko-server -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=production \
-              -e MONGO_DB_URI='${{ secrets.MONGO_DB_URI }}' \
-              -e MONGO_DB_NAME='${{ secrets.MONGO_DB_NAME }}' \
-              -e JWT_SECRET='${{ secrets.JWT_SECRET }}' \
-              -e GEMINI_API_KEY='${{ secrets.GEMINI_API_KEY }}' \
-              -e GEMINI_API_URL='${{ secrets.GEMINI_API_URL }}' \
-              --restart unless-stopped \
-              ${{ secrets.dockerhub_username }}/${{ secrets.dockerhub_repo_name }}:latest &&
-            
-            echo '=== Connecting to network ===' &&
-            docker network connect reverse-proxy_default tracko-server &&
-            
-            echo '=== Cleaning up old images ===' &&
-            docker image prune -f &&
-            
-            echo '=== Deployment completed successfully ==='
-          "
-             
-      - name: Cleanup WireGuard
-        if: always()
-        run: sudo wg-quick down wg0
+          echo "Triggering deploy..."
+          curl -fsS -X POST \
+            "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache":"do_not_clear"}' >/dev/null
+
+          echo "Done."
